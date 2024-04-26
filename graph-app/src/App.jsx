@@ -1,12 +1,12 @@
 import './App.css'
-import Graph from './components/Graph.jsx'
+import MyNetwork from './components/MyNetwork.jsx'
 
 function App() {
+
     return (
-        <>
-            <h1>Hello World</h1>
-            <Graph/>
-        </>
+        <div className={"Container"}>
+            <MyNetwork />
+        </div>
     )
 }
 
