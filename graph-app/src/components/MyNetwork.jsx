@@ -11,19 +11,21 @@ export default class MyNetwork extends Component {
         this.networkComponent.current.network.on("click", event => {
             console.log("clicked", event);
         });
+
+
     }
 
     render() {
         return (
             <Network
-                options={{ width: "100%", height: "300px" }}
+                options={{ width: "100%", height: "100%" }}
                 ref={this.networkComponent}
             >
-                <Node id="vader" label="Darth Vader" />
-                <Node id="luke" label="Luke Skywalker" />
-                <Node id="leia" label="Leia Organa" />
-                <Edge id="1" from="vader" to="luke" label={"associated with"}/>
-                <Edge id="2" from="vader" to="leia" />
+                <Node id="pets" label="pets" />
+                <Node id="dogs" label="dogs" />
+                <Node id="collars" label="collars" />
+                <Edge id="pets-dogs" from="pets" to="dogs" label={"subset"} arrows={"to"}/>
+
             </Network>
         );
     }

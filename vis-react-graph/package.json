@@ -1,0 +1,7 @@
+{
+  "name": "vis-react-graph",
+  "version": "1.0.0",
+  "dependencies": {
+    "vis-react": "^0.5.1"
+  }
+}
