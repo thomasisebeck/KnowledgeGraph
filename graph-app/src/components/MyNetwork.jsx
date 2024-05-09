@@ -25,7 +25,6 @@ export default class MyNetwork extends Component {
                 <Node id="dogs" label="dogs" />
                 <Node id="collars" label="collars" />
                 <Edge id="pets-dogs" from="pets" to="dogs" label={"subset"} arrows={"to"}/>
-
             </Network>
         );
     }
