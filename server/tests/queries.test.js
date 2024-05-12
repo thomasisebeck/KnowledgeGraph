@@ -8,6 +8,7 @@ const PASSWORD = process.env.NEO4J_PASSWORD
 const DATABASE = process.env.DATABASE
 describe('queries', () => {
     let driver;
+    let nodeId;
 
     beforeAll(async () => {
         driver = await sess.connect(URI, USER, PASSWORD);
@@ -21,8 +22,29 @@ describe('queries', () => {
         }
     })
 
-    test('createInfoNode', async () => {
+    test('create info node', async () => {
        let id = await q.createInformationNode('myNewInfoNode', driver, "I am a new information node!");
-       expect(id).toBeGreaterThan(-1);
+       expect(id).not.toBe(null);
+       nodeId = id;
     })
+
+    test('remove info node by id', async () => {
+        if (nodeId == null)
+            fail("node id is null");
+        await q.removeNode(nodeId, driver);
+        let afterDelete = await q.getById(nodeId, driver);
+        console.log(afterDelete);
+    })
+
+    // test('create and remove classification node', async () => {
+    //     let id = await q.createClassificationNode('myNewNode', driver);
+    //     expect(id).toBeGreaterThan(-1);
+    //
+    //     let node = await q.getById(id, driver);
+    //     console.log(node);
+    //
+    //     let removeId = await q.removeNode(id, driver);
+    //     expect(id).toBe(removeId);
+    // })
+
 })
