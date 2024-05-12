@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
+    "get": "yarn install",
     "build": "tsc && vite build",
     "serve": "vite preview",
     "type-check": "tsc",
