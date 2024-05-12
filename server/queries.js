@@ -1,37 +1,45 @@
-const logResults = (result) => {
-    console.log(
-        `>> The query ${result.summary.query.text} ` +
-        `returned ${result.records.length} records ` +
-        `in ${result.summary.resultAvailableAfter} ms.`
-    )
+import 'dotenv/config'
+
+const DATABASE = process.env.DATABASE;
+
+const extractID = data => {
+    return data.records[0]._fieldLookup.id;
 }
 
-const createClassificationNode = async (label, driver, database) => {
-    let result = await driver.executeQuery(
-        'MERGE (c:ClassificationNode {label: $label})',
+const executeGenericQuery = async (query, driver, params) => {
+    return await driver.executeQuery(
+        query,
+        params,
         {
-            label: label
-        },
-        {
-            database: database
+            database: DATABASE
         }
     )
-    logResults(result);
 }
 
-const createInformationNode = async (label, driver, database, snippet) => {
-    let result = await driver.executeQuery(
-        `MERGE (i:InformationNode {label: $label, snippet: $snippet})`,
-        {
-            label: label,
-            snippet: snippet
-        },
-        {database: database}
-    )
-    logResults(result);
+const createClassificationNode = async (label, driver) => {
+    let query = 'MERGE (c:ClassificationNode {label: $label})'
+    return extractID(await executeGenericQuery(query, driver, {label: label}, DATABASE));
+}
+
+const findClassificationNode = async (label, driver) => {
+
+}
+
+const createInformationNode = async (label, driver, snippet) => {
+    let query = `MERGE (i:InformationNode {label: $label, snippet: $snippet}) WITH apoc.node.id(i) AS id RETURN id`;
+    return extractID(await executeGenericQuery(query, driver, {
+        label: label,
+        snippet: snippet
+    }));
+}
+
+const clearDB = async (driver) => {
+    let query = 'MATCH (n) DETACH DELETE n';
+    await executeGenericQuery(query, driver, {}, DATABASE);
 }
 
 export default {
     createInformationNode,
-    createClassificationNode
+    createClassificationNode,
+    clearDB
 }
