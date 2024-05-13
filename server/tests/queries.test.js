@@ -6,6 +6,9 @@ const URI = process.env.NEO4J_URI
 const USER = process.env.NEO4J_USERNAME
 const PASSWORD = process.env.NEO4J_PASSWORD
 const DATABASE = process.env.DATABASE
+
+//commit me for tests
+
 describe('queries', () => {
     let driver;
     let nodeId;
