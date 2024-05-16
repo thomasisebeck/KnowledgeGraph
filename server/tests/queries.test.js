@@ -23,7 +23,7 @@ describe('queries', () => {
     })
 
     test('create info node', async () => {
-       let id = await q.createInformationNode('myNewInfoNode', driver, "I am a new information node!");
+       let id = await q.createInformationNode(driver,'myNewInfoNode', "I am a new information node!");
        expect(id).not.toBe(null);
        nodeId = id;
     })
@@ -32,19 +32,26 @@ describe('queries', () => {
         if (nodeId == null)
             fail("node id is null");
         await q.removeNode(nodeId, driver);
-        let afterDelete = await q.getById(nodeId, driver);
+        let afterDelete = await q.getById(driver, nodeId);
         console.log(afterDelete);
     })
 
-    // test('create and remove classification node', async () => {
-    //     let id = await q.createClassificationNode('myNewNode', driver);
-    //     expect(id).toBeGreaterThan(-1);
+    test('create relationship', async ()=> {
+        let fromId = await q.createInformationNode(driver, 'fromLabel', "I am a snippet in the from node");
+        let toId = await q.createInformationNode(driver, 'toLabel', "I am a snippet in the to node");
+
+        //above working
+
+        const label = "my label"
+        let newID = await q.createRelationship(driver, fromId, toId, true, label);
+        expect(newID).not.toBe(null);
+
+        let exists = await q.relationshipExistsBetweenNodes(driver, fromId, toId, label);
+        expect(exists).toBe(true);
+    })
+
+    // test('delete relationship', async () => {
     //
-    //     let node = await q.getById(id, driver);
-    //     console.log(node);
-    //
-    //     let removeId = await q.removeNode(id, driver);
-    //     expect(id).toBe(removeId);
     // })
 
 })
