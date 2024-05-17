@@ -1,13 +1,8 @@
 import express from 'express';
 import 'dotenv/config';
-import sess from './session.js'
-import q from './queries.js'
-
+import sess from './session'
 const app = express();
 
-const URI = process.env.NEO4J_URI
-const USER = process.env.NEO4J_USERNAME
-const PASSWORD = process.env.NEO4J_PASSWORD
 
 //connect here
 (async () => {
