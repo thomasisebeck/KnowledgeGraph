@@ -24,8 +24,13 @@ const getField = (result: EagerResult<RecordShape>, field: string): any => {
     if (result.records[0].has(field))
           f = result.records[0].get(field);
 
-    if (f == null)
+    if (f == null) {
+        console.log("FIELDS")
+        for (const rec of result.records) {
+            console.log(rec);
+        }
         throw "cannot find field in " + result.records[0];
+    }
 
     return f;
 }
@@ -119,8 +124,8 @@ const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string
     const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
     const result = await executeGenericQuery(driver, query, {});
     console.warn("REL EXISTS BTW NODES")
-    console.log(result);
-    return getField(result, "EXISTS((n1)-[:MY_LABEL]-(n2))");
+    console.log(getField(result, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`));
+    return getField(result, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
 }
 
 const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string) => {
@@ -137,11 +142,12 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
 
     const query =
         `MERGE (n1 {nodeId: $nodeIdFrom})-[r:${formatLabel(relationshipLabel)}]->(n2 {nodeId: $nodeIdTo})
-        ON CREATE SET r.votes = 0
+        ON CREATE SET r.votes = 0, r.relId = $relId
         RETURN r`;
     const result = await executeGenericQuery(driver, query, {
         nodeIdFrom: nodeIdFrom,
-        nodeIdTo: nodeIdTo
+        nodeIdTo: nodeIdTo,
+        relId: getId()
     });
     return getField(result, "r");
 }

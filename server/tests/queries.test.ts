@@ -104,20 +104,24 @@ describe('queries', () => {
     if (driver == null)
       fail("driver is null")
 
-    console.log("CREATE INFO NODE")
     let info1 = await q.createInformationNode(driver, 'relInfo1', "I am a snippet in the from node");
-
-    console.log("CREATE CLASS NODE INNER 1")
     let class1 = await q.findOrCreateClassificationNode(driver, "classNode1");
-
-    console.log("CREATE CLASS NODE OUTER 2")
     let class2 = await q.findOrCreateClassificationNode(driver, "classNode2");
 
     let getRel1 = await q.getOrCreateRelationship(driver, info1.id, class1.id, "rel info1 class1");
+    console.log("result 1");
+    console.log(getRel1);
     let getRel2 = await q.getOrCreateRelationship(driver, class2.id, class1.id, "rel class2 class1");
+    console.log("result 2");
+    console.log(getRel2);
 
-    expect(q.relationshipExistsBetweenNodes(driver, info1.id, class1.id, "rel info1 class1")).toBe(false);
-  }, 10000)
+    let relExists = await q.relationshipExistsBetweenNodes(driver, info1.id, class1.id, "rel info1 class1");
+    expect(relExists).toBe(true);
+
+    relExists = await q.relationshipExistsBetweenNodes(driver, class2.id, class1.id, "rel class2 class1");
+    expect(relExists).toBe(true);
+
+  }, 15000)
 
 
 })
