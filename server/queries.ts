@@ -14,18 +14,20 @@ const executeGenericQuery =  async (driver: Driver, query: string, params: any):
         })
     } catch (e) {
         console.error("ERROR");
+        console.error(e);
         throw e;
     }
 }
 
-const getField = (result: EagerResult<RecordShape>, field: string) => {
+const getField = (result: EagerResult<RecordShape>, field: string): any => {
+    let f = null;
     if (result.records[0].has(field))
-        return result.records[0].get(field);
+          f = result.records[0].get(field);
 
-    console.log("Available fields:")
-    console.log(result.records[0]);
-    console.log(result.records[0].keys)
-    throw "Cannot find field";
+    if (f == null)
+        throw "cannot find field in " + result.records[0];
+
+    return f;
 }
 
 
@@ -34,22 +36,23 @@ const getId = () => {
 }
 
 
-const createClassificationNode = async (driver: Driver, label: string) => {
-    let query = `MERGE (c:${CLASS} {label: $label, nodeId: $nodeId}) RETURN c.nodeId AS nodeId`;
-    let newId = getId();
-    let result = await executeGenericQuery(driver, query, {
-        label: label, nodeId: newId
-    })
-
-    return await getField(result, "nodeId");
-}
-
 const createInformationNode = async (driver: Driver,label: string, snippet: string) => {
+    let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n`;
+    let searchResult = await executeGenericQuery(driver, searchQuery, {
+        label: label
+    })
+    if (searchResult.records.length != 0)
+        throw "cannot create duplicate labels for info nodes"
+
     let query = `MERGE (n:${INFO} {label: $label, snippet: $snippet, nodeId: $nodeId}) RETURN n.nodeId AS nodeId`;
     let result = await executeGenericQuery(driver, query, {
         label: label, snippet: snippet, nodeId: getId()
     })
-    return getField(result, "nodeId");
+    return {
+        id: getField(result, "nodeId"),
+        label: label,
+        snippet: snippet
+    }
 }
 
 const formatLabel = (relationshipLabel:  string ) => {
@@ -80,10 +83,11 @@ const getNodeById = async (driver: Driver, nodeId: any) => {
     });
 }
 
-const getNodeByLabel = async (driver: Driver, label: string) => {
-    let query = `MATCH (n:${BOTH}) WHERE n.label = $label RETURN n.nodeId AS nodeId, n.label AS label`;
+const findOrCreateClassificationNode = async (driver: Driver, label: string) => {
+    let query = `MERGE (n:${CLASS} {label: $label, nodeId: $nodeId}) RETURN n.nodeId AS nodeId, n.label AS label`;
     let result = await executeGenericQuery(driver, query, {
-        label: label
+        label: label,
+        nodeId: getId()
     })
 
     return {
@@ -104,10 +108,42 @@ const clearDB = async (driver: Driver) => {
     await executeGenericQuery(driver, query, {});
 }
 
-const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string) => {
+const upVoteRelationship = async (driver: Driver, relId: string)=> {
+    const query =  `MATCH ()-[r {relId: $relId}]->() SET r.value = r.value + 1 RETURN r`;
+    return await executeGenericQuery(driver, query, {
+        relId: relId
+    })
+}
+
+const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
     const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
     const result = await executeGenericQuery(driver, query, {});
+    console.warn("REL EXISTS BTW NODES")
+    console.log(result);
     return getField(result, "EXISTS((n1)-[:MY_LABEL]-(n2))");
+}
+
+const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string) => {
+    if (relationshipLabel.includes("-"))
+        throw "labels cannot include hyphens";
+
+    const checkNodesQuery = 'MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo}) RETURN n1, n2';
+    const checkResult = await executeGenericQuery(driver, checkNodesQuery, {
+        nodeIdFrom: nodeIdFrom,
+        nodeIdTo: nodeIdTo
+    })
+    if (checkResult.records.length == 0)
+        throw Error("cannot find nodes to connect")
+
+    const query =
+        `MERGE (n1 {nodeId: $nodeIdFrom})-[r:${formatLabel(relationshipLabel)}]->(n2 {nodeId: $nodeIdTo})
+        ON CREATE SET r.votes = 0
+        RETURN r`;
+    const result = await executeGenericQuery(driver, query, {
+        nodeIdFrom: nodeIdFrom,
+        nodeIdTo: nodeIdTo
+    });
+    return getField(result, "r");
 }
 
 const getRelationshipById = async(driver: Driver, relId: string) => {
@@ -115,14 +151,52 @@ const getRelationshipById = async(driver: Driver, relId: string) => {
     return getField(await executeGenericQuery(driver, query, {}), 'r');
 }
 
+interface Connection {
+    label: string,
+    from: boolean,
+    to: boolean
+}
+
+interface RequestBody {
+    infoNode: {
+        label: string,
+        info: string
+    },
+    classificationNodes: string[],
+    connections: Connection[]
+}
+
+const createStack = async(driver: Driver, body: RequestBody)=> {
+    const classificationNodes = body.classificationNodes;
+    const infoNode = body.infoNode;
+
+    //1. create classification nodes
+    const classId1 = await findOrCreateClassificationNode(driver, classificationNodes[0]);
+    const classId2 = await findOrCreateClassificationNode(driver, classificationNodes[1]);
+    const classId3 = await findOrCreateClassificationNode(driver, classificationNodes[2]);
+
+    //2. create info node
+    const infoId = createInformationNode(driver, infoNode.label, infoNode.info);
+
+    //3. connect the nodes
+    if (body.connections.length != 3)
+        throw "invalid number of connections";
+
+    // for (const c of body.connections) {
+    //     //between 1 and 2
+    //     if (await relationshipExistsBetweenNodes(driver, classId1.id, classId2.id, c.label))
+    //         upVoteRelationship()
+    // }
+}
+
 export default {
     createInformationNode,
-    createClassificationNode,
     clearDB,
     removeNode,
     getNodeById,
     createRelationship,
-    relationshipExistsBetweenNodes,
     getRelationshipById,
-    getNodeByLabel
+    findOrCreateClassificationNode,
+    getOrCreateRelationship,
+    relationshipExistsBetweenNodes
 }

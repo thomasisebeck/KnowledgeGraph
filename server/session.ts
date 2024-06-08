@@ -9,7 +9,7 @@ async function connect(uri: string, user: string, password: string) {
     } catch (err : any) {
         console.log(`Connection error\n${err}\nCause: ${err.cause}`)
         await driver?.close()
-        return null;
+        throw "connection error"
     }
 }
 

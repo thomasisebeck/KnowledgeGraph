@@ -1,11 +1,34 @@
 import express from 'express';
 import 'dotenv/config';
 import sess from './session'
-const app = express();
 
+const app = express();
+import q from "./queries";
+import {Driver} from "neo4j-driver";
+
+
+let driver: Driver;
 
 //connect here
 (async () => {
+
+    if (
+        process.env.NEO4J_URI == undefined ||
+        process.env.NEO4J_USERNAME == undefined ||
+        process.env.NEO4J_PASSWORD == undefined
+    )
+        throw "cannot start server with undefined variables"
+    try {
+        driver = await sess.connect(
+            process.env.NEO4J_URI,
+            process.env.NEO4J_USERNAME,
+            process.env.NEO4J_PASSWORD,
+        );
+    } catch (e) {
+        console.error("Unable to connect: ")
+        console.error(e)
+        process.exit(1)
+    }
 
 })();
 
@@ -43,5 +66,7 @@ app.listen(process.env.SERVER_PORT, () => {
 */
 
 app.post('/createStack', (req, res) => {
+
+    //3. connect nodes
 
 })
