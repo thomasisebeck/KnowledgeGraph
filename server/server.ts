@@ -15,3 +15,33 @@ app.get('/', (req, res) => {
 app.listen(process.env.SERVER_PORT, () => {
     console.log(`Running on PORT ${process.env.SERVER_PORT}`);
 })
+
+/*
+{
+    infoNode: {
+        label: "nodeLabel", -> infoNode
+        info: "info",
+    },
+    classificationNodes: [
+        {
+            label: "nodeLabel",
+            outwards: true,
+            inwards: true
+        },
+        {
+            label: "nodeLabel",
+            outwards: true,
+            inwards: true
+        },
+        {
+            label: "nodeLabel",
+            outwards: true,
+            inwards: true
+        },
+    ]
+}
+*/
+
+app.post('/createStack', (req, res) => {
+
+})

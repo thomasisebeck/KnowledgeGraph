@@ -73,6 +73,43 @@ describe('queries', () => {
 
   }, 10000)
 
+  test('get node by label', async () => {
+    if (driver == null)
+      throw "Driver is null"
+
+    console.log("CREATE INFO NODE 1")
+    let info1 = await q.createInformationNode(driver, 'myNode1', "I am a snippet in the from node");
+    console.log("CREATE INFO NODE 2")
+    let info2 = await q.createInformationNode(driver, 'myNode2', "I am a snippet in the to node");
+
+
+    console.log("CREATE CLASS NODE 1")
+    let class1 = await q.createClassificationNode(driver, 'myNode3');
+    console.log("CREATE CLASS NODE 2")
+    let class2 = await q.createClassificationNode(driver, 'myNode4');
+
+    console.log("GET ALL NODES BY LABELS")
+    let resinfo1 = await q.getNodeByLabel(driver, "myNode1");
+    let resinfo2 = await q.getNodeByLabel(driver, "myNode2");
+    let resclass1 = await q.getNodeByLabel(driver, "myNode3");
+    let resclass2 = await q.getNodeByLabel(driver, "myNode4");
+
+    expect(resinfo1.label).toBe("myNode1");
+    expect(resinfo1.id).not.toBe(null);
+
+    expect(resinfo2.label).toBe("myNode2");
+    expect(resinfo2.id).not.toBe(null);
+
+    expect(resclass1.label).toBe("myNode3");
+    expect(resclass1.id).not.toBe(null);
+
+    expect(resclass2.label).toBe("myNode4");
+    expect(resclass2.id).not.toBe(null);
+
+    expect(resinfo1.label).toBe("myNode1");
+    expect(resinfo1.id).not.toBe(null);
+  }, 10000)
+
   // test('delete relationship', async () => {
   //
   // })

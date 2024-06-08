@@ -23,6 +23,7 @@ const getField = (result: EagerResult<RecordShape>, field: string) => {
         return result.records[0].get(field);
 
     console.log("Available fields:")
+    console.log(result.records[0]);
     console.log(result.records[0].keys)
     throw "Cannot find field";
 }
@@ -38,7 +39,8 @@ const createClassificationNode = async (driver: Driver, label: string) => {
     let newId = getId();
     let result = await executeGenericQuery(driver, query, {
         label: label, nodeId: newId
-    }).then(result =>  getField(result, "nodeId"))
+    })
+
     return await getField(result, "nodeId");
 }
 
@@ -71,12 +73,23 @@ const createRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: 
     return newId;
 }
 
-//TODO: fix broken return
 const getNodeById = async (driver: Driver, nodeId: any) => {
     let query = `MATCH (n:${BOTH}) WHERE n.nodeId = $nodeId RETURN n`;
     return await executeGenericQuery(driver, query, {
         nodeId: nodeId
     });
+}
+
+const getNodeByLabel = async (driver: Driver, label: string) => {
+    let query = `MATCH (n:${BOTH}) WHERE n.label = $label RETURN n.nodeId AS nodeId, n.label AS label`;
+    let result = await executeGenericQuery(driver, query, {
+        label: label
+    })
+
+    return {
+        id: getField(result,"nodeId"),
+        label: getField(result, "label")
+    }
 }
 
 const removeNode = async (nodeId: string, driver: Driver) => {
@@ -110,5 +123,6 @@ export default {
     getNodeById,
     createRelationship,
     relationshipExistsBetweenNodes,
-    getRelationshipById
+    getRelationshipById,
+    getNodeByLabel
 }
