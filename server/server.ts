@@ -10,7 +10,7 @@ const app = express();
 })();
 
 app.get('/', (req, res) => {
-    res.send('GeeksforGeeks');
+    res.send('My app is running');
 })
 app.listen(process.env.SERVER_PORT, () => {
     console.log(`Running on PORT ${process.env.SERVER_PORT}`);
