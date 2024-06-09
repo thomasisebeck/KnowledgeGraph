@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import {Driver, EagerResult, RecordShape} from "neo4j-driver";
+import {Driver, EagerResult, PathSegment, RecordShape} from "neo4j-driver";
 
 const DATABASE = process.env.DATABASE;
 
@@ -19,7 +19,7 @@ const executeGenericQuery =  async (driver: Driver, query: string, params: any):
 }
 
 const getField = (result: EagerResult<RecordShape>, field: string) => {
-    if (result.records[0].has(field))
+    if (result.records && result.records[0].has(field))
         return result.records[0].get(field);
 
     console.log("Available fields:")
@@ -36,10 +36,9 @@ const getId = () => {
 const createClassificationNode = async (driver: Driver, label: string) => {
     let query = `MERGE (c:${CLASS} {label: $label, nodeId: $nodeId}) RETURN c.nodeId AS nodeId`;
     let newId = getId();
-    let result = await executeGenericQuery(driver, query, {
+    return await executeGenericQuery(driver, query, {
         label: label, nodeId: newId
     }).then(result =>  getField(result, "nodeId"))
-    return await getField(result, "nodeId");
 }
 
 const createInformationNode = async (driver: Driver,label: string, snippet: string) => {
@@ -63,7 +62,7 @@ function getSummaryDataPoint(summary: EagerResult<RecordShape>, field: string) {
 const createRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, directed: boolean, label: string): Promise<string> => {
     let connection = directed ? "->" : "-"
     let newId = getId();
-    let query = `CREATE (from {nodeId: $nodeIdFrom})-[rel:${formatLabel(label)} {relId: $relId}]${connection}(to {nodeId: $nodeIdTo})`;
+    let query = `MATCH (from {nodeId: $nodeIdFrom}), (to {nodeId: $nodeIdTo}) CREATE (from)-[rel:${formatLabel(label)} {relId: $relId}]${connection}(to)`;
     let result = await executeGenericQuery(driver, query, {
         nodeIdFrom: nodeIdFrom, nodeIdTo: nodeIdTo, relId: newId
     });
@@ -102,6 +101,79 @@ const getRelationshipById = async(driver: Driver, relId: string) => {
     return getField(await executeGenericQuery(driver, query, {}), 'r');
 }
 
+type Segment = {
+    relId: string, startNodeId: string, endNodeId: string, label: string
+}
+
+function formatSegment(seg: PathSegment): Segment {
+   return {
+       relId: seg.relationship.properties.relId,
+       startNodeId: seg.start.properties.nodeId,
+       endNodeId: seg.end.properties.nodeId,
+       label: seg.relationship.type
+   }
+}
+
+const formatNode = (node: { properties: { nodeId: any; label: any; }; }) => {
+    return {
+        nodeId: node.properties.nodeId,
+        label: node.properties.label
+    }
+}
+
+const containsSegment = (array: Segment[], relIdToFind: string): boolean => {
+    for (let seg of array)
+       if (seg.relId == relIdToFind)
+           return true;
+    return false;
+}
+
+type GraphNode = {
+    nodeId: string, label: string
+}
+
+const containsNode = (array: GraphNode[], nodeIdToFind: string) => {
+    for (let node of array)
+        if (node.nodeId == nodeIdToFind)
+            return true;
+    return false;
+}
+
+const formatNearestNeighbors = (records: any) => {
+    console.log("FORMATTING:")
+    console.dir(records, {depth: null});
+    console.log("-----------------------------")
+
+    //1. add nodes
+    let nodes: GraphNode[] = [];
+    let segments: Segment[]= [];
+    for (let r of records.records) {
+        let startNode = formatNode(r._fields[0].start);
+        let endNode = formatNode(r._fields[0].end);
+
+        for (let seg of r._fields[0].segments) {
+            console.log("checking segment: ");
+            console.dir(seg, {depth: null})
+            !containsSegment(segments, seg.relationship.properties.relId) && segments.push(formatSegment(seg));
+        }
+
+        !containsNode(nodes, startNode.nodeId) && nodes.push(startNode);
+        !containsNode(nodes, endNode.nodeId) && nodes.push(endNode);
+    }
+
+    return {
+        nodes: nodes,
+        segments: segments
+    }
+
+}
+
+const getNearestNeighbors = async(driver: Driver, nodeId: string, depth: number)=> {
+    //MATCH p=(startNode {nodeId: 'lx7m2urp0.jjgtbf9t'})-[*1..3]->(neighbor) RETURN neighbor, p
+    const query = `MATCH p=(startNode {nodeId: '${nodeId}'})-[*1..${depth}]->(neighbor) WITH DISTINCT p RETURN p`;
+    return formatNearestNeighbors(await executeGenericQuery(driver, query, {}));
+}
+
 export default {
     createInformationNode,
     createClassificationNode,
@@ -110,5 +182,12 @@ export default {
     getNodeById,
     createRelationship,
     relationshipExistsBetweenNodes,
-    getRelationshipById
+    getRelationshipById,
+    getNearestNeighbors
 }
+
+//return all nodes
+/*
+MATCH (startNode)-[]->(neighbor)
+RETURN startNode, neighbor
+ */
