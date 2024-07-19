@@ -8,15 +8,18 @@ const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'
 const BOTH = `${INFO} | ${CLASS}`
 
+// get nodes fully connected:
+// MATCH (n) MATCH (n)-[r]-() RETURN n,r
+
 //-------------------------- UTILITY FUNCTIONS ---------------------------------//
 
 //const records: Record<RecordShape, PropertyKey, RecordShape<PropertyKey, number>>[]
-const executeGenericQuery =  async (driver: Driver, query: string, params: any)  => {
+const executeGenericQuery = async (driver: Driver, query: string, params: any) => {
     try {
-        const { records, summary } = await driver.executeQuery(query, params, {
+        const {records, summary} = await driver.executeQuery(query, params, {
             database: DATABASE
         })
-        return { records, summary };
+        return {records, summary};
     } catch (e) {
         console.error("ERROR");
         console.error(e);
@@ -28,11 +31,11 @@ const getId = () => {
     return crypto.randomUUID();
 }
 
-const getField = (records: Record[] , field: string) => {
+const getField = (records: Record[], field: string) => {
     return records?.at(0)?.get(field);
 }
 
-const formatLabel = (relationshipLabel:  string ) => {
+const formatLabel = (relationshipLabel: string) => {
     return relationshipLabel.replaceAll(' ', '_').toLocaleUpperCase();
 }
 
@@ -42,16 +45,16 @@ const clearDB = async (driver: Driver) => {
 }
 //----------------------------- CREATION FUNCTIONS -----------------------------//
 
-const createInformationNode = async (driver: Driver,label: string, snippet: string) => {
+const createInformationNode = async (driver: Driver, label: string, snippet: string) => {
     let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n`;
     let searchResult = await executeGenericQuery(driver, searchQuery, {
         label: label
     })
-    if (searchResult.summary.counters.updates().nodesCreated == 0)
+    if (searchResult.records.length != 0)
         throw "cannot create duplicate labels for info nodes"
 
     let query = `MERGE (n:${INFO} {label: $label, snippet: $snippet, nodeId: $nodeId}) RETURN n.nodeId AS nodeId`;
-    let { records, summary} = await executeGenericQuery(driver, query, {
+    let {records, summary} = await executeGenericQuery(driver, query, {
         label: label, snippet: snippet, nodeId: crypto.randomUUID()
     })
     return {
@@ -76,10 +79,9 @@ const createRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: 
 }
 
 const findOrCreateClassificationNode = async (driver: Driver, label: string) => {
-    let query = `MERGE (n:${CLASS} {label: $label, nodeId: $nodeId}) RETURN n.nodeId AS nodeId, n.label AS label`;
+    let query = `MERGE (n:${CLASS} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label,
-        nodeId: crypto.randomUUID()
+        label: label
     })
 
     return {
@@ -92,7 +94,7 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string) => 
 
 const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
     const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
-    const { records, summary} = await executeGenericQuery(driver, query, {});
+    const {records, summary} = await executeGenericQuery(driver, query, {});
     console.warn("REL EXISTS BTW NODES")
 
 
@@ -114,91 +116,91 @@ const removeNode = async (nodeId: string, driver: Driver) => {
     });
 }
 
-const upVoteRelationship = async (driver: Driver, relId: string)=> {
-    const query =  `MATCH ()-[r {relId: $relId}]->() SET r.value = r.value + 1 RETURN r`;
+const upVoteRelationship = async (driver: Driver, relId: string) => {
+    const query = `MATCH ()-[r {relId: $relId}]->() SET r.votes = r.votes + 1 RETURN r`;
     return await executeGenericQuery(driver, query, {
         relId: relId
     })
 }
 
-const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string) => {
+const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<NodeRelationship> => {
     if (relationshipLabel.includes("-"))
         throw "labels cannot include hyphens";
 
     const checkNodesQuery = 'MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo}) RETURN n1, n2';
-    let { records, summary} = await executeGenericQuery(driver, checkNodesQuery, {
+    let {records, summary} = await executeGenericQuery(driver, checkNodesQuery, {
         nodeIdFrom: nodeIdFrom,
         nodeIdTo: nodeIdTo
     })
 
-    let nodesFound = 0;
-    for (let record of records) {
-        nodesFound++;
-    }
-    if (nodesFound != 2)
+    let node1 = getField(records, "n1");
+    let node2 = getField(records, "n2");
+
+    if (node1 == null || node2 == null)
         throw "cannot find nodes to connect"
 
+    const REL_ID = crypto.randomUUID();
     const query =
-        `MERGE (n1 {nodeId: $nodeIdFrom})-[r:${formatLabel(relationshipLabel)}]->(n2 {nodeId: $nodeIdTo})
-        ON CREATE SET r.votes = 0, r.relId = $relId
+        `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})
+        MERGE (n1)-[r:${formatLabel(relationshipLabel)}]->(n2)
+        ON CREATE SET 
+        r.relId = '${REL_ID}', 
+        r.votes = 0      
         RETURN r`;
 
     let result = await executeGenericQuery(driver, query, {
         nodeIdFrom: nodeIdFrom,
-        nodeIdTo: nodeIdTo,
-        relId: crypto.randomUUID()
+        nodeIdTo: nodeIdTo
     });
-    return result.records.at(0)?.get("r");
+
+    const r = result.records.at(0)?.get("r");
+
+    return {
+        relId: r.properties.relId,
+        type: r.type,
+        votes: r.properties.votes
+    };
 }
 
-const getRelationshipById = async(driver: Driver, relId: string) => {
-    const query =  `MATCH ()-[r {relId: '${relId}'}]->() RETURN r`;
-    const { records } = await executeGenericQuery(driver, query, {});
+const getRelationshipById = async (driver: Driver, relId: string) => {
+    const query = `MATCH ()-[r {relId: '${relId}'}]->() RETURN r`;
+    const {records} = await executeGenericQuery(driver, query, {});
     return records.at(0)?.get("r")
 }
 
-const createStack2 = async(body: RequestBody)=> {
+const createStack = async (driver: Driver, body: RequestBody) => {
     const classificationNodes = body.classificationNodes;
     const infoNode = body.infoNode;
 
-    //error: Element implicitly has an any type because expression of type 0 can't be used to index type string[
-    console.log(classificationNodes[0]);
+    const class1 = await findOrCreateClassificationNode(driver, classificationNodes[0]);
+    const class2 = await findOrCreateClassificationNode(driver, classificationNodes[1]);
+    const class3 = await findOrCreateClassificationNode(driver, classificationNodes[2]);
 
-
-    //error: length does not exist on type Connection[]
-    if (body.connections.length == 3)
-        throw "invalid number of connections";
-
-    //works
-    for (const c of body.connections) { //no error
-        //between 1 and 2
-    }
-}
-
-const createStack = async(driver: Driver, body: RequestBody)=> {
-    const classificationNodes = body.classificationNodes;
-    const infoNode = body.infoNode;
-
-    //error: Element implicitly has an any type because expression of type 0 can't be used to index type string[
-    const classId1 = await findOrCreateClassificationNode(driver, classificationNodes[0]!);
-
-    //works
-    const classId2 = await findOrCreateClassificationNode(driver,  classificationNodes.at(1)!);
-    const classId3 = await findOrCreateClassificationNode(driver, classificationNodes.at(2)!);
-
-    const infoId = createInformationNode(driver, infoNode.label, infoNode.info);
+    const info = await createInformationNode(driver, infoNode.label, infoNode.info);
 
     //error: length does not exist on type Connection[]
-    if (body.connections.length == 3)
+    if (body.connections.length !== 3)
         throw "invalid number of connections";
 
-    //works
-    for (const c of body.connections) { //no error
-        //between 1 and 2
-        if (await relationshipExistsBetweenNodes(driver, classId1.id, classId2.id, c.label)) {
+    const relationshipsToUpvote:NodeRelationship[] = [];
 
-        }
+    // between 1 and 2
+    relationshipsToUpvote.push(await getOrCreateRelationship(driver, class1.id, class2.id, body.connections[0]));
+
+    //between 2 and 3
+    relationshipsToUpvote.push(await getOrCreateRelationship(driver, class2.id, class3.id, body.connections[1]));
+
+    //between 3 and info
+    relationshipsToUpvote.push(await getOrCreateRelationship(driver, class3.id, info.id, body.connections[2]));
+
+
+    //upvote, so that it always starts at 1
+    //subsequent upvotes will just increment this number
+    for (const r of relationshipsToUpvote) {
+        await upVoteRelationship(driver, r.relId);
     }
+
+
 }
 
 //--------------------------- INTERFACES ----------------------------------//
@@ -209,15 +211,20 @@ interface Connection {
     to: boolean
 }
 
-interface RequestBody {
+export interface RequestBody {
     infoNode: {
         label: string,
         info: string
     },
     classificationNodes: string[],
-    connections: Connection[]
+    connections: string[]
 }
 
+export interface NodeRelationship {
+    type: string,
+    relId: string,
+    votes: number
+}
 
 
 export default {
@@ -229,5 +236,6 @@ export default {
     getRelationshipById,
     findOrCreateClassificationNode,
     getOrCreateRelationship,
-    relationshipExistsBetweenNodes
+    relationshipExistsBetweenNodes,
+    createStack
 }
