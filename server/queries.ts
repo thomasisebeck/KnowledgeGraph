@@ -45,37 +45,31 @@ const clearDB = async (driver: Driver) => {
 }
 //----------------------------- CREATION FUNCTIONS -----------------------------//
 
-const createInformationNode = async (driver: Driver, label: string, snippet: string) => {
-    let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n`;
+const createOrRetrieveInformationNode = async (driver: Driver, label: string, snippet: string): Promise<Node> => {
+    let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n.nodeId AS nodeId`;
     let searchResult = await executeGenericQuery(driver, searchQuery, {
         label: label
     })
-    if (searchResult.records.length != 0)
-        throw "cannot create duplicate labels for info nodes"
+    if (searchResult.records.length != 0) {
+        //node already created, return it
+        return {
+            nodeId: getField(searchResult.records, "nodeId"),
+            label: label,
+            snippet: snippet,
+            nodeType: nodeType.INFORMATION
+        }
+    }
 
     let query = `MERGE (n:${INFO} {label: $label, snippet: $snippet, nodeId: $nodeId}) RETURN n.nodeId AS nodeId`;
     let {records, summary} = await executeGenericQuery(driver, query, {
         label: label, snippet: snippet, nodeId: crypto.randomUUID()
     })
     return {
-        id: getField(records, "nodeId"),
+        nodeId: getField(records, "nodeId"),
         label: label,
-        snippet: snippet
+        snippet: snippet,
+        nodeType: nodeType.INFORMATION
     }
-}
-
-const createRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, directed: boolean, label: string): Promise<string> => {
-    let connection = directed ? "->" : "-"
-    let newId = crypto.randomUUID();
-    let query = `CREATE (from {nodeId: $nodeIdFrom})-[rel:${formatLabel(label)} {relId: $relId}]${connection}(to {nodeId: $nodeIdTo})`;
-    let {records, summary} = await executeGenericQuery(driver, query, {
-        nodeIdFrom: nodeIdFrom, nodeIdTo: nodeIdTo, relId: newId
-    });
-
-    if (summary.counters.updates().relationshipsCreated !== 1)
-        throw "failed to create relationship";
-
-    return newId;
 }
 
 const findOrCreateClassificationNode = async (driver: Driver, label: string) => {
@@ -85,7 +79,7 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string) => 
     })
 
     return {
-        id: getField(records, "nodeId"),
+        nodeId: getField(records, "nodeId"),
         label: getField(records, "label"),
     }
 }
@@ -95,10 +89,10 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string) => 
 const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
     const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
     const {records, summary} = await executeGenericQuery(driver, query, {});
-    console.warn("REL EXISTS BTW NODES")
 
+    if (records.length == 0)
+        return false;
 
-    console.log(records.at(0)?.get(`EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`));
     return getField(records, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
 }
 
@@ -117,10 +111,21 @@ const removeNode = async (nodeId: string, driver: Driver) => {
 }
 
 const upVoteRelationship = async (driver: Driver, relId: string) => {
-    const query = `MATCH ()-[r {relId: $relId}]->() SET r.votes = r.votes + 1 RETURN r`;
-    return await executeGenericQuery(driver, query, {
+    const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes + 1 RETURN r, from, to`;
+    const result = await executeGenericQuery(driver, query, {
         relId: relId
     })
+    const r = getField(result.records, "r");
+    const from = getField(result.records, "from");
+    const to = getField(result.records, "to");
+
+    return {
+        relId: r.properties.relId,
+        type: r.type,
+        votes: r.properties.votes.toNumber(),
+        from: from.nodeId,
+        to: to.nodeId
+    };
 }
 
 const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<NodeRelationship> => {
@@ -158,7 +163,9 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
     return {
         relId: r.properties.relId,
         type: r.type,
-        votes: r.properties.votes
+        votes: r.properties.votes.toNumber(),
+        to: nodeIdTo,
+        from: nodeIdFrom
     };
 }
 
@@ -168,53 +175,80 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     return records.at(0)?.get("r")
 }
 
-const createStack = async (driver: Driver, body: RequestBody) => {
-    const classificationNodes = body.classificationNodes;
+//returns the stack
+const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
+    const classificationNodeStrings = body.classificationNodes;
     const infoNode = body.infoNode;
 
-    const class1 = await findOrCreateClassificationNode(driver, classificationNodes[0]);
-    const class2 = await findOrCreateClassificationNode(driver, classificationNodes[1]);
-    const class3 = await findOrCreateClassificationNode(driver, classificationNodes[2]);
+    const nodes: Node[] = [];
 
-    const info = await createInformationNode(driver, infoNode.label, infoNode.info);
+    //create 3 classification nodes
+    for (let i = 0; i < 3; i++) {
+        const current = await findOrCreateClassificationNode(driver, classificationNodeStrings[i]);
+        nodes.push({
+            label: current.label,
+            nodeId: current.nodeId,
+            nodeType: nodeType.CLASSIFICATION
+        })
+    }
+
+    //create the information node
+    const info = await createOrRetrieveInformationNode(driver, infoNode.label, infoNode.snippet);
+    nodes.push({
+        label: info.label,
+        snippet: info.snippet,
+        nodeId: info.nodeId,
+        nodeType: nodeType.INFORMATION
+    })
 
     //error: length does not exist on type Connection[]
     if (body.connections.length !== 3)
         throw "invalid number of connections";
 
-    const relationshipsToUpvote:NodeRelationship[] = [];
+    const relationships: NodeRelationship[] = [];
 
-    // between 1 and 2
-    relationshipsToUpvote.push(await getOrCreateRelationship(driver, class1.id, class2.id, body.connections[0]));
-
-    //between 2 and 3
-    relationshipsToUpvote.push(await getOrCreateRelationship(driver, class2.id, class3.id, body.connections[1]));
-
-    //between 3 and info
-    relationshipsToUpvote.push(await getOrCreateRelationship(driver, class3.id, info.id, body.connections[2]));
-
-
-    //upvote, so that it always starts at 1
-    //subsequent upvotes will just increment this number
-    for (const r of relationshipsToUpvote) {
-        await upVoteRelationship(driver, r.relId);
+    const NUM_RELATIONSHIPS = 3;
+    for (let i = 0; i < NUM_RELATIONSHIPS; i++) {
+        let curr: NodeRelationship;
+        if (i == NUM_RELATIONSHIPS - 1) { //last class to info
+            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, info.nodeId, body.connections[i]);
+        }
+        else {
+            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, nodes[i + 1].nodeId, body.connections[i]);
+        }
+        //upvote relationship, whether it's existing or new
+        relationships.push(await upVoteRelationship(driver, curr.relId));
     }
 
-
+    return {
+        nodes: nodes,
+        relationships: relationships
+    }
 }
 
 //--------------------------- INTERFACES ----------------------------------//
 
-interface Connection {
+export enum nodeType {
+    CLASSIFICATION,
+    INFORMATION
+}
+
+interface Node {
     label: string,
-    from: boolean,
-    to: boolean
+    nodeId: string
+    snippet?: string
+    nodeType: nodeType
+}
+
+export interface CreateStackReturnBody {
+    nodes: Node[],
+    relationships: NodeRelationship[]
 }
 
 export interface RequestBody {
     infoNode: {
         label: string,
-        info: string
+        snippet: string
     },
     classificationNodes: string[],
     connections: string[]
@@ -223,16 +257,17 @@ export interface RequestBody {
 export interface NodeRelationship {
     type: string,
     relId: string,
-    votes: number
+    votes: number,
+    to: string,
+    from: string
 }
 
 
 export default {
-    createInformationNode,
+    createOrRetrieveInformationNode,
     clearDB,
     removeNode,
     getNodeById,
-    createRelationship,
     getRelationshipById,
     findOrCreateClassificationNode,
     getOrCreateRelationship,
