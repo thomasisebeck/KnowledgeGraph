@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import {Driver, EagerResult, Record, RecordShape} from "neo4j-driver";
+import {driver, Driver, EagerResult, Record, RecordShape} from "neo4j-driver";
 import * as crypto from "node:crypto";
 
 const DATABASE = process.env.DATABASE;
@@ -7,6 +7,7 @@ const DATABASE = process.env.DATABASE;
 const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'
 const BOTH = `${INFO} | ${CLASS}`
+const TOPIC = 'Topic'
 
 // get nodes fully connected:
 // MATCH (n) MATCH (n)-[r]-() RETURN n,r
@@ -72,15 +73,17 @@ const createOrRetrieveInformationNode = async (driver: Driver, label: string, sn
     }
 }
 
-const findOrCreateClassificationNode = async (driver: Driver, label: string) => {
-    let query = `MERGE (n:${CLASS} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
+const findOrCreateClassificationNode = async (driver: Driver, label: string, topicNode?: boolean): Promise<Node> => {
+    const TYPE = topicNode ? TOPIC : CLASS;
+    let query = `MERGE (n:${TYPE} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
     let {records, summary} = await executeGenericQuery(driver, query, {
         label: label
     })
 
     return {
+        nodeType: nodeType.CLASSIFICATION,
         nodeId: getField(records, "nodeId"),
-        label: getField(records, "label"),
+        label: getField(records, "label")
     }
 }
 
@@ -110,6 +113,12 @@ const removeNode = async (nodeId: string, driver: Driver) => {
     });
 }
 
+const createTopicNodes = async (driver: Driver) => {
+
+    //create the topic nodes
+
+
+}
 const upVoteRelationship = async (driver: Driver, relId: string) => {
     const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes + 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
@@ -211,53 +220,63 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
 }
 
 //returns the stack
-const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
+const createStack = async (driver: Driver, body: RequestBody) => {
     const classificationNodeStrings = body.classificationNodes;
     const infoNode = body.infoNode;
 
     const nodes: Node[] = [];
 
+    const myNodes = await Promise.all([
+        findOrCreateClassificationNode(driver, classificationNodeStrings[0]),
+        findOrCreateClassificationNode(driver, classificationNodeStrings[1]),
+        findOrCreateClassificationNode(driver, classificationNodeStrings[2]),
+        createOrRetrieveInformationNode(driver, infoNode.label, infoNode.snippet)
+    ])
+
     //create 3 classification nodes
-    for (let i = 0; i < 3; i++) {
-        const current = await findOrCreateClassificationNode(driver, classificationNodeStrings[i]);
-        nodes.push({
-            label: current.label,
-            nodeId: current.nodeId,
-            nodeType: nodeType.CLASSIFICATION
-        })
+    for (let i = 0; i < myNodes.length; i++) {
+        const n = myNodes[i];
+        if (i == myNodes.length - 1)
+            nodes.push({
+                label: n.label,
+                nodeId: n.nodeId,
+                nodeType: nodeType.INFORMATION,
+                snippet: n.snippet
+            })
+        else
+            nodes.push({
+                label: n.label,
+                nodeId: n.nodeId,
+                nodeType: nodeType.CLASSIFICATION
+            })
     }
 
-    //create the information node
-    const info = await createOrRetrieveInformationNode(driver, infoNode.label, infoNode.snippet);
-    nodes.push({
-        label: info.label,
-        snippet: info.snippet,
-        nodeId: info.nodeId,
-        nodeType: nodeType.INFORMATION
-    })
 
     //error: length does not exist on type Connection[]
     if (body.connections.length !== 3)
         throw "invalid number of connections";
 
-    const relationships: NodeRelationship[] = [];
+    const createdRels = await Promise.all([
+        getOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, body.connections[0], body.doubleSided[0]),
+        getOrCreateRelationship(driver, nodes[1].nodeId, nodes[2].nodeId, body.connections[1], body.doubleSided[1]),
+        getOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, body.connections[2], body.doubleSided[2]),
+    ])
 
-    const NUM_RELATIONSHIPS = 3;
-    for (let i = 0; i < NUM_RELATIONSHIPS; i++) {
-        let curr: NodeRelationship[];
-        if (i == NUM_RELATIONSHIPS - 1) { //last class to info
-            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, info.nodeId, body.connections[i], body.doubleSided[i]);
-        } else {
-            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, nodes[i + 1].nodeId, body.connections[i], body.doubleSided[i]);
-        }
+    //don't have to upvote twice, they have the same relID
+    const myRels = await Promise.all([
+        upVoteRelationship(driver, createdRels[0][0].relId),
+        // createdRels[0][1] && upVoteRelationship(driver, createdRels[0][1].relId),
 
-        //upvote relationship, whether it's existing or new
-        relationships.push(await upVoteRelationship(driver, curr[0].relId));
-    }
+        upVoteRelationship(driver, createdRels[1][0].relId),
+        // createdRels[1][1] && upVoteRelationship(driver, createdRels[1][1].relId),
+
+        upVoteRelationship(driver, createdRels[2][0].relId),
+        // createdRels[2][1] && upVoteRelationship(driver, createdRels[2][1].relId),
+    ])
 
     return {
         nodes: nodes,
-        relationships: relationships
+        relationships: myRels
     }
 }
 
