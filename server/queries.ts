@@ -128,7 +128,7 @@ const upVoteRelationship = async (driver: Driver, relId: string) => {
     };
 }
 
-const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<NodeRelationship> => {
+const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string, doubleSided?: boolean): Promise<NodeRelationship[]> => {
     if (relationshipLabel.includes("-"))
         throw "labels cannot include hyphens";
 
@@ -158,15 +158,50 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
         nodeIdTo: nodeIdTo
     });
 
-    const r = result.records.at(0)?.get("r");
+    let result2;
 
-    return {
-        relId: r.properties.relId,
-        type: r.type,
-        votes: r.properties.votes.toNumber(),
-        to: nodeIdTo,
-        from: nodeIdFrom
-    };
+    if (doubleSided) {
+        const query =
+            `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})
+        MERGE (n1)-[r:${formatLabel(relationshipLabel)}]->(n2)
+        ON CREATE SET 
+        r.relId = '${REL_ID}', 
+        r.votes = 0      
+        RETURN r`;
+
+        result2 = await executeGenericQuery(driver, query, {
+            nodeIdFrom: nodeIdTo,
+            nodeIdTo: nodeIdFrom
+        });
+    }
+
+    const r = result.records.at(0)?.get("r");
+    let r2 = result2 != null ? result2.records.at(0)?.get("r") : null;
+
+    const toRet: NodeRelationship[] = [];
+
+    toRet.push(
+        {
+            relId: r.properties.relId,
+            type: r.type,
+            votes: r.properties.votes.toNumber(),
+            to: nodeIdTo,
+            from: nodeIdFrom
+        }
+    )
+
+    if (r2 != null)
+        toRet.push(
+            {
+                relId: r2.properties.relId,
+                type: r2.type,
+                votes: r2.properties.votes.toNumber(),
+                to: nodeIdFrom,
+                from: nodeIdTo
+            }
+        )
+
+    return toRet;
 }
 
 const getRelationshipById = async (driver: Driver, relId: string) => {
@@ -209,15 +244,15 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 
     const NUM_RELATIONSHIPS = 3;
     for (let i = 0; i < NUM_RELATIONSHIPS; i++) {
-        let curr: NodeRelationship;
+        let curr: NodeRelationship[];
         if (i == NUM_RELATIONSHIPS - 1) { //last class to info
-            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, info.nodeId, body.connections[i]);
+            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, info.nodeId, body.connections[i], body.doubleSided[i]);
+        } else {
+            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, nodes[i + 1].nodeId, body.connections[i], body.doubleSided[i]);
         }
-        else {
-            curr = await getOrCreateRelationship(driver, nodes[i].nodeId, nodes[i + 1].nodeId, body.connections[i]);
-        }
+
         //upvote relationship, whether it's existing or new
-        relationships.push(await upVoteRelationship(driver, curr.relId));
+        relationships.push(await upVoteRelationship(driver, curr[0].relId));
     }
 
     return {
@@ -251,7 +286,8 @@ export interface RequestBody {
         snippet: string
     },
     classificationNodes: string[],
-    connections: string[]
+    connections: string[],
+    doubleSided: boolean[]
 }
 
 export interface NodeRelationship {

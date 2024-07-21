@@ -65,6 +65,11 @@ app.listen(process.env.SERVER_PORT, () => {
 }
 */
 
+
+app.get('/initialData', (req, res) => {
+
+})
+
 app.post('/createStack', (req, res) => {
 
     //3. connect nodes
