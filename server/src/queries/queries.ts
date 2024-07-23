@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import {Driver, Record} from "neo4j-driver";
 import * as crypto from "node:crypto";
+import {executeGenericQuery, formatLabel, getField} from "./utils";
 
-const DATABASE = process.env.DATABASE;
 
 const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'
@@ -14,32 +14,8 @@ const BOTH = `${INFO} | ${CLASS}`
 //-------------------------- UTILITY FUNCTIONS ---------------------------------//
 
 //const records: Record<RecordShape, PropertyKey, RecordShape<PropertyKey, number>>[]
-const executeGenericQuery = async (driver: Driver, query: string, params: any) => {
-    try {
-        const {records, summary} = await driver.executeQuery(query, params, {
-            database: DATABASE
-        })
-        return {records, summary};
-    } catch (e) {
-        console.error("ERROR");
-        console.error(e);
-        throw e;
-    }
-}
 
-const getField = (records: Record[], field: string) => {
-    return records?.at(0)?.get(field);
-}
-
-const formatLabel = (relationshipLabel: string) => {
-    return relationshipLabel.replaceAll(' ', '_').toLocaleUpperCase();
-}
-
-const clearDB = async (driver: Driver) => {
-    let query = 'MATCH (n) DETACH DELETE n';
-    await executeGenericQuery(driver, query, {});
-}
-//----------------------------- CREATION FUNCTIONS -----------------------------//
+//----------------------------- CREATION / MODIFICATION FUNCTIONS -----------------------------//
 
 const findOrCreateInformationNode = async (driver: Driver, label: string, snippet: string): Promise<Node> => {
     let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n.nodeId AS nodeId`;
@@ -79,25 +55,6 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string): Pr
         nodeId: getField(records, "nodeId"),
         label: getField(records, "label")
     }
-}
-
-//----------------------------- FINDING / CREATION FUNCTIONS -----------------------------//
-
-const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
-    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
-    const {records, summary} = await executeGenericQuery(driver, query, {});
-
-    if (records.length == 0)
-        return false;
-
-    return getField(records, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
-}
-
-const getNodeById = async (driver: Driver, nodeId: any) => {
-    let query = `MATCH (n:${BOTH}) WHERE n.nodeId = $nodeId RETURN n`;
-    return await executeGenericQuery(driver, query, {
-        nodeId: nodeId
-    });
 }
 
 const removeNode = async (nodeId: string, driver: Driver) => {
@@ -226,12 +183,6 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
     return toRet;
 }
 
-const getRelationshipById = async (driver: Driver, relId: string) => {
-    const query = `MATCH ()-[r {relId: '${relId}'}]->() RETURN r`;
-    const {records} = await executeGenericQuery(driver, query, {});
-    return records.at(0)?.get("r")
-}
-
 const createStack = async (driver: Driver, body: RequestBody) => {
     const classificationNodeStrings = body.classificationNodes;
     const infoNode = body.infoNode;
@@ -290,6 +241,32 @@ const createStack = async (driver: Driver, body: RequestBody) => {
     }
 }
 
+
+//----------------------------- DOES EXIST FUNCTIONS -----------------------------//
+
+const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
+    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
+    const {records, summary} = await executeGenericQuery(driver, query, {});
+
+    if (records.length == 0)
+        return false;
+
+    return getField(records, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
+}
+
+const getNodeById = async (driver: Driver, nodeId: any) => {
+    let query = `MATCH (n:${BOTH}) WHERE n.nodeId = $nodeId RETURN n`;
+    return await executeGenericQuery(driver, query, {
+        nodeId: nodeId
+    });
+}
+
+const getRelationshipById = async (driver: Driver, relId: string) => {
+    const query = `MATCH ()-[r {relId: '${relId}'}]->() RETURN r`;
+    const {records} = await executeGenericQuery(driver, query, {});
+    return records.at(0)?.get("r")
+}
+
 //--------------------------- INTERFACES ----------------------------------//
 
 export enum nodeType {
@@ -329,7 +306,6 @@ export interface NodeRelationship {
 
 export default {
     findOrCreateInformationNode,
-    clearDB,
     removeNode,
     getNodeById,
     getRelationshipById,
