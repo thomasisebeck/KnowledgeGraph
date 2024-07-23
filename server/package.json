@@ -1,9 +1,11 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "server.ts",
+  "main": "src/server.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "ts-node src/server.ts",
+    "dev": "nodemon --watch 'src/**' --exec ts-node src/server.ts"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +16,7 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.3",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.5.3"
   },
   "dependencies": {

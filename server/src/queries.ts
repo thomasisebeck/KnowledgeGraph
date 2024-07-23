@@ -236,7 +236,6 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     return records.at(0)?.get("r")
 }
 
-//returns the stack
 const createStack = async (driver: Driver, body: RequestBody) => {
     const classificationNodeStrings = body.classificationNodes;
     const infoNode = body.infoNode;
@@ -268,8 +267,6 @@ const createStack = async (driver: Driver, body: RequestBody) => {
             })
     }
 
-
-    //error: length does not exist on type Connection[]
     if (body.connections.length !== 3)
         throw "invalid number of connections";
 
@@ -334,7 +331,6 @@ export interface NodeRelationship {
     from: string
 }
 
-
 export default {
     findOrCreateInformationNode,
     clearDB,
@@ -344,5 +340,6 @@ export default {
     findOrCreateClassificationNode,
     getOrCreateRelationship,
     relationshipExistsBetweenNodes,
-    createStack
+    createStack,
+    createTopicNodes
 }
