@@ -1,5 +1,5 @@
 import {Driver, Relationship} from 'neo4j-driver'
-import q  from '../queries/queries'
+import q  from  "../queries/queries"
 import sess from '../session'
 import 'dotenv/config'
 import {clearDB} from "../utils";
@@ -33,97 +33,97 @@ describe('queries', () => {
             console.log("session closed")
         }
     })
-    //
-    // test('create info node', async () => {
-    //     if (driver == null)
-    //         throw "Driver is null"
-    //     let result = await q.findOrCreateInformationNode(driver, 'myNewInfoNode', "I am a new information node!");
-    //     expect(result).not.toBe(null);
-    //     nodeId = result.nodeId;
-    // })
-    //
-    // test('remove info node by id', async () => {
-    //     if (driver == null)
-    //         throw "Driver is null"
-    //     if (nodeId == null)
-    //         fail("node id is null");
-    //     await q.removeNode(nodeId, driver);
-    //     let afterDelete = await q.getNodeById(driver, nodeId);
-    //     console.log(afterDelete);
-    // })
-    //
-    // test('create relationship and get by ID', async () => {
-    //     if (driver == null)
-    //         throw "Driver is null"
-    //
-    //     console.log("CREATE INFO NODE 1")
-    //     let fromRes = await q.findOrCreateInformationNode(driver, 'fromLabel', "I am a snippet in the from node");
-    //     console.log("CREATE INFO NODE 2")
-    //     let toRes = await q.findOrCreateInformationNode(driver, 'toLabel', "I am a snippet in the to node");
-    //
-    //     const label = "my label"
-    //     console.log("CREATE REL")
-    //     let newID = await q.getOrCreateRelationship(driver, fromRes.nodeId, toRes.nodeId, label);
-    //     expect(newID).not.toBe(null);
-    //
-    //     console.log("SEE IF REL EXISTS")
-    //     let exists = await q.relationshipExistsBetweenNodes(driver, fromRes.nodeId, toRes.nodeId, label);
-    //     expect(exists).toBe(true);
-    //
-    //     console.log("FIND REL BY ID")
-    //     let findById = await q.getRelationshipById(driver, newID[0].relId);
-    //     console.log(findById);
-    //
-    // }, 10000)
-    //
-    // test('get node by label', async () => {
-    //     if (driver == null)
-    //         throw "Driver is null"
-    //
-    //     await q.findOrCreateInformationNode(driver, 'myNode1', "I am a snippet in the from node");
-    //     await q.findOrCreateInformationNode(driver, 'myNode2', "I am a snippet in the to node");
-    //
-    //     await q.findOrCreateClassificationNode(driver, 'myNode3');
-    //     let class2 = await q.findOrCreateClassificationNode(driver, 'myNode4');
-    //
-    //     let resclass1 = await q.findOrCreateClassificationNode(driver, "myNode3");
-    //     let resclass2 = await q.findOrCreateClassificationNode(driver, "myNode4");
-    //
-    //     expect(resclass1.label).toBe("myNode3");
-    //     expect(resclass1.nodeId).not.toBe(null);
-    //
-    //     expect(resclass2.label).toBe("myNode4");
-    //     expect(resclass2.nodeId).not.toBe(null);
-    // }, 15000)
-    //
-    // test('getOrCreateRel', async () => {
-    //
-    //     if (driver == null)
-    //         fail("driver is null")
-    //
-    //     let info1 = await q.findOrCreateInformationNode(driver, 'relInfo1', "I am a snippet in the from node");
-    //     let class1 = await q.findOrCreateClassificationNode(driver, "classNode1");
-    //     let class2 = await q.findOrCreateClassificationNode(driver, "classNode2");
-    //
-    //     //shouldn't exist
-    //     let relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
-    //     expect(relExists).toBe(false);
-    //     relExists = await q.relationshipExistsBetweenNodes(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
-    //     expect(relExists).toBe(false);
-    //
-    //    let getRel1 = await q.getOrCreateRelationship(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
-    //    let getRel2 = await q.getOrCreateRelationship(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
-    //
-    //    expect(getRel1[0].type).toBe("REL_INFO1_CLASS1")
-    //    expect(getRel2[0].type).toBe("REL_CLASS2_CLASS1")
-    //
-    //     //should exist
-    //     relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
-    //     expect(relExists).toBe(true);
-    //     relExists = await q.relationshipExistsBetweenNodes(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
-    //     expect(relExists).toBe(true);
-    //
-    // }, 15000)
+
+    test('create info node', async () => {
+        if (driver == null)
+            throw "Driver is null"
+        let result = await q.findOrCreateInformationNode(driver, 'myNewInfoNode', "I am a new information node!");
+        expect(result).not.toBe(null);
+        nodeId = result.nodeId;
+    })
+
+    test('remove info node by id', async () => {
+        if (driver == null)
+            throw "Driver is null"
+        if (nodeId == null)
+            fail("node id is null");
+        await q.removeNode(nodeId, driver);
+        let afterDelete = await q.getNodeById(driver, nodeId);
+        console.log(afterDelete);
+    })
+
+    test('create relationship and get by ID', async () => {
+        if (driver == null)
+            throw "Driver is null"
+
+        console.log("CREATE INFO NODE 1")
+        let fromRes = await q.findOrCreateInformationNode(driver, 'fromLabel', "I am a snippet in the from node");
+        console.log("CREATE INFO NODE 2")
+        let toRes = await q.findOrCreateInformationNode(driver, 'toLabel', "I am a snippet in the to node");
+
+        const label = "my label"
+        console.log("CREATE REL")
+        let newID = await q.getOrCreateRelationship(driver, fromRes.nodeId, toRes.nodeId, label);
+        expect(newID).not.toBe(null);
+
+        console.log("SEE IF REL EXISTS")
+        let exists = await q.relationshipExistsBetweenNodes(driver, fromRes.nodeId, toRes.nodeId, label);
+        expect(exists).toBe(true);
+
+        console.log("FIND REL BY ID")
+        let findById = await q.getRelationshipById(driver, newID[0].relId);
+        console.log(findById);
+
+    }, 10000)
+
+    test('get node by label', async () => {
+        if (driver == null)
+            throw "Driver is null"
+
+        await q.findOrCreateInformationNode(driver, 'myNode1', "I am a snippet in the from node");
+        await q.findOrCreateInformationNode(driver, 'myNode2', "I am a snippet in the to node");
+
+        await q.findOrCreateClassificationNode(driver, 'myNode3');
+        let class2 = await q.findOrCreateClassificationNode(driver, 'myNode4');
+
+        let resclass1 = await q.findOrCreateClassificationNode(driver, "myNode3");
+        let resclass2 = await q.findOrCreateClassificationNode(driver, "myNode4");
+
+        expect(resclass1.label).toBe("myNode3");
+        expect(resclass1.nodeId).not.toBe(null);
+
+        expect(resclass2.label).toBe("myNode4");
+        expect(resclass2.nodeId).not.toBe(null);
+    }, 15000)
+
+    test('getOrCreateRel', async () => {
+
+        if (driver == null)
+            fail("driver is null")
+
+        let info1 = await q.findOrCreateInformationNode(driver, 'relInfo1', "I am a snippet in the from node");
+        let class1 = await q.findOrCreateClassificationNode(driver, "classNode1");
+        let class2 = await q.findOrCreateClassificationNode(driver, "classNode2");
+
+        //shouldn't exist
+        let relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
+        expect(relExists).toBe(false);
+        relExists = await q.relationshipExistsBetweenNodes(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
+        expect(relExists).toBe(false);
+
+       let getRel1 = await q.getOrCreateRelationship(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
+       let getRel2 = await q.getOrCreateRelationship(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
+
+       expect(getRel1[0].type).toBe("REL_INFO1_CLASS1")
+       expect(getRel2[0].type).toBe("REL_CLASS2_CLASS1")
+
+        //should exist
+        relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
+        expect(relExists).toBe(true);
+        relExists = await q.relationshipExistsBetweenNodes(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
+        expect(relExists).toBe(true);
+
+    }, 15000)
 
     test('create stack', async () => {
 
