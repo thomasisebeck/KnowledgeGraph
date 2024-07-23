@@ -27,10 +27,6 @@ const executeGenericQuery = async (driver: Driver, query: string, params: any) =
     }
 }
 
-const getId = () => {
-    return crypto.randomUUID();
-}
-
 const getField = (records: Record[], field: string) => {
     return records?.at(0)?.get(field);
 }

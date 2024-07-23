@@ -123,23 +123,19 @@ app.post('/createStack', async (req, res) => {
         const result = await q.createStack(driver, body);
         res.status(200).send(result);
     } catch (e) {
-        res.status(400).json({
-            success: false,
-            message: e as string
-        })
+        res.status(400).send(e as string)
     }
 
 })
 
 app.get('/topicNodes', (req, res) => {
-    //todo: create topic nodes
-    q.createTopicNodes(driver).then(result => {
-        console.log('After creating topic nodes');
-        console.log(result);
-    });
-
-    //todo: send result
-
+    try {
+        q.createTopicNodes(driver).then(result => {
+            res.status(200).json(result);
+        });
+    } catch (e) {
+        res.status(400).json(e as string);
+    }
 })
 
 app.listen(process.env.PORT, () => {
