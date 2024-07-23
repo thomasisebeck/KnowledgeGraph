@@ -1,8 +1,8 @@
 import 'dotenv/config'
-import {Driver, Record} from "neo4j-driver";
+import {Driver} from "neo4j-driver";
 import * as crypto from "node:crypto";
-import {executeGenericQuery, formatLabel, getField} from "./utils";
-
+import {executeGenericQuery, formatLabel, getField} from "../utils";
+import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "./interfaces";
 
 const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'
@@ -10,10 +10,6 @@ const BOTH = `${INFO} | ${CLASS}`
 
 // get nodes fully connected:
 // MATCH (n) MATCH (n)-[r]-() RETURN n,r
-
-//-------------------------- UTILITY FUNCTIONS ---------------------------------//
-
-//const records: Record<RecordShape, PropertyKey, RecordShape<PropertyKey, number>>[]
 
 //----------------------------- CREATION / MODIFICATION FUNCTIONS -----------------------------//
 
@@ -94,16 +90,20 @@ const upVoteRelationship = async (driver: Driver, relId: string) => {
     const result = await executeGenericQuery(driver, query, {
         relId: relId
     })
+
     const r = getField(result.records, "r");
-    const from = getField(result.records, "from");
-    const to = getField(result.records, "to");
+    const from = getField(result.records, 'from');
+    const to = getField(result.records, 'to');
+
+    // console.log("FROM:");
+    // console.log(from);
 
     return {
         relId: r.properties.relId,
         type: r.type,
         votes: r.properties.votes.toNumber(),
-        from: from.nodeId,
-        to: to.nodeId
+        from: from.properties.nodeId,
+        to: to.properties.nodeId
     };
 }
 
@@ -159,6 +159,7 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
 
     const toRet: NodeRelationship[] = [];
 
+
     toRet.push(
         {
             relId: r.properties.relId,
@@ -183,7 +184,7 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
     return toRet;
 }
 
-const createStack = async (driver: Driver, body: RequestBody) => {
+const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
     const classificationNodeStrings = body.classificationNodes;
     const infoNode = body.infoNode;
 
@@ -199,6 +200,7 @@ const createStack = async (driver: Driver, body: RequestBody) => {
     //create 3 classification nodes
     for (let i = 0; i < myNodes.length; i++) {
         const n = myNodes[i];
+
         if (i == myNodes.length - 1)
             nodes.push({
                 label: n.label,
@@ -216,6 +218,7 @@ const createStack = async (driver: Driver, body: RequestBody) => {
 
     if (body.connections.length !== 3)
         throw "invalid number of connections";
+
 
     const createdRels = await Promise.all([
         getOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, body.connections[0], body.doubleSided[0]),
@@ -240,7 +243,6 @@ const createStack = async (driver: Driver, body: RequestBody) => {
         relationships: myRels
     }
 }
-
 
 //----------------------------- DOES EXIST FUNCTIONS -----------------------------//
 
@@ -267,42 +269,6 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     return records.at(0)?.get("r")
 }
 
-//--------------------------- INTERFACES ----------------------------------//
-
-export enum nodeType {
-    CLASSIFICATION,
-    INFORMATION
-}
-
-interface Node {
-    label: string,
-    nodeId: string
-    snippet?: string
-    nodeType: nodeType
-}
-
-export interface CreateStackReturnBody {
-    nodes: Node[],
-    relationships: NodeRelationship[]
-}
-
-export interface RequestBody {
-    infoNode: {
-        label: string,
-        snippet: string
-    },
-    classificationNodes: string[],
-    connections: string[],
-    doubleSided: boolean[]
-}
-
-export interface NodeRelationship {
-    type: string,
-    relId: string,
-    votes: number,
-    to: string,
-    from: string
-}
 
 export default {
     findOrCreateInformationNode,

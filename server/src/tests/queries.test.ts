@@ -1,7 +1,9 @@
 import {Driver, Relationship} from 'neo4j-driver'
-import q, {CreateStackReturnBody, NodeRelationship, nodeType, RequestBody} from '../queries'
+import q  from '../queries/queries'
 import sess from '../session'
 import 'dotenv/config'
+import {clearDB} from "../utils";
+import {nodeType, RequestBody} from "../queries/interfaces";
 
 const URI = process.env.NEO4J_URI
 const USER = process.env.NEO4J_USERNAME
@@ -22,7 +24,7 @@ describe('queries', () => {
         if (driver == null)
             throw "Driver is null"
         expect(driver.executeQuery).not.toBe(null);
-        await q.clearDB(driver);
+        await clearDB(driver);
     })
 
     afterAll(async () => {
@@ -31,11 +33,11 @@ describe('queries', () => {
             console.log("session closed")
         }
     })
-
+    //
     // test('create info node', async () => {
     //     if (driver == null)
     //         throw "Driver is null"
-    //     let result = await q.createOrRetrieveInformationNode(driver, 'myNewInfoNode', "I am a new information node!");
+    //     let result = await q.findOrCreateInformationNode(driver, 'myNewInfoNode', "I am a new information node!");
     //     expect(result).not.toBe(null);
     //     nodeId = result.nodeId;
     // })
@@ -49,15 +51,15 @@ describe('queries', () => {
     //     let afterDelete = await q.getNodeById(driver, nodeId);
     //     console.log(afterDelete);
     // })
-
+    //
     // test('create relationship and get by ID', async () => {
     //     if (driver == null)
     //         throw "Driver is null"
     //
     //     console.log("CREATE INFO NODE 1")
-    //     let fromRes = await q.createOrRetrieveInformationNode(driver, 'fromLabel', "I am a snippet in the from node");
+    //     let fromRes = await q.findOrCreateInformationNode(driver, 'fromLabel', "I am a snippet in the from node");
     //     console.log("CREATE INFO NODE 2")
-    //     let toRes = await q.createOrRetrieveInformationNode(driver, 'toLabel', "I am a snippet in the to node");
+    //     let toRes = await q.findOrCreateInformationNode(driver, 'toLabel', "I am a snippet in the to node");
     //
     //     const label = "my label"
     //     console.log("CREATE REL")
@@ -69,7 +71,7 @@ describe('queries', () => {
     //     expect(exists).toBe(true);
     //
     //     console.log("FIND REL BY ID")
-    //     let findById = await q.getRelationshipById(driver, newID.relId);
+    //     let findById = await q.getRelationshipById(driver, newID[0].relId);
     //     console.log(findById);
     //
     // }, 10000)
@@ -78,8 +80,8 @@ describe('queries', () => {
     //     if (driver == null)
     //         throw "Driver is null"
     //
-    //     await q.createOrRetrieveInformationNode(driver, 'myNode1', "I am a snippet in the from node");
-    //     await q.createOrRetrieveInformationNode(driver, 'myNode2', "I am a snippet in the to node");
+    //     await q.findOrCreateInformationNode(driver, 'myNode1', "I am a snippet in the from node");
+    //     await q.findOrCreateInformationNode(driver, 'myNode2', "I am a snippet in the to node");
     //
     //     await q.findOrCreateClassificationNode(driver, 'myNode3');
     //     let class2 = await q.findOrCreateClassificationNode(driver, 'myNode4');
@@ -99,7 +101,7 @@ describe('queries', () => {
     //     if (driver == null)
     //         fail("driver is null")
     //
-    //     let info1 = await q.createOrRetrieveInformationNode(driver, 'relInfo1', "I am a snippet in the from node");
+    //     let info1 = await q.findOrCreateInformationNode(driver, 'relInfo1', "I am a snippet in the from node");
     //     let class1 = await q.findOrCreateClassificationNode(driver, "classNode1");
     //     let class2 = await q.findOrCreateClassificationNode(driver, "classNode2");
     //
@@ -112,8 +114,8 @@ describe('queries', () => {
     //    let getRel1 = await q.getOrCreateRelationship(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
     //    let getRel2 = await q.getOrCreateRelationship(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
     //
-    //    expect(getRel1.type).toBe("REL_INFO1_CLASS1")
-    //    expect(getRel2.type).toBe("REL_CLASS2_CLASS1")
+    //    expect(getRel1[0].type).toBe("REL_INFO1_CLASS1")
+    //    expect(getRel2[0].type).toBe("REL_CLASS2_CLASS1")
     //
     //     //should exist
     //     relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
@@ -192,13 +194,29 @@ describe('queries', () => {
         expect(nodes[3].nodeType).toBe(nodeType.INFORMATION);
         expect(nodes[3].snippet).toBe("If you have ever owned a puppy, you would know that they are the best");
 
-        // //todo: check rels and double sided!!!!
-        // for (let i = 0; i < 3; i++) {
-        //     expect(rels[i]).toBe('SUBSET')
-        //     expect(rels[i].votes).toBe(2)
-        // }
+        //check relationships
 
-        const result3 = await q.createStack(driver, request2);
+        expect(rels.length).toBe(3);
+
+        // Check the first relationship (animals - subset -> pets)
+        expect(rels[0].type).toBe('SUBSET');
+        expect(rels[0].votes).toBe(2); // Votes are 2 because it was upvoted twice
+
+        expect(rels[0].from).toBe(nodes[0].nodeId);
+        expect(rels[0].to).toBe(nodes[1].nodeId);
+
+        // Check the second relationship (pets - subset -> dogs)
+        expect(rels[1].type).toBe('SUBSET');
+        expect(rels[1].votes).toBe(2); // Votes are 1 because it was upvoted once
+        expect(rels[1].from).toBe(nodes[1].nodeId);
+        expect(rels[1].to).toBe(nodes[2].nodeId);
+
+        // Check the third relationship (dogs - subset -> dogs are the best)
+        expect(rels[2].type).toBe('SUBSET');
+        expect(rels[2].votes).toBe(2); // Votes are 1 because it was upvoted once
+        expect(rels[2].from).toBe(nodes[2].nodeId);
+        expect(rels[2].to).toBe(nodes[3].nodeId);
+
 
     }, 45000)
 
