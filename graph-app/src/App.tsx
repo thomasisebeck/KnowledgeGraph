@@ -9,11 +9,26 @@ function App() {
 
     //fetch the initial data
     useEffect(() => {
-        fetch('/initialData').then(res => {
-            console.log("INITIAL DATA")
-            console.log("FETCHING TOPIC NODES")
-            console.log(res);
-        })
+        const fetchData = async () => {
+           try {
+               console.log("FETCHING TOPIC NODES")
+               const response = await fetch('http://localhost:3001/topicNodes');
+               if (response.ok) {
+                   console.log("DATA")
+                   const data = await response.json();
+                   console.log(data);
+               } else {
+                   console.log("error")
+                   console.log(response.status);
+               }
+
+           } catch (e) {
+               console.error(e);
+           }
+        }
+
+        fetchData();
+
     }, []);
 
     return (

@@ -5,9 +5,11 @@ import bodyParser from "body-parser";
 import sess from './session'
 import {RequestBody} from "./queries/interfaces";
 import q from "./queries/queries"
+import cors from "cors"
 
 const app = express();
 app.use(bodyParser.json())
+app.use(cors())
 
 let driver: Driver;
 
@@ -60,10 +62,13 @@ app.post('/createStack', async (req, res) => {
 app.get('/topicNodes', (req, res) => {
     try {
         q.createTopicNodes(driver).then(result => {
-            res.status(200).json(result);
+            // res.status(200).json(result);
+            res.status(200).json({
+                success: true, data: result
+            })
         });
     } catch (e) {
-        res.status(400).json(e as string);
+        res.status(400).send(e as string);
     }
 })
 
