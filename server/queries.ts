@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import {driver, Driver, EagerResult, Record, RecordShape} from "neo4j-driver";
+import {Driver, Record} from "neo4j-driver";
 import * as crypto from "node:crypto";
 
 const DATABASE = process.env.DATABASE;
@@ -7,7 +7,6 @@ const DATABASE = process.env.DATABASE;
 const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'
 const BOTH = `${INFO} | ${CLASS}`
-const TOPIC = 'Topic'
 
 // get nodes fully connected:
 // MATCH (n) MATCH (n)-[r]-() RETURN n,r
@@ -46,7 +45,7 @@ const clearDB = async (driver: Driver) => {
 }
 //----------------------------- CREATION FUNCTIONS -----------------------------//
 
-const createOrRetrieveInformationNode = async (driver: Driver, label: string, snippet: string): Promise<Node> => {
+const findOrCreateInformationNode = async (driver: Driver, label: string, snippet: string): Promise<Node> => {
     let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n.nodeId AS nodeId`;
     let searchResult = await executeGenericQuery(driver, searchQuery, {
         label: label
@@ -73,9 +72,8 @@ const createOrRetrieveInformationNode = async (driver: Driver, label: string, sn
     }
 }
 
-const findOrCreateClassificationNode = async (driver: Driver, label: string, topicNode?: boolean): Promise<Node> => {
-    const TYPE = topicNode ? TOPIC : CLASS;
-    let query = `MERGE (n:${TYPE} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
+const findOrCreateClassificationNode = async (driver: Driver, label: string): Promise<Node> => {
+    let query = `MERGE (n:${CLASS} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
     let {records, summary} = await executeGenericQuery(driver, query, {
         label: label
     })
@@ -116,9 +114,28 @@ const removeNode = async (nodeId: string, driver: Driver) => {
 const createTopicNodes = async (driver: Driver) => {
 
     //create the topic nodes
+    //1. Computer science and info
+    //2. Philosophy and Psychology
+    //3. Science
+    //4. Language
+    //5. Technology
+    //6. Arts
+    //7. History
+    //8. Geography
 
+    return await Promise.all([
+        findOrCreateClassificationNode(driver, "Computer and Information Science"),
+        findOrCreateClassificationNode(driver, "Philosophy and Psychology"),
+        findOrCreateClassificationNode(driver, "Science"),
+        findOrCreateClassificationNode(driver, "Language"),
+        findOrCreateClassificationNode(driver, "Technology"),
+        findOrCreateClassificationNode(driver, "Arts"),
+        findOrCreateClassificationNode(driver, "History"),
+        findOrCreateClassificationNode(driver, "Geography"),
+    ]);
 
 }
+
 const upVoteRelationship = async (driver: Driver, relId: string) => {
     const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes + 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
@@ -230,7 +247,7 @@ const createStack = async (driver: Driver, body: RequestBody) => {
         findOrCreateClassificationNode(driver, classificationNodeStrings[0]),
         findOrCreateClassificationNode(driver, classificationNodeStrings[1]),
         findOrCreateClassificationNode(driver, classificationNodeStrings[2]),
-        createOrRetrieveInformationNode(driver, infoNode.label, infoNode.snippet)
+        findOrCreateInformationNode(driver, infoNode.label, infoNode.snippet)
     ])
 
     //create 3 classification nodes
@@ -319,7 +336,7 @@ export interface NodeRelationship {
 
 
 export default {
-    createOrRetrieveInformationNode,
+    findOrCreateInformationNode,
     clearDB,
     removeNode,
     getNodeById,

@@ -3,7 +3,7 @@ import 'dotenv/config';
 import sess from './session'
 
 const app = express();
-import q from "./queries";
+import q, {RequestBody} from "./queries";
 import {Driver} from "neo4j-driver";
 
 
@@ -43,7 +43,7 @@ app.listen(process.env.SERVER_PORT, () => {
 {
     infoNode: {
         label: "nodeLabel", -> infoNode
-        info: "info",
+        snippet: "info",
     },
     classificationNodes: [
         {
@@ -66,12 +66,64 @@ app.listen(process.env.SERVER_PORT, () => {
 */
 
 
-app.get('/initialData', (req, res) => {
-
-})
+// app.post('/createStack', async (req, res) => {
+//
+//     const nodes = req.body.classificationNodes;
+//     const infoNode = req.body.infoNode;
+//     if (!nodes) {
+//         res.json({
+//             success: false,
+//             message: "nodes are null"
+//         });
+//         return;
+//     }
+//     if (nodes.length != 3) {
+//         res.json({
+//             success: false,
+//             message: "invalid number of classification nodes, must be 3"
+//         });
+//         return;
+//     }
+//     if (!infoNode) {
+//         res.json({
+//             success: false,
+//             message: 'info node is null'
+//         })
+//         return;
+//     }
+//
+//     const body = req.body as RequestBody;
+//     try {
+//         await q.createStack(driver, body);
+//     } catch (e) {
+//         res.json({
+//             success: false,
+//             message: e as string
+//         })
+//
+//         return ;
+//     }
+//
+//     res.json({
+//         success: true,
+//     })
+// })
 
 app.post('/createStack', (req, res) => {
 
-    //3. connect nodes
+   const body = req.body as RequestBody;
+
+   //create classification nodes and information node
+
+
+
+
+
+})
+
+app.get('/topicNodes', (req, res) => {
+    //todo: create topic nodes
+
+    //todo: send result
 
 })
