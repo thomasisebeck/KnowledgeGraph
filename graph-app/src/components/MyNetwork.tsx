@@ -26,7 +26,8 @@ const MyNetwork = ({nodes, relationships} : GraphType) => {
 
           {
               nodes && nodes.map(el => {
-                  return <Node key={el.nodeId} id={el.nodeId} label={el.label} />
+                  //todo: scaling doesn't work
+                  return <Node scaling={{min: 100, max: 20}} shadow={true} shape="circle" key={el.nodeId} id={el.nodeId} label={el.label} />
               })
           }
 
