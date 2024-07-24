@@ -4,12 +4,14 @@ import React, {useEffect, useState} from 'react'
 
 import MyNetwork from './components/MyNetwork.js'
 import {GraphNode, GraphType, NodeRelationship} from "./interfaces";
+import AddBox from "./components/AddBox";
 
 
 function App() {
 
     const [nodes, setNodes] = useState<GraphNode[]>()
     const [relationships, setRelationships] = useState<NodeRelationship[]>()
+    const [addBoxVisible, setAddBoxVisible] = useState(true);
 
     //fetch the initial data
     useEffect(() => {
@@ -21,6 +23,8 @@ function App() {
         })
     }, []);
 
+
+
     return (
         <div className={s.Container}>
             {
@@ -29,6 +33,11 @@ function App() {
                     nodes={nodes}
                     relationships={relationships}
                 />
+            }
+
+            {
+                addBoxVisible &&
+                <AddBox hideAddBox={() => setAddBoxVisible(false)}/>
             }
         </div>
     )
