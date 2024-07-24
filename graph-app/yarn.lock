@@ -383,7 +383,7 @@
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.15.tgz"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
 
-"@types/prop-types@*":
+"@types/prop-types@*", "@types/prop-types@^15.7.12":
   version "15.7.12"
   resolved "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.12.tgz"
   integrity sha512-5zvhXYtRNRluoE/jAp4GVsSduVUzNWKkOZrCDBWYtE7biZywwdC2AcEzg+cSMLFRfVgeAFqpfNabiPjxFddV1Q==

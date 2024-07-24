@@ -73,8 +73,9 @@ const createTopicNodes = async (driver: Driver) => {
     //8. Geography
 
     return await Promise.all([
-        findOrCreateClassificationNode(driver, "Computer and Information Science"),
-        findOrCreateClassificationNode(driver, "Philosophy and Psychology"),
+        findOrCreateClassificationNode(driver, "Computer and Info Science"),
+        findOrCreateClassificationNode(driver, "Philosophy"),
+        findOrCreateClassificationNode(driver, "Psychology"),
         findOrCreateClassificationNode(driver, "Science"),
         findOrCreateClassificationNode(driver, "Language"),
         findOrCreateClassificationNode(driver, "Technology"),

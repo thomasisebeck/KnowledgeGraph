@@ -62,7 +62,10 @@ app.post('/createStack', async (req, res) => {
 app.get('/topicNodes', (req, res) => {
     try {
         q.createTopicNodes(driver).then(result => {
-            res.status(200).json(result);
+            res.status(200).json({
+                nodes: result,
+                relationships: []
+            });
         });
     } catch (e) {
         res.status(400).json(e as string);
