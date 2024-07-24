@@ -5,9 +5,11 @@ import bodyParser from "body-parser";
 import sess from './session'
 import {RequestBody} from "./queries/interfaces";
 import q from "./queries/queries"
+import cors from 'cors'
 
 const app = express();
 app.use(bodyParser.json())
+app.use(cors())
 
 let driver: Driver;
 

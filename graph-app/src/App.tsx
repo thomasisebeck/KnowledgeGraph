@@ -9,10 +9,9 @@ function App() {
 
     //fetch the initial data
     useEffect(() => {
-        fetch('/initialData').then(res => {
+        fetch('http://localhost:5000/topicNodes').then(async res => {
             console.log("INITIAL DATA")
-            console.log("FETCHING TOPIC NODES")
-            console.log(res);
+            console.log(await res.json());
         })
     }, []);
 
