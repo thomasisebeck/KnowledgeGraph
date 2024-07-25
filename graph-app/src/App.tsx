@@ -6,6 +6,8 @@ import MyNetwork from './components/MyNetwork.js'
 import {GraphNode, GraphType, NodeRelationship} from "./interfaces";
 import AddBox from "./components/AddBox";
 
+import plusButton from './images/plusButton.png';
+
 
 function App() {
 
@@ -39,6 +41,7 @@ function App() {
                 addBoxVisible &&
                 <AddBox hideAddBox={() => setAddBoxVisible(false)}/>
             }
+            <img src={plusButton} className={s.plus}/>
         </div>
     )
 }
