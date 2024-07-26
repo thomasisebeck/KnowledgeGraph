@@ -3,6 +3,13 @@ export enum nodeType {
     INFORMATION
 }
 
+export interface HoverImageInterface {
+    normalImage: string,
+    hoverImage: string,
+    onclick: () => void,
+    message: string
+}
+
 export interface GraphNode {
     label: string,
     nodeId: string

@@ -1,9 +1,7 @@
+import React from 'react';
 import s from './addBox.module.scss'
 
-
-function AddBox ({hideAddBox}) {
-
-
+function AddBox ({hideAddBox} : { hideAddBox: () => void }) {
 
     return (
         <div className={s.container} onClick={hideAddBox}>

@@ -7,13 +7,14 @@ import {GraphNode, GraphType, NodeRelationship} from "./interfaces";
 import AddBox from "./components/AddBox";
 
 import plusButton from './images/plusButton.png';
+import {AddButtons} from "./components/AddButtons/AddButtons";
 
 
 function App() {
 
     const [nodes, setNodes] = useState<GraphNode[]>()
     const [relationships, setRelationships] = useState<NodeRelationship[]>()
-    const [addBoxVisible, setAddBoxVisible] = useState(true);
+    const [addBoxVisible, setAddBoxVisible] = useState(false);
 
     //fetch the initial data
     useEffect(() => {
@@ -41,7 +42,9 @@ function App() {
                 addBoxVisible &&
                 <AddBox hideAddBox={() => setAddBoxVisible(false)}/>
             }
-            <img src={plusButton} className={s.plus}/>
+            <div className={s.plus}>
+                <AddButtons />
+            </div>
         </div>
     )
 }
