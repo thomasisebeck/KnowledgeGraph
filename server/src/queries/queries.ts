@@ -86,8 +86,17 @@ const createTopicNodes = async (driver: Driver) => {
 
 }
 
-const upVoteRelationship = async (driver: Driver, relId: string) => {
-    const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes + 1 RETURN r, from, to`;
+//downvoteRelationship
+//destroy connection when it gets to 0
+//unless it creates a stray node, then just return - upvotes
+
+const downVotRelationship = async (driver: Driver, relId: string)=> {
+
+
+}
+
+const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean) => {
+    const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes ${ mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
         relId: relId
     })
@@ -96,8 +105,11 @@ const upVoteRelationship = async (driver: Driver, relId: string) => {
     const from = getField(result.records, 'from');
     const to = getField(result.records, 'to');
 
-    // console.log("FROM:");
-    // console.log(from);
+    if (r.properties.votes.toNumber() < 0) {
+       //went into the negative, remove the connection if it doesn't break anything
+
+    }
+
 
     return {
         relId: r.properties.relId,
@@ -229,13 +241,13 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 
     //don't have to upvote twice, they have the same relID
     const myRels = await Promise.all([
-        upVoteRelationship(driver, createdRels[0][0].relId),
+        upVoteRelationship(driver, createdRels[0][0].relId, true),
         // createdRels[0][1] && upVoteRelationship(driver, createdRels[0][1].relId),
 
-        upVoteRelationship(driver, createdRels[1][0].relId),
+        upVoteRelationship(driver, createdRels[1][0].relId, true),
         // createdRels[1][1] && upVoteRelationship(driver, createdRels[1][1].relId),
 
-        upVoteRelationship(driver, createdRels[2][0].relId),
+        upVoteRelationship(driver, createdRels[2][0].relId, true),
         // createdRels[2][1] && upVoteRelationship(driver, createdRels[2][1].relId),
     ])
 
@@ -280,5 +292,6 @@ export default {
     getOrCreateRelationship,
     relationshipExistsBetweenNodes,
     createStack,
-    createTopicNodes
+    createTopicNodes,
+    upVoteRelationship
 }

@@ -72,6 +72,26 @@ app.get('/topicNodes', (req, res) => {
     }
 })
 
+function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
+    try {
+        q.upVoteRelationship(driver, req.body.relId, mustUpvote).then(result => {
+            res.status(200).json({
+                rel: result
+            })
+        })
+    } catch (e) {
+        res.status(400).json(e as string)
+    }
+}
+
+app.get('/upvoteRel', async (req, res) => {
+    upOrDownVote(req, res, true);
+})
+
+app.get('/downvoteRel', async (req, res) => {
+    upOrDownVote(req, res, false);
+})
+
 app.listen(process.env.PORT, () => {
     console.log(`Running on PORT ${process.env.PORT }`);
 })

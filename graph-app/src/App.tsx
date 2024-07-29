@@ -14,7 +14,7 @@ function App() {
 
     const [nodes, setNodes] = useState<GraphNode[]>()
     const [relationships, setRelationships] = useState<NodeRelationship[]>()
-    const [addBoxVisible, setAddBoxVisible] = useState(false);
+    const [addBoxVisible, setAddBoxVisible] = useState(true);
 
     //fetch the initial data
     useEffect(() => {
@@ -43,7 +43,7 @@ function App() {
                 <AddBox hideAddBox={() => setAddBoxVisible(false)}/>
             }
             <div className={s.plus}>
-                <AddButtons />
+                <AddButtons showAddBox={() => setAddBoxVisible(true)} />
             </div>
         </div>
     )
