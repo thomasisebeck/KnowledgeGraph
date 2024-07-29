@@ -2,7 +2,7 @@ import 'dotenv/config'
 import {Driver} from "neo4j-driver";
 import * as crypto from "node:crypto";
 import {executeGenericQuery, formatLabel, getField} from "../utils";
-import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "./interfaces";
+import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "../../../shared/interfaces";
 
 const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'

@@ -3,13 +3,14 @@ import s from './App.module.scss'
 import React, {useEffect, useReducer, useState} from 'react'
 
 import MyNetwork from './components/MyNetwork.js'
-import {createRelRequestBody, GraphNode, GraphType, NodeRelationship} from "./interfaces";
+import {createRelRequestBody, GraphNode, GraphType, NodeRelationship} from "../../shared/interfaces";
 import AddBox from "./components/AddBox";
 
 import plusButton from './images/plusButton.png';
 import {AddButtons} from "./components/AddButtons/AddButtons";
+import {unstable_batchedUpdates} from "react-dom";
 
-enum AddConnectionPhase  {
+enum AddConnectionPhase {
     NONE,
     FIRST,
     SECOND,
@@ -22,10 +23,11 @@ function App() {
 
     const [nodes, setNodes] = useState<GraphNode[]>()
     const [relationships, setRelationships] = useState<NodeRelationship[]>()
+    const [addPhase, setAddPhase] = useState<AddConnectionPhase>(AddConnectionPhase.NONE)
+    const [firstNode, setFirstNode] = useState(null)
+    const [secondNode, setSecondNode] = useState(null)
+    const [clickE, setClickE] = useState(null)
 
-    const [firstNode, setFirstNode]= useState<any>(null)
-    const [secondNode, setSecondNode]= useState<any>(null)
-    let [addPhase, setAddPhase] = useState(AddConnectionPhase.NONE)
 
     //fetch the initial data
     useEffect(() => {
@@ -33,50 +35,52 @@ function App() {
             const data = await res.json() as GraphType;
             setNodes(data.nodes)
             setRelationships(data.relationships)
-            console.log(data)
+            setAddPhase(AddConnectionPhase.NONE)
         })
     }, []);
 
-    const updateAddPhase = (newState: AddConnectionPhase) => {
-        setAddPhase(newState);
-        addPhase = newState;
-    }
+    useEffect(() => {
+        if (clickE != null) {
+            //click first node
+            if (addPhase == AddConnectionPhase.FIRST) {
+                setFirstNode(clickE)
+                setAddPhase(AddConnectionPhase.SECOND)
+            }
 
-    const clickEvent = (event:any) => {
-
-        console.log("add phase", addPhase);
-        //click second node
-        if (addPhase == AddConnectionPhase.SECOND) {
-            if (event.nodes.length == 1) {
-                //check that it's not the same node
-                if (event.nodes[0] != firstNode) {
-                    //set the second node
-                    setSecondNode(event.nodes[0]);
-                    updateAddPhase(AddConnectionPhase.ADD_BOX);
+            //click second node
+            if (addPhase == AddConnectionPhase.SECOND) {
+                console.log("SECOND")
+                if (clickE !== firstNode) {
+                    setSecondNode(clickE)
+                    setAddPhase(AddConnectionPhase.ADD_BOX)
                 }
             }
         }
+    }, [clickE])
 
-        //click first node
-        if (addPhase == AddConnectionPhase.FIRST) {
-            console.log("HERE")
-            if (event.nodes.length == 1) {
-                //success, move to next stage
-                setFirstNode(event.nodes[0])
-                updateAddPhase(AddConnectionPhase.SECOND)
-            }
-        }
+    const clickEvent = (event: any) => {
+        setClickE(event.nodes[0]);
+    }
+
+    function resetSelectedNodes() {
+        setFirstNode(null)
+        setSecondNode(null)
     }
 
     const createConn = () => {
-        updateAddPhase(AddConnectionPhase.FIRST)
-        setFirstNode(null)
-        setSecondNode(null)
+        resetSelectedNodes();
+        setAddPhase(AddConnectionPhase.FIRST)
+    }
+
+    const reset = () => {
+        setAddPhase(AddConnectionPhase.NONE)
+        resetSelectedNodes();
     }
 
     const sendCreateConnApi = async (name: string, doubleSided: boolean) => {
         if (firstNode == null || secondNode == null) {
             console.log("First or second is null")
+            reset();
             return;
         }
 
@@ -95,14 +99,48 @@ function App() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(body)
-        }).then(async res => {
-            if (res.status == 400) {
-                console.error(res.text())
-            }
-            const body = await res.json();
-            console.log("FRONTEND")
-            console.log(body)
         })
+            .then(async res => {
+                if (res.status == 400) {
+                    console.error(res.text())
+                }
+                if (res.status == 200) {
+                    const body = await res.json();
+                    console.log(body)
+                    const myRel = body[0] as NodeRelationship;
+
+                    unstable_batchedUpdates(() => {
+
+                        //set rel
+                        setRelationships(prevState => {
+                            if (prevState) {
+                                const newRels = prevState;
+
+                                //todo: handle double sided connections
+
+                                for (const rel of newRels) {
+                                    if (rel.relId == myRel.relId) {
+                                        rel.votes = myRel.votes;
+                                        return [...newRels];
+                                    }
+                                }
+
+                                console.log("ADDING NEW REL")
+                                return [myRel, ...newRels]
+                            }
+                        });
+
+                        reset();
+                    })
+
+                    return;
+
+                }
+
+                console.error("error")
+                console.error(res.status)
+                reset();
+            })
 
 
     }
@@ -119,22 +157,25 @@ function App() {
             }
 
             <div className={s.CreateConnectionContainer}>
-                { addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p> }
-                { addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p> }
+                {addPhase}
+                {addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p>}
+                {addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p>}
             </div>
 
             <div className={s.plus}>
-                <AddButtons showAddBox={() => createConn()} />
+                <AddButtons showAddBox={() => createConn()}/>
             </div>
 
             {
                 addPhase == AddConnectionPhase.ADD_BOX &&
-                <AddBox hideAddBox={() => {
-                    updateAddPhase(AddConnectionPhase.NONE);
-                    setFirstNode(null)
-                    setSecondNode(null)
-                }}
-                createConnection={sendCreateConnApi}/>
+                <AddBox
+                    hideAddBox={() => {
+                        setAddPhase(AddConnectionPhase.NONE)
+                        setFirstNode(null)
+                        setSecondNode(null)
+                    }}
+                    createConnection={sendCreateConnApi}
+                />
             }
         </div>
     )

@@ -3,7 +3,7 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {createRelRequestBody, RequestBody} from "./queries/interfaces";
+import {createRelRequestBody, RequestBody} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
 
@@ -64,8 +64,6 @@ app.post('/createRel', async (req, res) => {
         if (driver == null)
             throw "driver is null"
         const body = req.body as createRelRequestBody;
-        console.log("BODY")
-        console.dir(body)
         await q.getOrCreateRelationship(driver, body.fromId, body.toId, body.name, body.doubleSided).then(result => {
             res.status(200).json(result);
         })

@@ -1,7 +1,6 @@
 import { Edge, Network, Node } from '@lifeomic/react-vis-network'
-import React, {Component, createRef, useEffect, useRef} from 'react'
-import PropTypes from "prop-types";
-import {GraphType} from "../interfaces";
+import React, {useEffect, useRef} from 'react'
+import {GraphType} from "../../../shared/interfaces";
 
 const options= {
     width: '100%',
@@ -52,13 +51,14 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
               })
           }
 
-        {/*<Edge*/}
-        {/*  id="pets-dogs"*/}
-        {/*  from="pets"*/}
-        {/*  to="dogs"*/}
-        {/*  label={'subset'}*/}
-        {/*  arrows={'to'}*/}
-        {/*/>*/}
+          {
+              relationships && relationships.map(r => {
+                  //todo: check if double sided and set arrows accordingly
+                  const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
+                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type}  arrows={'to'} key={uniqueKey}/>
+              })
+          }
+
       </Network>
     )
 }

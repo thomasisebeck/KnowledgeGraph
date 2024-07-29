@@ -1,7 +1,5 @@
 import React from 'react';
 import s from './addBox.module.scss'
-import ReactDOM from "react-dom";
-import {createRelRequestBody} from "../interfaces";
 
 function AddBox({hideAddBox, createConnection}: { hideAddBox: () => void, createConnection: (name: string, doubleSided: boolean) => void }) {
 
