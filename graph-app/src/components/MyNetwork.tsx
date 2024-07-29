@@ -27,7 +27,7 @@ const options= {
     }
 }
 
-const MyNetwork = ({nodes, relationships} : GraphType) => {
+const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
 
     const networkRef = useRef(null);
 
@@ -35,12 +35,9 @@ const MyNetwork = ({nodes, relationships} : GraphType) => {
         if (networkRef.current) {
             // @ts-ignore
             networkRef.current.network.on('click', (event) => {
-                console.log('clicked', event)
+                clickEvent(event);
             })
         }
-
-        console.log("PROPS")
-        console.log(nodes)
     }, [networkRef])
 
     return (

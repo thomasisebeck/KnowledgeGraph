@@ -19,7 +19,8 @@ export interface GraphNode {
 
 export interface GraphType {
     nodes: GraphNode[] | undefined,
-    relationships: NodeRelationship[] | undefined
+    relationships: NodeRelationship[] | undefined,
+    clickEvent: (event: any) => void
 }
 
 export interface RequestBody {

@@ -19,8 +19,8 @@ export const AddButtons = ({showAddBox}: AddButtonsProps) => {
     }
 
     const addConnection = () => {
-        console.log("adding connection")
         if (showAddBox) {
+            console.log("adding connection")
             showAddBox()
         }
     }
