@@ -33,6 +33,13 @@ export interface RequestBody {
     doubleSided: boolean[]
 }
 
+export interface createRelRequestBody {
+    name: string,
+    fromId: string,
+    toId: string,
+    doubleSided: boolean
+}
+
 export interface NodeRelationship {
     type: string,
     relId: string,

@@ -3,19 +3,20 @@ import s from './App.module.scss'
 import React, {useEffect, useReducer, useState} from 'react'
 
 import MyNetwork from './components/MyNetwork.js'
-import {GraphNode, GraphType, NodeRelationship} from "./interfaces";
+import {createRelRequestBody, GraphNode, GraphType, NodeRelationship} from "./interfaces";
 import AddBox from "./components/AddBox";
 
 import plusButton from './images/plusButton.png';
 import {AddButtons} from "./components/AddButtons/AddButtons";
 
-
-const enum AddConnectionStage {
+enum AddConnectionPhase  {
     NONE,
-    CLICK_FIRST,
-    CLICK_SECOND,
+    FIRST,
+    SECOND,
     ADD_BOX
 }
+
+const HOST = "http://localhost:5000";
 
 function App() {
 
@@ -24,14 +25,11 @@ function App() {
 
     const [firstNode, setFirstNode]= useState<any>(null)
     const [secondNode, setSecondNode]= useState<any>(null)
-    const [message, setMessage] = useState("initial message")
-    const [showAddBox, setShowAddBox] = useState(false);
-
-    let messageState = AddConnectionStage.NONE;
+    let [addPhase, setAddPhase] = useState(AddConnectionPhase.NONE)
 
     //fetch the initial data
     useEffect(() => {
-        fetch('http://localhost:5000/topicNodes').then(async res => {
+        fetch(`${HOST}/topicNodes`).then(async res => {
             const data = await res.json() as GraphType;
             setNodes(data.nodes)
             setRelationships(data.relationships)
@@ -39,37 +37,74 @@ function App() {
         })
     }, []);
 
-
+    const updateAddPhase = (newState: AddConnectionPhase) => {
+        setAddPhase(newState);
+        addPhase = newState;
+    }
 
     const clickEvent = (event:any) => {
 
-        //click node 2 > show dialogue
-        if (messageState == AddConnectionStage.CLICK_SECOND) {
+        console.log("add phase", addPhase);
+        //click second node
+        if (addPhase == AddConnectionPhase.SECOND) {
             if (event.nodes.length == 1) {
                 //check that it's not the same node
                 if (event.nodes[0] != firstNode) {
                     //set the second node
                     setSecondNode(event.nodes[0]);
-                    setMessage("Done!")
-                    setShowAddBox(true)
+                    updateAddPhase(AddConnectionPhase.ADD_BOX);
                 }
             }
         }
 
-        //click node 1 > show click node 2
-        if (messageState == AddConnectionStage.CLICK_FIRST) {
+        //click first node
+        if (addPhase == AddConnectionPhase.FIRST) {
+            console.log("HERE")
             if (event.nodes.length == 1) {
                 //success, move to next stage
                 setFirstNode(event.nodes[0])
-                setMessage("click on second node")
-                messageState = AddConnectionStage.CLICK_SECOND;
+                updateAddPhase(AddConnectionPhase.SECOND)
             }
         }
     }
 
     const createConn = () => {
-        setMessage("click on first node")
-        messageState = AddConnectionStage.CLICK_FIRST;
+        updateAddPhase(AddConnectionPhase.FIRST)
+        setFirstNode(null)
+        setSecondNode(null)
+    }
+
+    const sendCreateConnApi = async (name: string, doubleSided: boolean) => {
+        if (firstNode == null || secondNode == null) {
+            console.log("First or second is null")
+            return;
+        }
+
+        const body: createRelRequestBody = {
+            name: name,
+            toId: secondNode,
+            fromId: firstNode,
+            doubleSided: doubleSided
+        }
+
+        console.log(body);
+
+        await fetch(`${HOST}/createRel`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        }).then(async res => {
+            if (res.status == 400) {
+                console.error(res.text())
+            }
+            const body = await res.json();
+            console.log("FRONTEND")
+            console.log(body)
+        })
+
+
     }
 
     return (
@@ -84,7 +119,8 @@ function App() {
             }
 
             <div className={s.CreateConnectionContainer}>
-                <p>{message}</p>
+                { addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p> }
+                { addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p> }
             </div>
 
             <div className={s.plus}>
@@ -92,8 +128,13 @@ function App() {
             </div>
 
             {
-                showAddBox &&
-                <AddBox hideAddBox={() => setShowAddBox(false)} />
+                addPhase == AddConnectionPhase.ADD_BOX &&
+                <AddBox hideAddBox={() => {
+                    updateAddPhase(AddConnectionPhase.NONE);
+                    setFirstNode(null)
+                    setSecondNode(null)
+                }}
+                createConnection={sendCreateConnApi}/>
             }
         </div>
     )
