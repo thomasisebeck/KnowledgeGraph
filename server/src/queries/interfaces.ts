@@ -15,6 +15,13 @@ export interface CreateStackReturnBody {
     relationships: NodeRelationship[]
 }
 
+export interface createRelRequestBody {
+    name: string,
+    fromId: string,
+    toId: string,
+    doubleSided: boolean
+}
+
 export interface RequestBody {
     infoNode: {
         label: string,

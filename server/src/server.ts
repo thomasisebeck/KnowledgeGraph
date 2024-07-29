@@ -3,7 +3,7 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {RequestBody} from "./queries/interfaces";
+import {createRelRequestBody, RequestBody} from "./queries/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
 
@@ -57,6 +57,23 @@ app.post('/createStack', async (req, res) => {
         res.status(400).send(e as string)
     }
 
+})
+
+app.post('/createRel', async (req, res) => {
+    try {
+        if (driver == null)
+            throw "driver is null"
+        const body = req.body as createRelRequestBody;
+        console.log("BODY")
+        console.dir(body)
+        await q.getOrCreateRelationship(driver, body.fromId, body.toId, body.name, body.doubleSided).then(result => {
+            res.status(200).json(result);
+        })
+    } catch (e) {
+        console.log("SERVER ERROR")
+        console.log(e)
+        res.status(500).json(e as string)
+    }
 })
 
 app.get('/topicNodes', (req, res) => {
