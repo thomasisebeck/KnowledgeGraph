@@ -1,0 +1,42 @@
+@import "variables";
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+@mixin myFontStyle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+button {
+  @include myFontStyle;
+  background: #fff;
+  border-radius: $border-rad;
+  border-style: solid;
+  border-width: .125rem;
+  box-sizing: border-box;
+  border-color: $off-white;
+  color: #212121;
+  cursor: pointer;
+  display: inline-block;
+  padding: 4px 5px;
+  text-decoration: none;
+  transform: translateZ(0) scale(1);
+  transition: transform .2s;
+  width: 100%;
+  margin-top: $padding;
+}
+
+button:hover {
+  transform: scale(1.05);
+}

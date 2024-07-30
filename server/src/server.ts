@@ -3,11 +3,13 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {RequestBody} from "./queries/interfaces";
+import {createRelRequestBody, RequestBody} from "../../shared/interfaces";
 import q from "./queries/queries"
+import cors from 'cors'
 
 const app = express();
 app.use(bodyParser.json())
+app.use(cors())
 
 let driver: Driver;
 
@@ -54,17 +56,61 @@ app.post('/createStack', async (req, res) => {
     } catch (e) {
         res.status(400).send(e as string)
     }
+})
 
+app.post('/createRel', async (req, res) => {
+    try {
+        if (driver == null)
+            throw "driver is null"
+        const body = req.body as createRelRequestBody;
+        await q.getOrCreateRelationship(driver, body.fromId, body.toId, body.name, body.doubleSided).then(result => {
+            res.status(200).json(result);
+        })
+    } catch (e) {
+        console.log("SERVER ERROR")
+        console.log(e)
+        res.status(500).json(e as string)
+    }
 })
 
 app.get('/topicNodes', (req, res) => {
     try {
         q.createTopicNodes(driver).then(result => {
-            res.status(200).json(result);
+            res.status(200).json({
+                nodes: result,
+                relationships: []
+            });
         });
     } catch (e) {
         res.status(400).json(e as string);
     }
+})
+
+async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
+    try {
+        const relString: string = req.body.relId;
+        let rel = relString.substring(relString.indexOf("]-[") + 3, relString.length);
+        rel = rel.substring(0, relString.indexOf("]-[") - 1);
+
+        await q.upVoteRelationship(driver, rel, mustUpvote).then(result => {
+            res.status(200).json({
+                rel: result
+            })
+        })
+
+        console.log("SENT")
+    } catch (e) {
+        console.error(e)
+        res.status(400).json(e as string)
+    }
+}
+
+app.post('/upvoteRel', async (req, res) => {
+    await upOrDownVote(req, res, true);
+})
+
+app.post('/downvoteRel', async (req, res) => {
+    await upOrDownVote(req, res, false);
 })
 
 app.listen(process.env.PORT, () => {

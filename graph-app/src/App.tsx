@@ -1,24 +1,288 @@
 import s from './App.module.scss'
 
-import React, {useEffect} from 'react'
+import React, {useEffect, useReducer, useState} from 'react'
 
-import MyNetwork from './components/MyNetwork.jsx'
+import MyNetwork from './components/MyNetwork.js'
+import {createRelRequestBody, GraphNode, GraphType, NodeRelationship} from "../../shared/interfaces";
+import AddBox from "./components/AddBox";
 
+import {AddButtons} from "./components/AddButtons/AddButtons";
+import {unstable_batchedUpdates} from "react-dom";
+import {HoverImage} from "./components/HoverImage/HoverImage";
+
+enum AddConnectionPhase {
+    NONE,
+    FIRST,
+    SECOND,
+    ADD_BOX
+}
+
+enum clickType {
+    NODE,
+    EDGE
+}
+
+interface clickEvent {
+    clickType: clickType,
+    id: string
+}
+
+const HOST = "http://localhost:5000";
 
 function App() {
 
+    const [nodes, setNodes] = useState<GraphNode[]>()
+    const [relationships, setRelationships] = useState<NodeRelationship[]>()
+    const [addPhase, setAddPhase] = useState<AddConnectionPhase>(AddConnectionPhase.NONE)
+    const [firstNode, setFirstNode] = useState<string | null>(null)
+    const [secondNode, setSecondNode] = useState<string | null>(null)
+    const [clickE, setClickE] = useState<clickEvent | null>(null)
+
     //fetch the initial data
     useEffect(() => {
-        fetch('/initialData').then(res => {
-            console.log("INITIAL DATA")
-            console.log("FETCHING TOPIC NODES")
-            console.log(res);
+        fetch(`${HOST}/topicNodes`).then(async res => {
+            const data = await res.json() as GraphType;
+            setNodes(data.nodes)
+            setRelationships(data.relationships)
+            setAddPhase(AddConnectionPhase.NONE)
         })
     }, []);
 
+    //register clicks for nodes and edges
+    useEffect(() => {
+        console.log("CLICKED")
+
+        if (clickE != null) {
+
+            //node
+            if (clickE.clickType == clickType.NODE) {
+                //click first node
+                if (addPhase == AddConnectionPhase.FIRST) {
+                    setFirstNode(clickE.id)
+                    setAddPhase(AddConnectionPhase.SECOND)
+                }
+
+                //click second node
+                if (addPhase == AddConnectionPhase.SECOND) {
+                    console.log("SECOND")
+                    if (clickE.id !== firstNode) {
+                        setSecondNode(clickE.id)
+                        setAddPhase(AddConnectionPhase.ADD_BOX)
+                    }
+                }
+            }
+
+            //rel
+            if (clickE.clickType == clickType.EDGE) {
+                //todo: show upvote buttons
+
+
+            }
+
+        }
+    }, [clickE])
+
+    //handle clicks for nodes and edges
+    const clickEvent = (event: any) => {
+
+        //has nodes, set node event on click
+        if (event.nodes.length > 0) {
+            console.log("SETTING NODE")
+            setClickE({
+                clickType: clickType.NODE,
+                id: event.nodes[0]
+            })
+            return;
+        }
+
+        //has edges, set edge event on click
+        if (event.edges.length > 0) {
+            console.log("SETTING EDGE")
+            setClickE({
+                clickType: clickType.EDGE,
+                id: event.edges[0]
+            })
+
+            return;
+        }
+    }
+
+    //start adding a connection, show the dialogue to click on the first node
+    const createConn = () => {
+        reset();
+        setAddPhase(AddConnectionPhase.FIRST)
+    }
+
+    //reset the state
+    const reset = () => {
+        setAddPhase(AddConnectionPhase.NONE)
+        setFirstNode(null)
+        setSecondNode(null)
+    }
+
+    //used to update the relationship in the state after it's changed
+    function updateRelationship(myRel1: NodeRelationship) {
+        console.log("returned relationship")
+        console.log(myRel1)
+
+        //update the relationships using the prev state
+        setRelationships(prevState => {
+            if (prevState) {
+
+                //store the previous state for update
+                const newRels = prevState;
+
+                let found = false;
+
+                for (const rel of newRels) {
+                    if (rel.relId == myRel1.relId) {
+                        rel.votes = myRel1.votes;
+                        found = true;
+                        console.log("UPDATED VOTES ON" + rel.relId + " TO " + rel.votes)
+                    }
+                }
+
+                //found relationship, return the updated version as an array to replace the state
+                if (found)
+                    return [...newRels];
+
+                //relationship not found, add it to the list of relationships in the state
+                return [myRel1, ...newRels]
+            }
+        });
+
+        reset();
+    }
+
+    //function to send an api request to create a connection
+    const sendCreateConnApi = async (name: string, doubleSided: boolean) => {
+        if (firstNode == null || secondNode == null) {
+            console.log("First or second is null")
+            reset();
+            return;
+        }
+
+        const body: createRelRequestBody = {
+            name: name,
+            toId: secondNode,
+            fromId: firstNode,
+            doubleSided: doubleSided
+        }
+
+        console.log(body);
+
+        await fetch(`${HOST}/createRel`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(async res => {
+                if (res.status == 200) {
+                    const body = await res.json();
+
+                    //todo: see the format of a double-sided rel
+                    console.log("BODY")
+                    console.log(body)
+
+                    //get the response for the updated relationship
+                    const myRel1 = body as NodeRelationship;
+
+                    //search for the relationship on the existing graph and update the value
+                    updateRelationship(myRel1);
+
+                    //success
+                    return;
+                }
+
+                console.error("error")
+                console.error(res.status)
+                reset();
+            })
+
+
+    }
+
+    //make an api request to upvote a relationship
+    const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
+        const URL = mustUpvote ? `${HOST}/upvoteRel` : `${HOST}/downvoteRel`;
+
+        await fetch(URL, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                relId: edgeId
+            })
+        }).then(async res => {
+            const result = await res.json();
+            const relationship = result.rel as NodeRelationship;
+
+            //update the relationship on the existing graph
+            updateRelationship(relationship);
+        })
+
+    }
+
     return (
         <div className={s.Container}>
-            <MyNetwork/>
+            {
+                nodes && relationships &&
+                <MyNetwork
+                    nodes={nodes}
+                    relationships={relationships}
+                    clickEvent={clickEvent}
+                />
+            }
+
+            <div className={s.CreateConnectionContainer}>
+                {addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p>}
+                {addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p>}
+            </div>
+
+            <div className={s.plus}>
+                <AddButtons showAddBox={() => createConn()}/>
+            </div>
+
+            {
+                //when the add connection phase requires the dialogue to be shown,
+                //then show the dialgue
+                addPhase == AddConnectionPhase.ADD_BOX &&
+                <AddBox
+                    hideAddBox={() => {
+                        setAddPhase(AddConnectionPhase.NONE)
+                        setFirstNode(null)
+                        setSecondNode(null)
+                    }}
+                    createConnection={sendCreateConnApi}
+                />
+            }
+
+            <div className={s.upvoteDownvoteContainer}>
+                <HoverImage
+                    message={"upvote edge"}
+                    normalImage={"buttons/upvote.svg"}
+                    hoverImage={"buttons/upvote-hover.svg"}
+                    onclick={async () => {
+                        //upvote the edge
+                        if (clickE && clickE.clickType == clickType.EDGE)
+                            await upvoteEdge(clickE.id, true).then(r => console.log(r))
+                    }}
+                />
+                <HoverImage
+                    message={"downvote edge"}
+                    normalImage={"buttons/downvote.svg"}
+                    hoverImage={"buttons/downvote-hover.svg"}
+                    onclick={async () => {
+                        //downvote the edge
+                        if (clickE && clickE.clickType == clickType.EDGE)
+                            await upvoteEdge(clickE.id, false).then(r => console.log(r))
+                    }}
+                />
+
+            </div>
         </div>
     )
 }

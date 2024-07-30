@@ -1,5 +1,33 @@
+@import "variables";
+
 .Container {
   height: 100vh;
   width: 100vw;
   background-color: #212125;
+}
+
+.plus {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 100px;
+  height: 150px;
+}
+
+.CreateConnectionContainer {
+  color: $off-white;
+  position: absolute;
+  bottom: 15px;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.upvoteDownvoteContainer {
+  position: absolute;
+  height: 100px;
+  width: 100px;
+  top: calc(50% - 100px);
+  right: 0;
+  margin-right: 5px;
 }

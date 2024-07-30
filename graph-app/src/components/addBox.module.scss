@@ -1,0 +1,49 @@
+@import "../variables";
+
+.container {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.box {
+  background-color: azure;
+  border-radius: $border-rad;
+  padding: $padding;
+}
+
+.box input {
+  justify-self: flex-start;
+  margin-left: 8px;
+}
+
+.box h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: $padding;
+}
+
+.box div:nth-child(1) {
+  margin-bottom: 5px;
+}
+
+.box label {
+  width: 157px;
+  display: inline-block;
+}
+
+.background {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  background-color: rgba(19, 19, 19, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: -1;
+}

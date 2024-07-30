@@ -2,10 +2,11 @@ import 'dotenv/config'
 import {Driver} from "neo4j-driver";
 import * as crypto from "node:crypto";
 import {executeGenericQuery, formatLabel, getField} from "../utils";
-import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "./interfaces";
+import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "../../../shared/interfaces";
 
 const INFO = 'InformationNode'
 const CLASS = 'ClassificationNode'
+const ROOT = 'Root'
 const BOTH = `${INFO} | ${CLASS}`
 
 // get nodes fully connected:
@@ -40,8 +41,12 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
     }
 }
 
-const findOrCreateClassificationNode = async (driver: Driver, label: string): Promise<Node> => {
-    let query = `MERGE (n:${CLASS} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
+const findOrCreateClassificationNode = async (driver: Driver, label: string, createRoot?:boolean): Promise<Node> => {
+    let query;
+    if (createRoot)
+        query = `MERGE (n:${ROOT} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
+    else
+        query = `MERGE (n:${CLASS} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
     let {records, summary} = await executeGenericQuery(driver, query, {
         label: label
     })
@@ -73,20 +78,40 @@ const createTopicNodes = async (driver: Driver) => {
     //8. Geography
 
     return await Promise.all([
-        findOrCreateClassificationNode(driver, "Computer and Information Science"),
-        findOrCreateClassificationNode(driver, "Philosophy and Psychology"),
-        findOrCreateClassificationNode(driver, "Science"),
-        findOrCreateClassificationNode(driver, "Language"),
-        findOrCreateClassificationNode(driver, "Technology"),
-        findOrCreateClassificationNode(driver, "Arts"),
-        findOrCreateClassificationNode(driver, "History"),
-        findOrCreateClassificationNode(driver, "Geography"),
+        findOrCreateClassificationNode(driver, "Computer &\nInfo Science", true),
+        findOrCreateClassificationNode(driver, "Philosophy", true),
+        findOrCreateClassificationNode(driver, "Psychology", true),
+        findOrCreateClassificationNode(driver, "Science", true),
+        findOrCreateClassificationNode(driver, "Language", true),
+        findOrCreateClassificationNode(driver, "Technology", true),
+        findOrCreateClassificationNode(driver, "Arts", true),
+        findOrCreateClassificationNode(driver, "History", true),
+        findOrCreateClassificationNode(driver, "Geography", true),
     ]);
 
 }
 
-const upVoteRelationship = async (driver: Driver, relId: string) => {
-    const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes + 1 RETURN r, from, to`;
+const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string)=> {
+   const query =
+       `MATCH (from {nodeId: '${nodeIdFrom}'}), (to:${ROOT}), p = shortestPath((from)-[r]-(to))
+       WHERE all(r IN relationships(p) WHERE r.relId IS NOT '${relId}')
+       return p`
+
+   const result = await executeGenericQuery(driver, query, {})
+    console.warn("WILL NODE GET STRANDED")
+    console.warn(result);
+
+   return result;
+
+}
+
+//downvoteRelationship
+//destroy connection when it gets to 0
+//unless it creates a stray node, then just return - upvotes
+
+const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean) : Promise<NodeRelationship> => {
+
+    const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
         relId: relId
     })
@@ -95,19 +120,33 @@ const upVoteRelationship = async (driver: Driver, relId: string) => {
     const from = getField(result.records, 'from');
     const to = getField(result.records, 'to');
 
-    // console.log("FROM:");
-    // console.log(from);
+    console.log("R")
+    console.dir(r, { depth: null})
 
+    if (r.properties.votes.toNumber() < 0) {
+        //went into the negative, remove the connection if it doesn't break anything
+        //todo: implement
+        //send request to see how many connections are present
+        console.log("REMOVING REL")
+        console.log("FROM")
+        console.log(from)
+        console.log("TO")
+        console.log(to)
+    }
+
+
+    //todo: return an object with isRemoved property
     return {
         relId: r.properties.relId,
         type: r.type,
         votes: r.properties.votes.toNumber(),
         from: from.properties.nodeId,
-        to: to.properties.nodeId
+        to: to.properties.nodeId,
+        doubleSided: result.records.length == 2
     };
 }
 
-const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string, doubleSided?: boolean): Promise<NodeRelationship[]> => {
+const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string, doubleSided?: boolean): Promise<NodeRelationship> => {
     if (relationshipLabel.includes("-"))
         throw "labels cannot include hyphens";
 
@@ -157,31 +196,15 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
     const r = result.records.at(0)?.get("r");
     let r2 = result2 != null ? result2.records.at(0)?.get("r") : null;
 
-    const toRet: NodeRelationship[] = [];
+    return {
+        relId: r.properties.relId,
+        type: r.type,
+        votes: r.properties.votes.toNumber(),
+        to: nodeIdTo,
+        from: nodeIdFrom,
+        doubleSided: r2 != null
+    }
 
-
-    toRet.push(
-        {
-            relId: r.properties.relId,
-            type: r.type,
-            votes: r.properties.votes.toNumber(),
-            to: nodeIdTo,
-            from: nodeIdFrom
-        }
-    )
-
-    if (r2 != null)
-        toRet.push(
-            {
-                relId: r2.properties.relId,
-                type: r2.type,
-                votes: r2.properties.votes.toNumber(),
-                to: nodeIdFrom,
-                from: nodeIdTo
-            }
-        )
-
-    return toRet;
 }
 
 const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
@@ -228,13 +251,13 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 
     //don't have to upvote twice, they have the same relID
     const myRels = await Promise.all([
-        upVoteRelationship(driver, createdRels[0][0].relId),
+        upVoteRelationship(driver, createdRels[0].relId, true),
         // createdRels[0][1] && upVoteRelationship(driver, createdRels[0][1].relId),
 
-        upVoteRelationship(driver, createdRels[1][0].relId),
+        upVoteRelationship(driver, createdRels[1].relId, true),
         // createdRels[1][1] && upVoteRelationship(driver, createdRels[1][1].relId),
 
-        upVoteRelationship(driver, createdRels[2][0].relId),
+        upVoteRelationship(driver, createdRels[2].relId, true),
         // createdRels[2][1] && upVoteRelationship(driver, createdRels[2][1].relId),
     ])
 
@@ -279,5 +302,6 @@ export default {
     getOrCreateRelationship,
     relationshipExistsBetweenNodes,
     createStack,
-    createTopicNodes
+    createTopicNodes,
+    upVoteRelationship
 }
