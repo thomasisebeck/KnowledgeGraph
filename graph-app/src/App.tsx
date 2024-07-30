@@ -181,20 +181,20 @@ function App() {
                 />
             }
 
-            //dialogue when creating a connection
+            {/*dialogue when creating a connection*/}
             <div className={s.CreateConnectionContainer}>
                 {addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p>}
                 {addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p>}
             </div>
 
-            //buttons to add relationships and nodes
+            {/*buttons to add relationships and nodes*/}
             <div className={s.plus}>
                 <AddButtons showAddBox={() => createConn()} showAddStack={() => setShowAddStackDialogue(true)}/>
             </div>
 
+            {/* when the add connection phase requires the dialogue to be shown, */}
+            {/* then show the dialogue*/}
             {
-                //when the add connection phase requires the dialogue to be shown,
-                //then show the dialogue
                 addPhase == AddConnectionPhase.ADD_BOX &&
                 <AddConnectionDialogue
                     firstNode={firstNode}
@@ -216,7 +216,7 @@ function App() {
                 />
             }
 
-            //buttons to upvote and downvote relationships
+            {/*buttons to upvote and downvote relationships*/}
             <div className={s.upvoteDownvoteContainer}>
                 <HoverImage
                     message={"upvote edge"}
