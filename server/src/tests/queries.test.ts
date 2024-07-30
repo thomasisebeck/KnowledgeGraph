@@ -3,7 +3,7 @@ import q  from  "../queries/queries"
 import sess from '../session'
 import 'dotenv/config'
 import {clearDB} from "../utils";
-import {nodeType, RequestBody} from "../queries/interfaces";
+import {nodeType, RequestBody} from "../../../shared/interfaces";
 
 const URI = process.env.NEO4J_URI
 const USER = process.env.NEO4J_USERNAME
@@ -71,7 +71,7 @@ describe('queries', () => {
         expect(exists).toBe(true);
 
         console.log("FIND REL BY ID")
-        let findById = await q.getRelationshipById(driver, newID[0].relId);
+        let findById = await q.getRelationshipById(driver, newID.relId);
         console.log(findById);
 
     }, 10000)
@@ -114,8 +114,8 @@ describe('queries', () => {
        let getRel1 = await q.getOrCreateRelationship(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
        let getRel2 = await q.getOrCreateRelationship(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
 
-       expect(getRel1[0].type).toBe("REL_INFO1_CLASS1")
-       expect(getRel2[0].type).toBe("REL_CLASS2_CLASS1")
+       expect(getRel1.type).toBe("REL_INFO1_CLASS1")
+       expect(getRel2.type).toBe("REL_CLASS2_CLASS1")
 
         //should exist
         relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
