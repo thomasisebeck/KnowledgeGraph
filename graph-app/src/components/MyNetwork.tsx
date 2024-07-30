@@ -51,6 +51,7 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
         }
     }, [networkRef])
 
+
     const sigmoid = (x : number) => {
         const STRETCH_FACTOR = 10;
         return 1 / (1 + Math.exp(-x / STRETCH_FACTOR));

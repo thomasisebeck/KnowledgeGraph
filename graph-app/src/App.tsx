@@ -269,7 +269,7 @@ function App() {
                     <HoverImage
                         message={"upvote edge"}
                         normalImage={"buttons/upvote.svg"}
-                        hoverImage={"buttons/upvote hover.svg"}
+                        hoverImage={"buttons/upvote-hover.svg"}
                         onclick={async () => {
                             if (clickE && clickE.clickType == clickType.EDGE)
                                 await upvoteEdge(clickE.id, true).then(r => console.log(r))
@@ -278,7 +278,7 @@ function App() {
                     <HoverImage
                         message={"downvote edge"}
                         normalImage={"buttons/downvote.svg"}
-                        hoverImage={"buttons/downvote hover.svg"}
+                        hoverImage={"buttons/downvote-hover.svg"}
                         onclick={async () => {
                             if (clickE && clickE.clickType == clickType.EDGE)
                                 await upvoteEdge(clickE.id, false).then(r => console.log(r))
