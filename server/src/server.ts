@@ -56,7 +56,6 @@ app.post('/createStack', async (req, res) => {
     } catch (e) {
         res.status(400).send(e as string)
     }
-
 })
 
 app.post('/createRel', async (req, res) => {

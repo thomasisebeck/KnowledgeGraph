@@ -37,7 +37,8 @@ export interface NodeRelationship {
     relId: string,
     votes: number,
     to: string,
-    from: string
+    from: string,
+    doubleSided: boolean
 }
 
 export interface GraphType {

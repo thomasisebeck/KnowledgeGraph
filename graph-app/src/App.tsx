@@ -6,7 +6,6 @@ import MyNetwork from './components/MyNetwork.js'
 import {createRelRequestBody, GraphNode, GraphType, NodeRelationship} from "../../shared/interfaces";
 import AddBox from "./components/AddBox";
 
-import plusButton from './images/plusButton.png';
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {unstable_batchedUpdates} from "react-dom";
 
@@ -17,6 +16,16 @@ enum AddConnectionPhase {
     ADD_BOX
 }
 
+enum clickType {
+    NODE,
+    EDGE
+}
+
+interface clickEvent {
+    clickType: clickType,
+    id: string
+}
+
 const HOST = "http://localhost:5000";
 
 function App() {
@@ -24,9 +33,9 @@ function App() {
     const [nodes, setNodes] = useState<GraphNode[]>()
     const [relationships, setRelationships] = useState<NodeRelationship[]>()
     const [addPhase, setAddPhase] = useState<AddConnectionPhase>(AddConnectionPhase.NONE)
-    const [firstNode, setFirstNode] = useState(null)
-    const [secondNode, setSecondNode] = useState(null)
-    const [clickE, setClickE] = useState(null)
+    const [firstNode, setFirstNode] = useState<string | null>(null)
+    const [secondNode, setSecondNode] = useState<string | null>(null)
+    const [clickE, setClickE] = useState<clickEvent | null>(null)
 
 
     //fetch the initial data
@@ -40,26 +49,60 @@ function App() {
     }, []);
 
     useEffect(() => {
-        if (clickE != null) {
-            //click first node
-            if (addPhase == AddConnectionPhase.FIRST) {
-                setFirstNode(clickE)
-                setAddPhase(AddConnectionPhase.SECOND)
-            }
+        console.log("CLICKED")
 
-            //click second node
-            if (addPhase == AddConnectionPhase.SECOND) {
-                console.log("SECOND")
-                if (clickE !== firstNode) {
-                    setSecondNode(clickE)
-                    setAddPhase(AddConnectionPhase.ADD_BOX)
+
+        if (clickE != null) {
+
+            //node
+            if (clickE.clickType == clickType.NODE) {
+                //click first node
+                if (addPhase == AddConnectionPhase.FIRST) {
+                    setFirstNode(clickE.id)
+                    setAddPhase(AddConnectionPhase.SECOND)
+                }
+
+                //click second node
+                if (addPhase == AddConnectionPhase.SECOND) {
+                    console.log("SECOND")
+                    if (clickE.id !== firstNode) {
+                        setSecondNode(clickE.id)
+                        setAddPhase(AddConnectionPhase.ADD_BOX)
+                    }
                 }
             }
+
+            //rel
+            if (clickE.clickType == clickType.EDGE) {
+                //todo: show upvote buttons
+
+            }
+
         }
     }, [clickE])
 
     const clickEvent = (event: any) => {
-        setClickE(event.nodes[0]);
+
+        //has nodes, set node event on click
+        if (event.nodes.length > 0) {
+            console.log("SETTING NODE")
+            setClickE({
+                clickType: clickType.NODE,
+                id: event.nodes[0]
+            })
+            return;
+        }
+
+        //has edges, set edge event on click
+        if (event.edges.length > 0) {
+            console.log("SETTING EDGE")
+            setClickE({
+                clickType: clickType.EDGE,
+                id: event.edges[0]
+            })
+
+            return;
+        }
     }
 
     function resetSelectedNodes() {
@@ -106,27 +149,40 @@ function App() {
                 }
                 if (res.status == 200) {
                     const body = await res.json();
+
+                    //todo: see the format of a double-sided rel
+                    console.log("BODY")
                     console.log(body)
-                    const myRel = body[0] as NodeRelationship;
+
+                    //get the response for the updated relationship
+                    const myRel1 = body as NodeRelationship;
+
+                    console.log("returned relationship")
+                    console.log(myRel1)
 
                     unstable_batchedUpdates(() => {
 
-                        //set rel
+                        //update the relationships using the prev state
                         setRelationships(prevState => {
                             if (prevState) {
                                 const newRels = prevState;
 
                                 //todo: handle double sided connections
+                                let found = false;
 
                                 for (const rel of newRels) {
-                                    if (rel.relId == myRel.relId) {
-                                        rel.votes = myRel.votes;
-                                        return [...newRels];
+                                    if (rel.relId == myRel1.relId) {
+                                        rel.votes = myRel1.votes;
+                                        found = true;
                                     }
                                 }
 
+                                if (found)
+                                    //would be double sided already
+                                    return [...newRels];
+
                                 console.log("ADDING NEW REL")
-                                return [myRel, ...newRels]
+                                return [myRel1, ...newRels]
                             }
                         });
 
