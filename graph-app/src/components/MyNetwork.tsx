@@ -39,6 +39,11 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
         }
     }, [networkRef])
 
+    const sigmoid = (x : number) => {
+        const STRETCH_FACTOR = 10;
+        return 1 / (1 + Math.exp(-x / STRETCH_FACTOR));
+    }
+
     return (
       <Network
         options={options}
@@ -55,7 +60,11 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
               relationships && relationships.map(r => {
                   //todo: check if double sided and set arrows accordingly
                   const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
-                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type} width={r.votes + 1} arrows={'to'} key={uniqueKey}/>
+                  const THICKNESS_MULTIPLIER = 15;
+                  const MINIMUM_THICKNESS = 0.4;
+
+                  const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
+                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type} width={thickness} arrows={'to'} key={uniqueKey} />
               })
           }
 
