@@ -55,7 +55,7 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
               relationships && relationships.map(r => {
                   //todo: check if double sided and set arrows accordingly
                   const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
-                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type}  arrows={'to'} key={uniqueKey}/>
+                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type} width={r.votes + 1} arrows={'to'} key={uniqueKey}/>
               })
           }
 

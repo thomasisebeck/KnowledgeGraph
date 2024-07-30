@@ -22,3 +22,12 @@
   width: 100%;
   justify-content: center;
 }
+
+.upvoteDownvoteContainer {
+  position: absolute;
+  height: 100px;
+  width: 100px;
+  top: calc(50% - 100px);
+  right: 0;
+  margin-right: 5px;
+}

@@ -1,4 +1,4 @@
-import {HoverImageInterface} from "../../interfaces";
+import {HoverImageInterface} from "../../../../shared/interfaces"
 import {useState} from "react";
 import React from "react";
 

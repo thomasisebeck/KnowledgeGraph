@@ -8,6 +8,7 @@ import AddBox from "./components/AddBox";
 
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {unstable_batchedUpdates} from "react-dom";
+import {HoverImage} from "./components/HoverImage/HoverImage";
 
 enum AddConnectionPhase {
     NONE,
@@ -76,6 +77,8 @@ function App() {
             if (clickE.clickType == clickType.EDGE) {
                 //todo: show upvote buttons
 
+
+
             }
 
         }
@@ -120,6 +123,41 @@ function App() {
         resetSelectedNodes();
     }
 
+    function updateRelationship(myRel1: NodeRelationship) {
+        console.log("returned relationship")
+        console.log(myRel1)
+
+        unstable_batchedUpdates(() => {
+
+            //update the relationships using the prev state
+            setRelationships(prevState => {
+                if (prevState) {
+                    const newRels = prevState;
+
+                    //todo: handle double sided connections
+                    let found = false;
+
+                    for (const rel of newRels) {
+                        if (rel.relId == myRel1.relId) {
+                            rel.votes = myRel1.votes;
+                            found = true;
+                            console.log("UPDATED VOTES ON" + rel.relId + " TO " + rel.votes)
+                        }
+                    }
+
+                    if (found)
+                        //would be double-sided already
+                        return [...newRels];
+
+                    console.log("ADDING NEW REL")
+                    return [myRel1, ...newRels]
+                }
+            });
+
+            reset();
+        })
+    }
+
     const sendCreateConnApi = async (name: string, doubleSided: boolean) => {
         if (firstNode == null || secondNode == null) {
             console.log("First or second is null")
@@ -156,38 +194,7 @@ function App() {
 
                     //get the response for the updated relationship
                     const myRel1 = body as NodeRelationship;
-
-                    console.log("returned relationship")
-                    console.log(myRel1)
-
-                    unstable_batchedUpdates(() => {
-
-                        //update the relationships using the prev state
-                        setRelationships(prevState => {
-                            if (prevState) {
-                                const newRels = prevState;
-
-                                //todo: handle double sided connections
-                                let found = false;
-
-                                for (const rel of newRels) {
-                                    if (rel.relId == myRel1.relId) {
-                                        rel.votes = myRel1.votes;
-                                        found = true;
-                                    }
-                                }
-
-                                if (found)
-                                    //would be double sided already
-                                    return [...newRels];
-
-                                console.log("ADDING NEW REL")
-                                return [myRel1, ...newRels]
-                            }
-                        });
-
-                        reset();
-                    })
+                    updateRelationship(myRel1);
 
                     return;
 
@@ -200,6 +207,29 @@ function App() {
 
 
     }
+
+    const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
+        const URL = mustUpvote ? `${HOST}/upvoteRel` : `${HOST}/downvoteRel`;
+
+        await fetch(URL, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                relId: edgeId
+            })
+        }).then(async res => {
+            const result = await res.json();
+            console.log(result)
+
+            const relationship = result.rel as NodeRelationship;
+            updateRelationship(relationship);
+
+        })
+
+    }
+
 
     return (
         <div className={s.Container}>
@@ -232,6 +262,30 @@ function App() {
                     }}
                     createConnection={sendCreateConnApi}
                 />
+            }
+
+            {
+                <div className={s.upvoteDownvoteContainer}>
+                    <HoverImage
+                        message={"upvote edge"}
+                        normalImage={"buttons/upvote.svg"}
+                        hoverImage={"buttons/upvote hover.svg"}
+                        onclick={async () => {
+                            if (clickE && clickE.clickType == clickType.EDGE)
+                                await upvoteEdge(clickE.id, true).then(r => console.log(r))
+                        }}
+                    />
+                    <HoverImage
+                        message={"downvote edge"}
+                        normalImage={"buttons/downvote.svg"}
+                        hoverImage={"buttons/downvote hover.svg"}
+                        onclick={async () => {
+                            if (clickE && clickE.clickType == clickType.EDGE)
+                                await upvoteEdge(clickE.id, false).then(r => console.log(r))
+                        }}
+                    />
+
+                </div>
             }
         </div>
     )

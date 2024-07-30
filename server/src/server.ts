@@ -86,24 +86,31 @@ app.get('/topicNodes', (req, res) => {
     }
 })
 
-function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
+async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
     try {
-        q.upVoteRelationship(driver, req.body.relId, mustUpvote).then(result => {
+        const relString: string = req.body.relId;
+        let rel = relString.substring(relString.indexOf("]-[") + 3, relString.length);
+        rel = rel.substring(0, relString.indexOf("]-[") - 1);
+
+        await q.upVoteRelationship(driver, rel, mustUpvote).then(result => {
             res.status(200).json({
                 rel: result
             })
         })
+
+        console.log("SENT")
     } catch (e) {
+        console.error(e)
         res.status(400).json(e as string)
     }
 }
 
-app.get('/upvoteRel', async (req, res) => {
-    upOrDownVote(req, res, true);
+app.post('/upvoteRel', async (req, res) => {
+    await upOrDownVote(req, res, true);
 })
 
-app.get('/downvoteRel', async (req, res) => {
-    upOrDownVote(req, res, false);
+app.post('/downvoteRel', async (req, res) => {
+    await upOrDownVote(req, res, false);
 })
 
 app.listen(process.env.PORT, () => {

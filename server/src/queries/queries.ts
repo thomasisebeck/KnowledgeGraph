@@ -110,7 +110,8 @@ const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: st
 //unless it creates a stray node, then just return - upvotes
 
 const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean) : Promise<NodeRelationship> => {
-    const query = `MATCH (from:${BOTH})-[r {relId: $relId}]->(to:${BOTH}) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
+
+    const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
         relId: relId
     })
@@ -118,6 +119,9 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const r = getField(result.records, "r");
     const from = getField(result.records, 'from');
     const to = getField(result.records, 'to');
+
+    console.log("R")
+    console.dir(r, { depth: null})
 
     if (r.properties.votes.toNumber() < 0) {
         //went into the negative, remove the connection if it doesn't break anything
