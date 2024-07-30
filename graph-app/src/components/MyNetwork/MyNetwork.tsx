@@ -1,6 +1,6 @@
 import { Edge, Network, Node } from '@lifeomic/react-vis-network'
 import React, {useEffect, useRef} from 'react'
-import {GraphType} from "../../../shared/interfaces";
+import {GraphType} from "../../../../shared/interfaces";
 
 const options= {
     width: '100%',

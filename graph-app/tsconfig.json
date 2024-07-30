@@ -16,6 +16,6 @@
     "target": "ESNext",
     "types": ["vite"]
   },
-  "include": ["./src"],
+  "include": ["./src", "../shared"],
   "exclude": ["node_modules"]
 }

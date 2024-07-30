@@ -91,15 +91,28 @@ const createTopicNodes = async (driver: Driver) => {
 
 }
 
+//todo: continue
 const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string)=> {
    const query =
        `MATCH (from {nodeId: '${nodeIdFrom}'}), (to:${ROOT}), p = shortestPath((from)-[r]-(to))
-       WHERE all(r IN relationships(p) WHERE r.relId IS NOT '${relId}')
-       return p`
+       WHERE NONE(r IN relationships(p) WHERE r.relId = '${relId}')
+       return labels(from) AS from_labels, p`
 
    const result = await executeGenericQuery(driver, query, {})
+
+    //no paths to a root node found
+    if (result.records.length == 0)
+        return  true;
+
+    const labels = getField(result.records, 'from_labels')
+    const path = getField(result.records, 'p')
+
     console.warn("WILL NODE GET STRANDED")
-    console.warn(result);
+    console.dir(result.records, {depth: null})
+    console.log("----------")
+    console.log(labels)
+    console.log("----------")
+    console.log(path)
 
    return result;
 
@@ -132,8 +145,27 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         console.log(from)
         console.log("TO")
         console.log(to)
-    }
 
+        //assume nodes will be stranded
+        let fromWillBeStranded = true;
+        let toWillBeStranded = true;
+
+        //wont be stranded if root
+        if (from.labels[0] == 'Root')
+            fromWillBeStranded = false;
+        if (to.labels[0] == 'Root')
+            fromWillBeStranded = false;
+
+        if (fromWillBeStranded) { //possibility that from gets stranded, not root
+
+        }
+
+        const willGetStrandedFrom = await willNodeGetStranded(driver, from, r.properties.relId);
+        const willGetStrandedTo = await willNodeGetStranded(driver, from, r.properties.relId);
+        console.log("will node get stranded")
+        console.dir(willGetStrandedFrom, { depth: null})
+        console.dir(willGetStrandedTo, { depth: null})
+    }
 
     //todo: return an object with isRemoved property
     return {

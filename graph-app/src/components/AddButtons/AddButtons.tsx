@@ -1,18 +1,15 @@
 import React, {useEffect, useState} from 'react';
-
-import s from './AddButtons.module.scss'
 import {HoverImage} from "../HoverImage/HoverImage";
-
-const STATE_MACHINE_NAME = "MyStateMachine"
+import s from './AddButtons.module.scss'
 
 interface AddButtonsProps {
-    showAddBox?: () => void
+    showAddBox?: () => void,
+    showAddStack?: () => void
 }
 
 enum IMAGES {
     ADD_CONNECTION,
     ADD_NODE,
-    DOWNVOTE,
     EXIT,
     PLUS
 }
@@ -29,11 +26,6 @@ const images = [
         message: "create node with information"
     },
     {
-        normal: "buttons/downvote.svg",
-        hover: "buttons/downvote-hover.svg",
-        message: "downvote connection"
-    },
-    {
         normal: "buttons/exit.svg",
         hover: "buttons/exit-hover.svg",
         message: "exit"
@@ -45,17 +37,18 @@ const images = [
     },
 ]
 
-export const AddButtons = ({showAddBox}: AddButtonsProps) => {
+export const AddButtons = ({showAddBox, showAddStack}: AddButtonsProps) => {
 
     const [expanded, setExpanded] = useState(false)
 
-    const addNode = () => {
-        console.log("adding node")
+    const addStack = () => {
+        if (showAddStack) {
+            showAddStack()
+        }
     }
 
     const addConnection = () => {
         if (showAddBox) {
-            console.log("adding connection")
             showAddBox()
         }
     }
@@ -80,7 +73,7 @@ export const AddButtons = ({showAddBox}: AddButtonsProps) => {
                     <React.Fragment>
                         <HoverImage
                             message={images[IMAGES.ADD_NODE].message}
-                            onclick={addNode}
+                            onclick={addStack}
                             normalImage={images[IMAGES.ADD_NODE].normal}
                             hoverImage={images[IMAGES.ADD_NODE].hover}
                         />

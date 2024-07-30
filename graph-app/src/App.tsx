@@ -2,13 +2,14 @@ import s from './App.module.scss'
 
 import React, {useEffect, useReducer, useState} from 'react'
 
-import MyNetwork from './components/MyNetwork.js'
-import {createRelRequestBody, GraphNode, GraphType, NodeRelationship} from "../../shared/interfaces";
-import AddBox from "./components/AddBox";
+import MyNetwork from './components/MyNetwork/MyNetwork.js'
+import {GraphNode, GraphType, NodeRelationship} from "../../shared/interfaces";
+import {HOST} from "../../shared/variables"
+import AddConnectionDialogue from "./components/AddConnectionDialogue";
 
 import {AddButtons} from "./components/AddButtons/AddButtons";
-import {unstable_batchedUpdates} from "react-dom";
 import {HoverImage} from "./components/HoverImage/HoverImage";
+import AddStackDialogue from "./components/AddStackDialogue";
 
 enum AddConnectionPhase {
     NONE,
@@ -27,8 +28,6 @@ interface clickEvent {
     id: string
 }
 
-const HOST = "http://localhost:5000";
-
 function App() {
 
     const [nodes, setNodes] = useState<GraphNode[]>()
@@ -37,6 +36,7 @@ function App() {
     const [firstNode, setFirstNode] = useState<string | null>(null)
     const [secondNode, setSecondNode] = useState<string | null>(null)
     const [clickE, setClickE] = useState<clickEvent | null>(null)
+    const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
 
     //fetch the initial data
     useEffect(() => {
@@ -70,13 +70,6 @@ function App() {
                         setAddPhase(AddConnectionPhase.ADD_BOX)
                     }
                 }
-            }
-
-            //rel
-            if (clickE.clickType == clickType.EDGE) {
-                //todo: show upvote buttons
-
-
             }
 
         }
@@ -154,55 +147,6 @@ function App() {
         reset();
     }
 
-    //function to send an api request to create a connection
-    const sendCreateConnApi = async (name: string, doubleSided: boolean) => {
-        if (firstNode == null || secondNode == null) {
-            console.log("First or second is null")
-            reset();
-            return;
-        }
-
-        const body: createRelRequestBody = {
-            name: name,
-            toId: secondNode,
-            fromId: firstNode,
-            doubleSided: doubleSided
-        }
-
-        console.log(body);
-
-        await fetch(`${HOST}/createRel`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        })
-            .then(async res => {
-                if (res.status == 200) {
-                    const body = await res.json();
-
-                    //todo: see the format of a double-sided rel
-                    console.log("BODY")
-                    console.log(body)
-
-                    //get the response for the updated relationship
-                    const myRel1 = body as NodeRelationship;
-
-                    //search for the relationship on the existing graph and update the value
-                    updateRelationship(myRel1);
-
-                    //success
-                    return;
-                }
-
-                console.error("error")
-                console.error(res.status)
-                reset();
-            })
-
-
-    }
 
     //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
@@ -237,29 +181,42 @@ function App() {
                 />
             }
 
+            //dialogue when creating a connection
             <div className={s.CreateConnectionContainer}>
                 {addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p>}
                 {addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p>}
             </div>
 
+            //buttons to add relationships and nodes
             <div className={s.plus}>
-                <AddButtons showAddBox={() => createConn()}/>
+                <AddButtons showAddBox={() => createConn()} showAddStack={() => setShowAddStackDialogue(true)}/>
             </div>
 
             {
                 //when the add connection phase requires the dialogue to be shown,
-                //then show the dialgue
+                //then show the dialogue
                 addPhase == AddConnectionPhase.ADD_BOX &&
-                <AddBox
+                <AddConnectionDialogue
+                    firstNode={firstNode}
                     hideAddBox={() => {
                         setAddPhase(AddConnectionPhase.NONE)
                         setFirstNode(null)
                         setSecondNode(null)
                     }}
-                    createConnection={sendCreateConnApi}
+                    secondNode={secondNode}
+                    reset={reset}
+                    updateRelationship={updateRelationship}
                 />
             }
 
+            {
+                showAddStackDialogue &&
+                <AddStackDialogue
+                    hideAddStackDialogue={() => setShowAddStackDialogue(false)}
+                />
+            }
+
+            //buttons to upvote and downvote relationships
             <div className={s.upvoteDownvoteContainer}>
                 <HoverImage
                     message={"upvote edge"}
