@@ -38,7 +38,6 @@ function App() {
     const [secondNode, setSecondNode] = useState<string | null>(null)
     const [clickE, setClickE] = useState<clickEvent | null>(null)
 
-
     //fetch the initial data
     useEffect(() => {
         fetch(`${HOST}/topicNodes`).then(async res => {
@@ -49,9 +48,9 @@ function App() {
         })
     }, []);
 
+    //register clicks for nodes and edges
     useEffect(() => {
         console.log("CLICKED")
-
 
         if (clickE != null) {
 
@@ -78,12 +77,12 @@ function App() {
                 //todo: show upvote buttons
 
 
-
             }
 
         }
     }, [clickE])
 
+    //handle clicks for nodes and edges
     const clickEvent = (event: any) => {
 
         //has nodes, set node event on click
@@ -108,56 +107,54 @@ function App() {
         }
     }
 
-    function resetSelectedNodes() {
+    //start adding a connection, show the dialogue to click on the first node
+    const createConn = () => {
+        reset();
+        setAddPhase(AddConnectionPhase.FIRST)
+    }
+
+    //reset the state
+    const reset = () => {
+        setAddPhase(AddConnectionPhase.NONE)
         setFirstNode(null)
         setSecondNode(null)
     }
 
-    const createConn = () => {
-        resetSelectedNodes();
-        setAddPhase(AddConnectionPhase.FIRST)
-    }
-
-    const reset = () => {
-        setAddPhase(AddConnectionPhase.NONE)
-        resetSelectedNodes();
-    }
-
+    //used to update the relationship in the state after it's changed
     function updateRelationship(myRel1: NodeRelationship) {
         console.log("returned relationship")
         console.log(myRel1)
 
-        unstable_batchedUpdates(() => {
+        //update the relationships using the prev state
+        setRelationships(prevState => {
+            if (prevState) {
 
-            //update the relationships using the prev state
-            setRelationships(prevState => {
-                if (prevState) {
-                    const newRels = prevState;
+                //store the previous state for update
+                const newRels = prevState;
 
-                    //todo: handle double sided connections
-                    let found = false;
+                let found = false;
 
-                    for (const rel of newRels) {
-                        if (rel.relId == myRel1.relId) {
-                            rel.votes = myRel1.votes;
-                            found = true;
-                            console.log("UPDATED VOTES ON" + rel.relId + " TO " + rel.votes)
-                        }
+                for (const rel of newRels) {
+                    if (rel.relId == myRel1.relId) {
+                        rel.votes = myRel1.votes;
+                        found = true;
+                        console.log("UPDATED VOTES ON" + rel.relId + " TO " + rel.votes)
                     }
-
-                    if (found)
-                        //would be double-sided already
-                        return [...newRels];
-
-                    console.log("ADDING NEW REL")
-                    return [myRel1, ...newRels]
                 }
-            });
 
-            reset();
-        })
+                //found relationship, return the updated version as an array to replace the state
+                if (found)
+                    return [...newRels];
+
+                //relationship not found, add it to the list of relationships in the state
+                return [myRel1, ...newRels]
+            }
+        });
+
+        reset();
     }
 
+    //function to send an api request to create a connection
     const sendCreateConnApi = async (name: string, doubleSided: boolean) => {
         if (firstNode == null || secondNode == null) {
             console.log("First or second is null")
@@ -182,9 +179,6 @@ function App() {
             body: JSON.stringify(body)
         })
             .then(async res => {
-                if (res.status == 400) {
-                    console.error(res.text())
-                }
                 if (res.status == 200) {
                     const body = await res.json();
 
@@ -194,10 +188,12 @@ function App() {
 
                     //get the response for the updated relationship
                     const myRel1 = body as NodeRelationship;
+
+                    //search for the relationship on the existing graph and update the value
                     updateRelationship(myRel1);
 
+                    //success
                     return;
-
                 }
 
                 console.error("error")
@@ -208,6 +204,7 @@ function App() {
 
     }
 
+    //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
         const URL = mustUpvote ? `${HOST}/upvoteRel` : `${HOST}/downvoteRel`;
 
@@ -221,15 +218,13 @@ function App() {
             })
         }).then(async res => {
             const result = await res.json();
-            console.log(result)
-
             const relationship = result.rel as NodeRelationship;
-            updateRelationship(relationship);
 
+            //update the relationship on the existing graph
+            updateRelationship(relationship);
         })
 
     }
-
 
     return (
         <div className={s.Container}>
@@ -243,7 +238,6 @@ function App() {
             }
 
             <div className={s.CreateConnectionContainer}>
-                {addPhase}
                 {addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p>}
                 {addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p>}
             </div>
@@ -253,6 +247,8 @@ function App() {
             </div>
 
             {
+                //when the add connection phase requires the dialogue to be shown,
+                //then show the dialgue
                 addPhase == AddConnectionPhase.ADD_BOX &&
                 <AddBox
                     hideAddBox={() => {
@@ -264,29 +260,29 @@ function App() {
                 />
             }
 
-            {
-                <div className={s.upvoteDownvoteContainer}>
-                    <HoverImage
-                        message={"upvote edge"}
-                        normalImage={"buttons/upvote.svg"}
-                        hoverImage={"buttons/upvote-hover.svg"}
-                        onclick={async () => {
-                            if (clickE && clickE.clickType == clickType.EDGE)
-                                await upvoteEdge(clickE.id, true).then(r => console.log(r))
-                        }}
-                    />
-                    <HoverImage
-                        message={"downvote edge"}
-                        normalImage={"buttons/downvote.svg"}
-                        hoverImage={"buttons/downvote-hover.svg"}
-                        onclick={async () => {
-                            if (clickE && clickE.clickType == clickType.EDGE)
-                                await upvoteEdge(clickE.id, false).then(r => console.log(r))
-                        }}
-                    />
+            <div className={s.upvoteDownvoteContainer}>
+                <HoverImage
+                    message={"upvote edge"}
+                    normalImage={"buttons/upvote.svg"}
+                    hoverImage={"buttons/upvote-hover.svg"}
+                    onclick={async () => {
+                        //upvote the edge
+                        if (clickE && clickE.clickType == clickType.EDGE)
+                            await upvoteEdge(clickE.id, true).then(r => console.log(r))
+                    }}
+                />
+                <HoverImage
+                    message={"downvote edge"}
+                    normalImage={"buttons/downvote.svg"}
+                    hoverImage={"buttons/downvote-hover.svg"}
+                    onclick={async () => {
+                        //downvote the edge
+                        if (clickE && clickE.clickType == clickType.EDGE)
+                            await upvoteEdge(clickE.id, false).then(r => console.log(r))
+                    }}
+                />
 
-                </div>
-            }
+            </div>
         </div>
     )
 }
