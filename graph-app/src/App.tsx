@@ -5,25 +5,34 @@ import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-
+import {AddConnectionPhase, clickEvent, ClickType} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 
-enum AddConnectionPhase {
-    NONE,
-    FIRST,
-    SECOND,
-    ADD_BOX
-}
+function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
+    return <div className={s.upvoteDownvoteContainer}>
+        <HoverImage
+            message={"upvote edge"}
+            normalImage={"buttons/upvote.svg"}
+            hoverImage={"buttons/upvote-hover.svg"}
+            onclick={async () => {
+                //upvote the edge
+                if (clickE && clickE.clickType == ClickType.EDGE)
+                    await upvoteEdge(clickE.id, true).then(r => console.log(r))
+            }}
+        />
+        <HoverImage
+            message={"downvote edge"}
+            normalImage={"buttons/downvote.svg"}
+            hoverImage={"buttons/downvote-hover.svg"}
+            onclick={async () => {
+                //downvote the edge
+                if (clickE && clickE.clickType == ClickType.EDGE)
+                    await upvoteEdge(clickE.id, false).then(r => console.log(r))
+            }}
+        />
 
-enum ClickType {
-    NODE,
-    EDGE
-}
-
-interface clickEvent {
-    clickType: ClickType,
-    id: string
+    </div>;
 }
 
 function App() {
@@ -33,7 +42,7 @@ function App() {
     const [addPhase, setAddPhase] = useState<AddConnectionPhase>(AddConnectionPhase.NONE)
     const [firstNode, setFirstNode] = useState<string | null>(null)
     const [secondNode, setSecondNode] = useState<string | null>(null)
-    const [clickE, setClickE] = useState<clickEvent | null>(null)
+    const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
 
     //fetch the initial data
@@ -52,36 +61,36 @@ function App() {
     useEffect(() => {
         console.log("CLICKED")
 
-        if (clickE != null) {
+        if (clickEvent != null) {
 
             //node
-            if (clickE.clickType == ClickType.NODE) {
+            if (clickEvent.clickType == ClickType.NODE) {
                 //click first node
                 if (addPhase == AddConnectionPhase.FIRST) {
-                    setFirstNode(clickE.id)
+                    setFirstNode(clickEvent.id)
                     setAddPhase(AddConnectionPhase.SECOND)
                 }
 
                 //click second node
                 if (addPhase == AddConnectionPhase.SECOND) {
                     console.log("SECOND")
-                    if (clickE.id !== firstNode) {
-                        setSecondNode(clickE.id)
+                    if (clickEvent.id !== firstNode) {
+                        setSecondNode(clickEvent.id)
                         setAddPhase(AddConnectionPhase.ADD_BOX)
                     }
                 }
             }
 
         }
-    }, [clickE])
+    }, [clickEvent])
 
     //handle clicks for nodes and edges
-    const clickEvent = (event: any) => {
+    const handleClickEvent = (event: any) => {
 
         //has nodes, set node event on click
         if (event.nodes.length > 0) {
             console.log("SETTING NODE")
-            setClickE({
+            setClickEvent({
                 clickType: ClickType.NODE,
                 id: event.nodes[0]
             })
@@ -91,7 +100,7 @@ function App() {
         //has edges, set edge event on click
         if (event.edges.length > 0) {
             console.log("SETTING EDGE")
-            setClickE({
+            setClickEvent({
                 clickType: ClickType.EDGE,
                 id: event.edges[0]
             })
@@ -174,7 +183,7 @@ function App() {
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
-                    clickEvent={clickEvent}
+                    clickEvent={handleClickEvent}
                 />
             }
 
@@ -186,26 +195,29 @@ function App() {
 
             {/*buttons to add relationships and nodes*/}
             <div className={s.plus}>
-                <AddButtons showAddBox={() => createConn()} showAddStack={() => setShowAddStackDialogue(true)}/>
+                <AddButtons
+                    showAddBox={() => createConn()}
+                    showAddStack={() => setShowAddStackDialogue(true)}
+                />
             </div>
 
             {/* when the add connection phase requires the dialogue to be shown, */}
-            {/* then show the dialogue*/}
             {
                 addPhase == AddConnectionPhase.ADD_BOX &&
                 <AddConnectionDialogue
-                    firstNode={firstNode}
-                    hideAddBox={() => {
+                   firstNode={firstNode}
+                   hideAddBox={() => {
                         setAddPhase(AddConnectionPhase.NONE)
                         setFirstNode(null)
                         setSecondNode(null)
                     }}
-                    secondNode={secondNode}
-                    reset={reset}
-                    updateRelationship={updateRelationship}
+                   secondNode={secondNode}
+                   reset={reset}
+                   updateRelationship={updateRelationship}
                 />
             }
 
+            {/*dialogue to add a new connection stack*/}
             {
                 showAddStackDialogue &&
                 <AddStackDialogue
@@ -214,29 +226,7 @@ function App() {
             }
 
             {/*buttons to upvote and downvote relationships*/}
-            <div className={s.upvoteDownvoteContainer}>
-                <HoverImage
-                    message={"upvote edge"}
-                    normalImage={"buttons/upvote.svg"}
-                    hoverImage={"buttons/upvote-hover.svg"}
-                    onclick={async () => {
-                        //upvote the edge
-                        if (clickE && clickE.clickType == ClickType.EDGE)
-                            await upvoteEdge(clickE.id, true).then(r => console.log(r))
-                    }}
-                />
-                <HoverImage
-                    message={"downvote edge"}
-                    normalImage={"buttons/downvote.svg"}
-                    hoverImage={"buttons/downvote-hover.svg"}
-                    onclick={async () => {
-                        //downvote the edge
-                        if (clickE && clickE.clickType == ClickType.EDGE)
-                            await upvoteEdge(clickE.id, false).then(r => console.log(r))
-                    }}
-                />
-
-            </div>
+            {upvoteDownvoteButtons(clickEvent, upvoteEdge)}
         </div>
     )
 }
