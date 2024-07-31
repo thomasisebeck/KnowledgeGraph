@@ -1,15 +1,13 @@
-import s from './App.module.scss'
-
-import React, {useEffect, useReducer, useState} from 'react'
-
+import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
-import {GraphNode, GraphType, NodeRelationship} from "../../shared/interfaces";
-import {HOST} from "../../shared/variables"
+import {GraphNode, NodeRelationship} from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
-
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
+
+import {HOST} from "../../shared/variables"
+import s from './App.module.scss'
 
 enum AddConnectionPhase {
     NONE,
@@ -18,13 +16,13 @@ enum AddConnectionPhase {
     ADD_BOX
 }
 
-enum clickType {
+enum ClickType {
     NODE,
     EDGE
 }
 
 interface clickEvent {
-    clickType: clickType,
+    clickType: ClickType,
     id: string
 }
 
@@ -57,7 +55,7 @@ function App() {
         if (clickE != null) {
 
             //node
-            if (clickE.clickType == clickType.NODE) {
+            if (clickE.clickType == ClickType.NODE) {
                 //click first node
                 if (addPhase == AddConnectionPhase.FIRST) {
                     setFirstNode(clickE.id)
@@ -84,7 +82,7 @@ function App() {
         if (event.nodes.length > 0) {
             console.log("SETTING NODE")
             setClickE({
-                clickType: clickType.NODE,
+                clickType: ClickType.NODE,
                 id: event.nodes[0]
             })
             return;
@@ -94,7 +92,7 @@ function App() {
         if (event.edges.length > 0) {
             console.log("SETTING EDGE")
             setClickE({
-                clickType: clickType.EDGE,
+                clickType: ClickType.EDGE,
                 id: event.edges[0]
             })
 
@@ -117,32 +115,22 @@ function App() {
 
     //used to update the relationship in the state after it's changed
     function updateRelationship(myRel1: NodeRelationship) {
-        console.log("returned relationship")
-        console.log(myRel1)
 
         //update the relationships using the prev state
         setRelationships(prevState => {
             if (prevState) {
+                //get the index of the existing rel
+                const existingIndex = prevState.findIndex(rel => rel.relId === myRel1.relId);
 
-                //store the previous state for update
-                const newRels = prevState;
-
-                let found = false;
-
-                for (const rel of newRels) {
-                    if (rel.relId == myRel1.relId) {
-                        rel.votes = myRel1.votes;
-                        found = true;
-                        console.log("UPDATED VOTES ON" + rel.relId + " TO " + rel.votes)
-                    }
+                if (existingIndex !== -1) {
+                    //found existing rel, update and return
+                    const toUpdate = [...prevState];
+                    toUpdate[existingIndex] = {...toUpdate[existingIndex], votes: myRel1.votes}
+                    return toUpdate;
                 }
 
-                //found relationship, return the updated version as an array to replace the state
-                if (found)
-                    return [...newRels];
-
-                //relationship not found, add it to the list of relationships in the state
-                return [myRel1, ...newRels]
+                //not found, insert the new rel
+                return [myRel1, ...prevState]
             }
         });
 
@@ -233,7 +221,7 @@ function App() {
                     hoverImage={"buttons/upvote-hover.svg"}
                     onclick={async () => {
                         //upvote the edge
-                        if (clickE && clickE.clickType == clickType.EDGE)
+                        if (clickE && clickE.clickType == ClickType.EDGE)
                             await upvoteEdge(clickE.id, true).then(r => console.log(r))
                     }}
                 />
@@ -243,7 +231,7 @@ function App() {
                     hoverImage={"buttons/downvote-hover.svg"}
                     onclick={async () => {
                         //downvote the edge
-                        if (clickE && clickE.clickType == clickType.EDGE)
+                        if (clickE && clickE.clickType == ClickType.EDGE)
                             await upvoteEdge(clickE.id, false).then(r => console.log(r))
                     }}
                 />
