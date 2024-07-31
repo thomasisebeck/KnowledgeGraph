@@ -77,8 +77,8 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
                   const MINIMUM_THICKNESS = 0.4;
 
                   const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
-                  const ARROWS = r.doubleSided ? 'to from' : 'to'
-                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type.replace('_', ' ').toLowerCase()} width={thickness} arrows={ARROWS} key={uniqueKey} />
+                  const ARROWS = r.doubleSided ? '' : 'to'
+                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type.replaceAll('_', ' ').toLowerCase()} width={thickness} arrows={ARROWS} key={uniqueKey} />
               })
           }
 

@@ -8,17 +8,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  color: $off-white;
+  z-index: 2;
 }
 
 .box {
-  background-color: azure;
+  background-color: #39405c;
   border-radius: $border-rad;
   padding: $padding;
-}
-
-.box input {
-  justify-self: flex-start;
-  margin-left: 8px;
 }
 
 .box h3 {
@@ -27,13 +24,10 @@
   margin-bottom: $padding;
 }
 
-.box div:nth-child(1) {
-  margin-bottom: 5px;
-}
-
 .box label {
-  width: 157px;
+  width: 170px;
   display: inline-block;
+  transform: translateY(-3px);
 }
 
 .background {

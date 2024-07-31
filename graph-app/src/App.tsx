@@ -9,7 +9,7 @@ import AddConnectionDialogue from "./components/AddConnectionDialogue";
 
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
-import AddStackDialogue from "./components/AddStackDialogue";
+import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
 
 enum AddConnectionPhase {
     NONE,
