@@ -1,13 +1,14 @@
 export enum nodeType {
     CLASSIFICATION,
-    INFORMATION
+    INFORMATION,
+    ROOT
 }
 
 export interface Node {
     label: string,
     nodeId: string
     snippet?: string
-    nodeType: nodeType
+    nodeType: string
 }
 
 export interface CreateStackReturnBody {

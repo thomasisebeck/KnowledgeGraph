@@ -40,10 +40,12 @@ function App() {
 
     //fetch the initial data
     useEffect(() => {
-        fetch(`${HOST}/topicNodes`).then(async res => {
-            const data = await res.json() as GraphType;
-            setNodes(data.nodes)
-            setRelationships(data.relationships)
+        fetch(`${HOST}/initialData`).then(async res => {
+            const data = await res.json();
+            console.log("FRONTEND INIT DATA")
+            console.log(data)
+            setNodes(data.nodes as GraphNode[])
+            setRelationships(data.relationships as NodeRelationship[])
             setAddPhase(AddConnectionPhase.NONE)
         })
     }, []);
@@ -146,7 +148,6 @@ function App() {
 
         reset();
     }
-
 
     //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {

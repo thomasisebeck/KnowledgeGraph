@@ -1,16 +1,16 @@
 import 'dotenv/config'
-import {Driver} from "neo4j-driver";
+import {Driver, Record, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
 import {executeGenericQuery, formatLabel, getField} from "../utils";
 import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "../../../shared/interfaces";
 
-const INFO = 'InformationNode'
-const CLASS = 'ClassificationNode'
-const ROOT = 'Root'
+const INFO = 'INFO'
+const CLASS = 'ClASS'
+const ROOT = 'ROOT'
 const BOTH = `${INFO} | ${CLASS}`
 
 // get nodes fully connected:
-// MATCH (n) MATCH (n)-[r]-() RETURN n,r
+// MATCH (n)-[r]-() RETURN n,r
 
 //----------------------------- CREATION / MODIFICATION FUNCTIONS -----------------------------//
 
@@ -25,7 +25,7 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
             nodeId: getField(searchResult.records, "nodeId"),
             label: label,
             snippet: snippet,
-            nodeType: nodeType.INFORMATION
+            nodeType: INFO
         }
     }
 
@@ -37,11 +37,11 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
         nodeId: getField(records, "nodeId"),
         label: label,
         snippet: snippet,
-        nodeType: nodeType.INFORMATION
+        nodeType: INFO
     }
 }
 
-const findOrCreateClassificationNode = async (driver: Driver, label: string, createRoot?:boolean): Promise<Node> => {
+const findOrCreateClassificationNode = async (driver: Driver, label: string, createRoot?: boolean): Promise<Node> => {
     let query;
     if (createRoot)
         query = `MERGE (n:${ROOT} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
@@ -52,7 +52,7 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string, cre
     })
 
     return {
-        nodeType: nodeType.CLASSIFICATION,
+        nodeType: CLASS,
         nodeId: getField(records, "nodeId"),
         label: getField(records, "label")
     }
@@ -92,17 +92,17 @@ const createTopicNodes = async (driver: Driver) => {
 }
 
 //todo: continue
-const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string)=> {
-   const query =
-       `MATCH (from {nodeId: '${nodeIdFrom}'}), (to:${ROOT}), p = shortestPath((from)-[r]-(to))
+const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string) => {
+    const query =
+        `MATCH (from {nodeId: '${nodeIdFrom}'}), (to:${ROOT}), p = shortestPath((from)-[r]-(to))
        WHERE NONE(r IN relationships(p) WHERE r.relId = '${relId}')
        return labels(from) AS from_labels, p`
 
-   const result = await executeGenericQuery(driver, query, {})
+    const result = await executeGenericQuery(driver, query, {})
 
     //no paths to a root node found
     if (result.records.length == 0)
-        return  true;
+        return true;
 
     const labels = getField(result.records, 'from_labels')
     const path = getField(result.records, 'p')
@@ -114,15 +114,119 @@ const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: st
     console.log("----------")
     console.log(path)
 
-   return result;
+    return result;
 
+}
+
+const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
+
+    try {
+        if (isRel) {
+           //check that from and to are different
+            console.log("TRYING TO ADD REL")
+           const rel = toAdd as NodeRelationship;
+            console.log(rel)
+           const normalPos = array.findIndex((e: { relId: any; }) => e.relId == rel.relId);
+            console.log(normalPos)
+           if (normalPos == -1)
+               array.push(toAdd);
+        }
+        else {
+            const node = toAdd as Node;
+            const pos = array.findIndex((n: {nodeId: any; }) => n.nodeId == toAdd.nodeId);
+            console.log(pos)
+            if (pos == -1) {
+                array.push(toAdd)
+            }
+        }
+    } catch (e) {
+        console.error(e)
+    }
+
+    return array;
+}
+
+const getAllData = async (driver: Driver) => {
+    const allNodesQuery =
+        `MATCH (from)-[r]-(to)
+        WHERE id(from) < id(to)
+        WITH from, r, to
+        OPTIONAL MATCH (to)-[r2]-(from) 
+        RETURN from, to, r, r2 IS NOT NULL AS is_double_sided`;
+
+    const rootNodesQuery =
+        `MATCH (n:Root) RETURN n`;
+
+    const [result, rootNodes] = await Promise.all([
+        executeGenericQuery(driver, allNodesQuery, {}),
+        executeGenericQuery(driver, rootNodesQuery, {}),
+    ])
+
+    let rels: NodeRelationship[] = [];
+    let nodes: Node[] = [];
+
+    let fromNode: Node | null = null;
+    let toNode: Node | null = null;
+
+    rootNodes.records.forEach(record => {
+        const node = getField([record], 'n');
+        const toPush: Node = {
+            label: node.properties.label,
+            nodeType: node.labels[0],
+            nodeId: node.properties.nodeId,
+        }
+        nodes = tryPushToArray(toPush, nodes);
+    })
+
+    result.records.forEach(record => {
+        record.keys.forEach((key) => {
+
+            //first get from node
+            //then get to node
+            //then get r
+            if (key == 'from' || key == 'to') {
+                const node = key == 'from' ? record.get('from') as Node : record.get('to');
+                const toPush: Node = {
+                    label: node.properties.label,
+                    nodeType: node.labels[0],
+                    nodeId: node.properties.nodeId,
+                }
+                nodes = tryPushToArray(toPush, nodes);
+
+                if (key == 'from') //push to from
+                    fromNode = toPush;
+                if (key == 'to')
+                    toNode = toPush;
+            } else if (key == 'r') {
+                const rel = record.get('r');
+                if (fromNode != null && toNode != null) {
+
+                    const toPush = {
+                        to: toNode.nodeId,
+                        from: fromNode.nodeId,
+                        votes: rel.properties.votes.toNumber(),
+                        relId: rel.properties.relId,
+                        type: rel.type,
+                        doubleSided: record.get('is_double_sided')
+                    }
+
+                    rels = tryPushToArray(toPush, rels, true);
+                }
+            }
+        })
+    })
+
+    return {
+        nodes: nodes,
+        relationships: rels
+    }
 }
 
 //downvoteRelationship
 //destroy connection when it gets to 0
 //unless it creates a stray node, then just return - upvotes
 
-const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean) : Promise<NodeRelationship> => {
+const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<NodeRelationship> => {
 
     const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
@@ -134,7 +238,7 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const to = getField(result.records, 'to');
 
     console.log("R")
-    console.dir(r, { depth: null})
+    console.dir(r, {depth: null})
 
     if (r.properties.votes.toNumber() < 0) {
         //went into the negative, remove the connection if it doesn't break anything
@@ -163,8 +267,8 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         const willGetStrandedFrom = await willNodeGetStranded(driver, from, r.properties.relId);
         const willGetStrandedTo = await willNodeGetStranded(driver, from, r.properties.relId);
         console.log("will node get stranded")
-        console.dir(willGetStrandedFrom, { depth: null})
-        console.dir(willGetStrandedTo, { depth: null})
+        console.dir(willGetStrandedFrom, {depth: null})
+        console.dir(willGetStrandedTo, {depth: null})
     }
 
     //todo: return an object with isRemoved property
@@ -260,14 +364,14 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
             nodes.push({
                 label: n.label,
                 nodeId: n.nodeId,
-                nodeType: nodeType.INFORMATION,
+                nodeType: INFO,
                 snippet: n.snippet
             })
         else
             nodes.push({
                 label: n.label,
                 nodeId: n.nodeId,
-                nodeType: nodeType.CLASSIFICATION
+                nodeType: CLASS
             })
     }
 
@@ -335,5 +439,6 @@ export default {
     relationshipExistsBetweenNodes,
     createStack,
     createTopicNodes,
-    upVoteRelationship
+    upVoteRelationship,
+    getAllData
 }

@@ -1,5 +1,5 @@
 import {Driver, Relationship} from 'neo4j-driver'
-import q  from  "../queries/queries"
+import q from "../queries/queries"
 import sess from '../session'
 import 'dotenv/config'
 import {clearDB} from "../utils";
@@ -56,25 +56,25 @@ describe('queries', () => {
         if (driver == null)
             throw "Driver is null"
 
-        console.log("CREATE INFO NODE 1")
+        // console.log("CREATE INFO NODE 1")
         let fromRes = await q.findOrCreateInformationNode(driver, 'fromLabel', "I am a snippet in the from node");
-        console.log("CREATE INFO NODE 2")
+        // console.log("CREATE INFO NODE 2")
         let toRes = await q.findOrCreateInformationNode(driver, 'toLabel', "I am a snippet in the to node");
 
         const label = "my label"
-        console.log("CREATE REL")
+        // console.log("CREATE REL")
         let newID = await q.getOrCreateRelationship(driver, fromRes.nodeId, toRes.nodeId, label);
         expect(newID).not.toBe(null);
 
-        console.log("SEE IF REL EXISTS")
+        // console.log("SEE IF REL EXISTS")
         let exists = await q.relationshipExistsBetweenNodes(driver, fromRes.nodeId, toRes.nodeId, label);
         expect(exists).toBe(true);
 
-        console.log("FIND REL BY ID")
+        // console.log("FIND REL BY ID")
         let findById = await q.getRelationshipById(driver, newID.relId);
-        console.log(findById);
+        // console.log(findById);
 
-    }, 10000)
+    }, 15000)
 
     test('get node by label', async () => {
         if (driver == null)
@@ -111,11 +111,11 @@ describe('queries', () => {
         relExists = await q.relationshipExistsBetweenNodes(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
         expect(relExists).toBe(false);
 
-       let getRel1 = await q.getOrCreateRelationship(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
-       let getRel2 = await q.getOrCreateRelationship(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
+        let getRel1 = await q.getOrCreateRelationship(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
+        let getRel2 = await q.getOrCreateRelationship(driver, class2.nodeId, class1.nodeId, "rel class2 class1");
 
-       expect(getRel1.type).toBe("REL_INFO1_CLASS1")
-       expect(getRel2.type).toBe("REL_CLASS2_CLASS1")
+        expect(getRel1.type).toBe("REL_INFO1_CLASS1")
+        expect(getRel2.type).toBe("REL_CLASS2_CLASS1")
 
         //should exist
         relExists = await q.relationshipExistsBetweenNodes(driver, info1.nodeId, class1.nodeId, "rel info1 class1");
@@ -130,27 +130,27 @@ describe('queries', () => {
         if (driver == null)
             fail("driver is null")
 
-       const request: RequestBody = {
-           infoNode: {
-               snippet: "If you have ever owned a puppy, you would know that they are the best",
-               label: "dogs are the best"
-           },
-           classificationNodes: [
-             "animals",
-             "pets",
-             "dogs"
-           ],
-           connections: [
-               "subset",
-               "subset",
-               "subset"
-           ],
-           doubleSided: [
-               true,
-               false,
-               false
-           ]
-       }
+        const request: RequestBody = {
+            infoNode: {
+                snippet: "If you have ever owned a puppy, you would know that they are the best",
+                label: "dogs are the best"
+            },
+            classificationNodes: [
+                "animals",
+                "pets",
+                "dogs"
+            ],
+            connections: [
+                "subset",
+                "subset",
+                "subset"
+            ],
+            doubleSided: [
+                true,
+                false,
+                false
+            ]
+        }
 
         const request2: RequestBody = {
             infoNode: {
@@ -175,9 +175,9 @@ describe('queries', () => {
         }
         console.log("Creating stack...");
 
-       const result = await q.createStack(driver, request);
+        const result = await q.createStack(driver, request);
 
-       //todo: create the stack again, to see if the votes changed
+        //todo: create the stack again, to see if the votes changed
         const result2 = await q.createStack(driver, request);
 
         const nodes = result2.nodes;

@@ -73,15 +73,24 @@ app.post('/createRel', async (req, res) => {
     }
 })
 
-app.get('/topicNodes', (req, res) => {
+app.get('/initialData', async (req, res) => {
+    console.log("CALLED INIT DATA")
     try {
-        q.createTopicNodes(driver).then(result => {
+        await q.createTopicNodes(driver);
+
+        //return all data
+        await q.getAllData(driver).then(allData => {
+            console.log("DATA")
+            console.dir(allData, {depth: null})
+
             res.status(200).json({
-                nodes: result,
-                relationships: []
+                nodes: allData.nodes,
+                relationships: allData.relationships
             });
-        });
+        })
+
     } catch (e) {
+        console.error(e)
         res.status(400).json(e as string);
     }
 })
@@ -114,5 +123,5 @@ app.post('/downvoteRel', async (req, res) => {
 })
 
 app.listen(process.env.PORT, () => {
-    console.log(`Running on PORT ${process.env.PORT }`);
+    console.log(`Running on PORT ${process.env.PORT}`);
 })
