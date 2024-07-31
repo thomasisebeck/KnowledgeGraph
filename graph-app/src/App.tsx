@@ -165,6 +165,14 @@ function App() {
             const result = await res.json();
             const relationship = result.rel as NodeRelationship;
 
+            //check if removed
+            if (!mustUpvote && relationship.votes < 0) {
+                console.log("TRYING TO DELETE")
+                setRelationships(prevState => prevState?.filter(rel => rel.relId !== relationship.relId))
+                //early return in must remove
+                return;
+            }
+
             //update the relationship on the existing graph
             updateRelationship(relationship);
         })

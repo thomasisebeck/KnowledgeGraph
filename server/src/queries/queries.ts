@@ -101,8 +101,11 @@ const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: st
     const result = await executeGenericQuery(driver, query, {})
 
     //no paths to a root node found
-    if (result.records.length == 0)
+    if (result.records.length == 0) {
+
+        console.warn("NO PATHS TO ROOT WILL GET STRANDED")
         return true;
+    }
 
     const labels = getField(result.records, 'from_labels')
     const path = getField(result.records, 'p')
@@ -122,18 +125,17 @@ const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
 
     try {
         if (isRel) {
-           //check that from and to are different
+            //check that from and to are different
             console.log("TRYING TO ADD REL")
-           const rel = toAdd as NodeRelationship;
+            const rel = toAdd as NodeRelationship;
             console.log(rel)
-           const normalPos = array.findIndex((e: { relId: any; }) => e.relId == rel.relId);
+            const normalPos = array.findIndex((e: { relId: any; }) => e.relId == rel.relId);
             console.log(normalPos)
-           if (normalPos == -1)
-               array.push(toAdd);
-        }
-        else {
+            if (normalPos == -1)
+                array.push(toAdd);
+        } else {
             const node = toAdd as Node;
-            const pos = array.findIndex((n: {nodeId: any; }) => n.nodeId == toAdd.nodeId);
+            const pos = array.findIndex((n: { nodeId: any; }) => n.nodeId == toAdd.nodeId);
             console.log(pos)
             if (pos == -1) {
                 array.push(toAdd)
@@ -237,6 +239,8 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const from = getField(result.records, 'from');
     const to = getField(result.records, 'to');
 
+    let isRemoved = false;
+
     console.log("R")
     console.dir(r, {depth: null})
 
@@ -258,17 +262,25 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         if (from.labels[0] == 'Root')
             fromWillBeStranded = false;
         if (to.labels[0] == 'Root')
-            fromWillBeStranded = false;
+            toWillBeStranded = false;
 
         if (fromWillBeStranded) { //possibility that from gets stranded, not root
-
+            const willGetStrandedFrom = await willNodeGetStranded(driver, from, r.properties.relId);
+            console.dir(willGetStrandedFrom, {depth: null})
         }
 
-        const willGetStrandedFrom = await willNodeGetStranded(driver, from, r.properties.relId);
-        const willGetStrandedTo = await willNodeGetStranded(driver, from, r.properties.relId);
-        console.log("will node get stranded")
-        console.dir(willGetStrandedFrom, {depth: null})
-        console.dir(willGetStrandedTo, {depth: null})
+        if (toWillBeStranded) {
+            const willGetStrandedTo = await willNodeGetStranded(driver, from, r.properties.relId);
+            console.dir(willGetStrandedTo, {depth: null})
+        }
+
+        if (!fromWillBeStranded && !toWillBeStranded) {
+            //remove the relationship
+            const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
+            const result = await executeGenericQuery(driver, query, {})
+            console.warn("DELETING....")
+        }
+
     }
 
     //todo: return an object with isRemoved property
@@ -278,7 +290,7 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         votes: r.properties.votes.toNumber(),
         from: from.properties.nodeId,
         to: to.properties.nodeId,
-        doubleSided: result.records.length == 2
+        doubleSided: result.records.length == 2,
     };
 }
 

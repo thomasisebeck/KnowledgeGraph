@@ -6,7 +6,7 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         console.log("Creating Stack");
     }
     return (
-        <Dialogue hideDialogue={hideAddStackDialogue} title={"Connect Nodes"}>
+        <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
             <div>
                 <label>Base Category</label>
                 <select name={"base-category"}>
@@ -21,6 +21,15 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                     <option value={"Hist"}>History</option>
                     <option value={"Geo"}>Geography</option>
                 </select>
+            </div>
+            {/*todo: add extendable categories*/}
+            <div>
+                <label>Higher subcategory</label>
+                <input type={"text"}/>
+            </div>
+            <div>
+                <label>Lower subcategory</label>
+                <input type={"text"}/>
             </div>
             <button>Create Stack</button>
         </Dialogue>
