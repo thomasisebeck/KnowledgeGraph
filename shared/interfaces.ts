@@ -11,6 +11,16 @@ export interface Node {
     nodeType: string
 }
 
+export interface Neo4jNode {
+    labels: string[];
+    properties: {
+        snippet?: string;
+        label: string;
+        nodeId: string;
+    };
+    elementId: string;
+}
+
 export interface CreateStackReturnBody {
     nodes: Node[],
     relationships: NodeRelationship[]

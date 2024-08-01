@@ -60,6 +60,7 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
             console.log(info);
             console.log(" ----------------------- ")
         }
+
         printDetails();
 
 
