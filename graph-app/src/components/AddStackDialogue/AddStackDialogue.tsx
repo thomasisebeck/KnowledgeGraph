@@ -34,14 +34,16 @@ function toggleButton(toggleDoubleSided: (index: number) => void, index: number,
 function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => void }) {
 
     const [categories, setCategories] = React.useState<Category[]>([])
-    const [currentCategory, setCurrentCategory] = useState("")
     const [baseCategory, setBaseCategory] = useState<Category>({
-       direction: Direction.UP,
+        direction: Direction.UP,
         name: "Comp"
     })
+    const [errorMessage, setErrorMessage] = useState("")
+    const [info, setInfo] = useState("")
 
     const createStack = () => {
         console.log("Creating Stack (not implemented)");
+
     }
 
     useEffect(() => {
@@ -54,9 +56,11 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     }, [categories]);
 
     function updateCategoryName(newCategoryName: string, index: number) {
+        console.log("UPDATING INDEX " + index + " TO " + newCategoryName)
         const old = categories;
         old[index].name = newCategoryName;
         setCategories(old);
+        console.log("UPDATED")
     }
 
     function addBlankCategory() {
@@ -97,8 +101,44 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         setCategories([...categories]);
     }
 
+    function tryCreateStack() {
+        //check that eveything has been filled out
+        //loop through the categories and see that they have the correct info
+
+        for (const c of categories) {
+            if (c.name == "new category" || c.name == "") {
+                setErrorMessage("please fill out all the categories")
+                return ;
+            }
+        }
+
+        if (categories.length < 2) {
+            setErrorMessage("please create at least two subcategories")
+            return ;
+        }
+
+        if (info == ""){
+            setErrorMessage("please fill out information in the space provided")
+            return ;
+        }
+
+        //all info filled out....
+        //send a request
+        createStack();
+
+    }
+
     return (
         <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
+            {
+               errorMessage != "" &&
+                <div className={s.error}>
+                    <div className={s.errorInner}>
+                        {errorMessage}
+                    </div>
+                </div>
+            }
+
             <div className={s.category}>
 
                 {/*select*/}
@@ -134,9 +174,8 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                             <div className={s.nodeDiv}></div>
                             <div className={s.content}>
                                 <input
-                                    type={"text"} value={c.name}
+                                    type={"text"}
                                     onClick={(e) => e.currentTarget.value = ""}
-                                    onChange={(e) => setCurrentCategory(e.target.value)}
                                     onBlur={(e) => updateCategoryName(e.target.value, index)}
                                 />
                             </div>
@@ -148,17 +187,20 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                 ))
             }
 
-            <button onClick={addBlankCategory}>Add Category</button>
+            { categories.length <= 3 &&
+                <button onClick={addBlankCategory}>Add Category</button>
+            }
 
 
             <hr/>
             <div className={s.textDiv}>
-                <label>Information</label>
-                <textarea>
-
-                </textarea>
+            <label>Information</label>
+                <textarea onBlur={(e) => {
+                    console.log("SETTING INFO")
+                    setInfo(e.target.value)}
+                }></textarea>
             </div>
-            <button>Create Stack</button>
+            <button onClick={tryCreateStack}>Create Stack</button>
         </Dialogue>
     )
 }

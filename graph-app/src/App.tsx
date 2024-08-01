@@ -8,6 +8,7 @@ import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
 import {AddConnectionPhase, clickEvent, ClickType} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
+import {preloadImages} from "./utills";
 
 function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
     return <div className={s.upvoteDownvoteContainer}>
@@ -45,8 +46,10 @@ function App() {
     const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
 
-    //fetch the initial data
+
+    //fetch the initial data and preload images
     useEffect(() => {
+        //fetch data
         fetch(`${HOST}/initialData`).then(async res => {
             const data = await res.json();
             console.log("FRONTEND INIT DATA")
@@ -55,6 +58,31 @@ function App() {
             setRelationships(data.relationships as NodeRelationship[])
             setAddPhase(AddConnectionPhase.NONE)
         })
+
+        const images = [
+            "add-connection.svg",
+            "add-connection-hover.svg",
+            "add-node.svg",
+            "add-node-hover.svg",
+            "cancel.svg",
+            "down-arrow.svg",
+            "downvote.svg",
+            "downvote-hover.svg",
+            "exit.svg",
+            "exit-hover.svg",
+            "neutral.svg",
+            "plus.svg",
+            "plus-hover.svg",
+            "up-arrow.svg",
+            "upvote.svg",
+            "upvote-hover.svg",
+        ]
+
+        images.forEach(img => {
+            const image = new Image();
+            image.src = "buttons/" + img;
+        })
+
     }, []);
 
     //register clicks for nodes and edges
@@ -205,15 +233,15 @@ function App() {
             {
                 addPhase == AddConnectionPhase.ADD_BOX &&
                 <AddConnectionDialogue
-                   firstNode={firstNode}
-                   hideAddBox={() => {
+                    firstNode={firstNode}
+                    hideAddBox={() => {
                         setAddPhase(AddConnectionPhase.NONE)
                         setFirstNode(null)
                         setSecondNode(null)
                     }}
-                   secondNode={secondNode}
-                   reset={reset}
-                   updateRelationship={updateRelationship}
+                    secondNode={secondNode}
+                    reset={reset}
+                    updateRelationship={updateRelationship}
                 />
             }
 

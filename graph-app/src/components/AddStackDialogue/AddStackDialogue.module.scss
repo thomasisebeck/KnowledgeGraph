@@ -59,6 +59,49 @@
   margin-bottom: 2px;
 }
 
+.error {
+  color: red;
+  position: fixed;
+  bottom: 20px;
+  text-align: center;
+  width: 100%;
+  left: 0;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  5% {
+    transform: translateX(-20px);
+  }
+  10% {
+    transform: translateX(20px);
+  }
+  15% {
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.errorInner {
+  background-color: white;
+  font-weight: bold;
+  border-radius: $border-rad;
+  padding: $padding;
+  animation: shake 4s ease-in-out;
+  animation-fill-mode: forwards;
+  position: relative;
+}
+
 input[type="checkbox"] {
   width: 20px;
   height: 20px;
