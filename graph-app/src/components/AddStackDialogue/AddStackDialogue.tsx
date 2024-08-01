@@ -42,7 +42,26 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     const [info, setInfo] = useState("")
 
     const createStack = () => {
-        console.log("Creating Stack (not implemented)");
+        function printDetails() {
+            console.log(" ----------------------- ")
+            console.log(" > Creating stack with the following items: < ")
+            console.log("base")
+
+            console.log("dir: " , baseCategory.direction)
+            console.log("name: ", baseCategory.name)
+
+            console.log(" > sub categories < ")
+            for (const c of categories) {
+                console.log("name: " , c.name);
+                console.log("dir: " , c.direction);
+            }
+
+            console.log(" > info < ")
+            console.log(info);
+            console.log(" ----------------------- ")
+        }
+        printDetails();
+
 
     }
 
@@ -64,10 +83,10 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     }
 
     function addBlankCategory() {
-       setCategories([...categories, {
-           direction: Direction.NEUTRAL,
-           name: "new category"
-       }])
+        setCategories([...categories, {
+            direction: Direction.NEUTRAL,
+            name: "new category"
+        }])
     }
 
     function getNewCategory(dir: Direction) {
@@ -81,7 +100,7 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         }
     }
 
-    function toggleDoubleSided(index: number, isBase:boolean = false) {
+    function toggleDoubleSided(index: number, isBase: boolean = false) {
         if (isBase) {
             //handle base category separately
             let copyBase = baseCategory;
@@ -89,10 +108,10 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                 copyBase.direction = getNewCategory(copyBase?.direction);
                 console.log("Setting base category")
                 setBaseCategory({
-                   name: copyBase.name,
+                    name: copyBase.name,
                     direction: copyBase.direction
                 });
-                return ;
+                return;
             }
             console.error("NO base category found")
             return;
@@ -108,18 +127,18 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         for (const c of categories) {
             if (c.name == "new category" || c.name == "") {
                 setErrorMessage("please fill out all the categories")
-                return ;
+                return;
             }
         }
 
         if (categories.length < 2) {
             setErrorMessage("please create at least two subcategories")
-            return ;
+            return;
         }
 
-        if (info == ""){
+        if (info == "") {
             setErrorMessage("please fill out information in the space provided")
-            return ;
+            return;
         }
 
         //all info filled out....
@@ -131,7 +150,7 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     return (
         <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
             {
-               errorMessage != "" &&
+                errorMessage != "" &&
                 <div className={s.error}>
                     <div className={s.errorInner}>
                         {errorMessage}
@@ -187,17 +206,18 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                 ))
             }
 
-            { categories.length <= 3 &&
+            {categories.length <= 3 &&
                 <button onClick={addBlankCategory}>Add Category</button>
             }
 
 
             <hr/>
             <div className={s.textDiv}>
-            <label>Information</label>
+                <label>Information</label>
                 <textarea onBlur={(e) => {
                     console.log("SETTING INFO")
-                    setInfo(e.target.value)}
+                    setInfo(e.target.value)
+                }
                 }></textarea>
             </div>
             <button onClick={tryCreateStack}>Create Stack</button>
