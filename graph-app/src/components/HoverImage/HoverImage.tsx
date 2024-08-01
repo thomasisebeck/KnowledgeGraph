@@ -4,7 +4,7 @@ import React from "react";
 
 import s from './HoverImage.module.scss'
 
-export const HoverImage = ({normalImage, hoverImage, onclick, message} : HoverImageInterface) => {
+export const HoverImage = ({normalImage, hoverImage, onclick, message}: HoverImageInterface) => {
     const [isHovering, setIsHovering] = useState(false);
 
     return (
@@ -15,12 +15,10 @@ export const HoverImage = ({normalImage, hoverImage, onclick, message} : HoverIm
             className={s.div}
         >
             {
-                isHovering ?
-                    <React.Fragment>
-                        <p className={s.text}>{message}</p>
-                        <img src={hoverImage} alt={"hoverImage"}/>
-                    </React.Fragment> :
-                    <img src={normalImage} alt={"normalImage"}/>
+                <React.Fragment>
+                    {isHovering && <p className={s.text}>{message}</p>}
+                    <img src={isHovering? hoverImage : normalImage} alt={message}/>
+                </React.Fragment>
             }
         </div>
     )
