@@ -2,7 +2,7 @@ import 'dotenv/config'
 import {Driver, Record, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
 import {executeGenericQuery, formatLabel, getField} from "../utils";
-import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody} from "../../../shared/interfaces";
+import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody, Neo4jNode} from "../../../shared/interfaces";
 
 const INFO = 'INFO'
 const CLASS = 'ClASS'
@@ -91,34 +91,42 @@ const createTopicNodes = async (driver: Driver) => {
 
 }
 
-//todo: continue
+//todo: continue with this!!!!
 const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string) => {
-    const query =
-        `MATCH (from {nodeId: '${nodeIdFrom}'}), (to:${ROOT}), p = shortestPath((from)-[r]-(to))
-       WHERE NONE(r IN relationships(p) WHERE r.relId = '${relId}')
-       return labels(from) AS from_labels, p`
 
-    const result = await executeGenericQuery(driver, query, {})
+    throw "not completed!!!!!"
 
-    //no paths to a root node found
-    if (result.records.length == 0) {
+    const pathToRootQuery =
+        `MATCH (from {nodeId: '${nodeIdFrom}'})-[r*1..100]-(to:${ROOT})
+       WHERE NONE(r.relId = '${relId}')
+       return labels(from) AS from_labels, labels(to) as to_labels, r as rel`
 
-        console.warn("NO PATHS TO ROOT WILL GET STRANDED")
-        return true;
-    }
 
-    const labels = getField(result.records, 'from_labels')
-    const path = getField(result.records, 'p')
+    const result = await executeGenericQuery(driver, pathToRootQuery, {})
 
-    console.warn("WILL NODE GET STRANDED")
-    console.dir(result.records, {depth: null})
-    console.log("----------")
-    console.log(labels)
-    console.log("----------")
-    console.log(path)
+    console.warn("RESULT")
+    console.dir(result, {depth: null})
 
-    return result;
+    const fromLabels = getField(result.records, 'from_labels')
+    const toLabels = getField(result.records, 'to_labels')
+    const path = getField(result.records, 'rel')
 
+    console.log("FROM LABELS")
+    console.dir(fromLabels, {depth: null})
+    console.log("TO LABELS")
+    console.dir(toLabels, {depth: null})
+    console.log("PATH")
+    console.dir(path, {depth: null})
+
+    // console.warn("WILL NODE GET STRANDED")
+    // console.dir(result.records, {depth: null})
+    // console.log("----------")
+    // console.log(labels)
+    // console.log("----------")
+    // console.log(path)
+    // console.log("----------")
+
+    return false;
 }
 
 const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
@@ -235,9 +243,9 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         relId: relId
     })
 
-    const r = getField(result.records, "r");
-    const from = getField(result.records, 'from');
-    const to = getField(result.records, 'to');
+    const r = getField(result.records, "r") as Relationship;
+    const from = getField(result.records, 'from') as Neo4jNode;
+    const to = getField(result.records, 'to') as Neo4jNode;
 
     let isRemoved = false;
 
@@ -265,12 +273,12 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
             toWillBeStranded = false;
 
         if (fromWillBeStranded) { //possibility that from gets stranded, not root
-            const willGetStrandedFrom = await willNodeGetStranded(driver, from, r.properties.relId);
+            const willGetStrandedFrom = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
             console.dir(willGetStrandedFrom, {depth: null})
         }
 
         if (toWillBeStranded) {
-            const willGetStrandedTo = await willNodeGetStranded(driver, from, r.properties.relId);
+            const willGetStrandedTo = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
             console.dir(willGetStrandedTo, {depth: null})
         }
 
