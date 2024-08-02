@@ -19,6 +19,8 @@ const BOTH = `${INFO} | ${CLASS}`
 
 // get nodes fully connected:
 // MATCH (n)-[r]-() RETURN n,r
+// delete:
+// MATCH (n) DETACH DELETE n
 
 //----------------------------- CREATION / MODIFICATION FUNCTIONS -----------------------------//
 
@@ -95,47 +97,13 @@ const createTopicNodes = async (driver: Driver) => {
         findOrCreateClassificationNode(driver, "Arts", true),
         findOrCreateClassificationNode(driver, "History", true),
         findOrCreateClassificationNode(driver, "Geography", true),
+
+        //todo: remove node
+        findOrCreateClassificationNode(driver, "TEST NODE")
     ]);
 
 }
 
-//todo: continue with this!!!!
-const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string) => {
-
-    throw "not completed!!!!!"
-
-    const pathToRootQuery =
-        `MATCH (from {nodeId: '${nodeIdFrom}'})-[r*1..100]-(to:${ROOT})
-       WHERE NONE(r.relId = '${relId}')
-       return labels(from) AS from_labels, labels(to) as to_labels, r as rel`
-
-
-    const result = await executeGenericQuery(driver, pathToRootQuery, {})
-
-    console.warn("RESULT")
-    console.dir(result, {depth: null})
-
-    const fromLabels = getField(result.records, 'from_labels')
-    const toLabels = getField(result.records, 'to_labels')
-    const path = getField(result.records, 'rel')
-
-    console.log("FROM LABELS")
-    console.dir(fromLabels, {depth: null})
-    console.log("TO LABELS")
-    console.dir(toLabels, {depth: null})
-    console.log("PATH")
-    console.dir(path, {depth: null})
-
-    // console.warn("WILL NODE GET STRANDED")
-    // console.dir(result.records, {depth: null})
-    // console.log("----------")
-    // console.log(labels)
-    // console.log("----------")
-    // console.log(path)
-    // console.log("----------")
-
-    return false;
-}
 
 const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
 
@@ -242,11 +210,36 @@ const getAllData = async (driver: Driver) => {
     }
 }
 
+//todo: continue with this!!!!
+const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string) => {
+
+    const pathToRootQuery =
+        `MATCH p=(myNode {nodeId: '${nodeIdFrom}'})-[*..100]-(root:${ROOT})
+        WHERE none(rel in relationships(p) WHERE rel.relId = '${relId}')
+        RETURN p
+        `
+       //MATCH p=((myNode {nodeId: '${nodeIdFrom}'})-[r*1..100 WHERE r.relId != '${relId}']-(root:ROOT)) RETURN p
+    console.warn("to remove rel: ")
+    console.log(relId)
+
+    console.warn("TRYING...")
+    const result = await executeGenericQuery(driver, pathToRootQuery, {})
+
+    console.log("---------------------------")
+    const hasPath = getField(result.records, 'p')
+    console.log("PATH")
+    console.dir(hasPath, {depth: null})
+    console.log("---------------------------")
+
+    //no path, will get stranded
+    return (hasPath === undefined);
+}
+
 //downvoteRelationship
 //destroy connection when it gets to 0
 //unless it creates a stray node, then just return - upvotes
 
-const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<NodeRelationship | null> => {
+const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<NodeRelationship> => {
 
     const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
@@ -257,60 +250,74 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const from = getField(result.records, 'from') as Neo4jNode;
     const to = getField(result.records, 'to') as Neo4jNode;
 
-    console.log("R")
-    console.dir(r, {depth: null})
+    // console.log("R")
+    // console.dir(r, {depth: null})
 
 
-    return null;
+    if (r.properties.votes.toNumber() < 0) {
+        //went into the negative, remove the connection if it doesn't break anything
+        //todo: implement
+        //send request to see how many connections are present
+        // console.log("REMOVING REL")
+        // console.log("FROM")
+        // console.log(from)
+        // console.log("TO")
+        // console.log(to)
 
-    // if (r.properties.votes.toNumber() < 0) {
-    //     //went into the negative, remove the connection if it doesn't break anything
-    //     //todo: implement
-    //     //send request to see how many connections are present
-    //     console.log("REMOVING REL")
-    //     console.log("FROM")
-    //     console.log(from)
-    //     console.log("TO")
-    //     console.log(to)
-    //
-    //     //assume nodes will be stranded
-    //     let fromWillBeStranded = true;
-    //     let toWillBeStranded = true;
-    //
-    //     //wont be stranded if root
-    //     if (from.labels[0] == ROOT)
-    //         fromWillBeStranded = false;
-    //     if (to.labels[0] == ROOT)
-    //         toWillBeStranded = false;
-    //
-    //     if (fromWillBeStranded) { //possibility that from gets stranded, not root
-    //         const willGetStrandedFrom = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
-    //         console.dir(willGetStrandedFrom, {depth: null})
-    //     }
-    //
-    //     if (toWillBeStranded) {
-    //         const willGetStrandedTo = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
-    //         console.dir(willGetStrandedTo, {depth: null})
-    //     }
-    //
-    //     if (!fromWillBeStranded && !toWillBeStranded) {
-    //         //remove the relationship
-    //         const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
-    //         const result = await executeGenericQuery(driver, query, {})
-    //         console.warn("DELETING....")
-    //     }
-    //
-    // }
-    //
-    // //todo: return an object with isRemoved property
-    // return {
-    //     relId: r.properties.relId,
-    //     type: r.type,
-    //     votes: r.properties.votes.toNumber(),
-    //     from: from.properties.nodeId,
-    //     to: to.properties.nodeId,
-    //     direction:
-    // };
+        //assume nodes will be stranded
+        let fromWillBeStranded = true;
+        let toWillBeStranded = true;
+
+        //wont be stranded if root
+        if (from.labels[0] == ROOT) {
+            console.log("FROM IS A ROOT NODE")
+            fromWillBeStranded = false;
+        }
+        if (to.labels[0] == ROOT) {
+            console.log("TO IS A ROOT NODE")
+            toWillBeStranded = false;
+        }
+
+        if (fromWillBeStranded) { //possibility that from gets stranded, not root
+            console.log("FROM WILL BE STRANDED")
+            const willGetStrandedFrom = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
+            console.log(willGetStrandedFrom)
+        }
+
+        if (toWillBeStranded) {
+            console.log("TO WILL BE STRANDED")
+            const willGetStrandedTo = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
+            console.dir(willGetStrandedTo)
+        }
+
+        if (!fromWillBeStranded && !toWillBeStranded) {
+            //remove the relationship
+            const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
+            const result = await executeGenericQuery(driver, query, {})
+            console.warn("Setting votes to 0 to delete")
+            return {
+                relId: r.properties.relId,
+                votes: 0,
+                to: to.properties.nodeId,
+                from: from.properties.nodeId,
+                direction: Direction.AWAY,
+                type: r.properties.type,
+            }
+        }
+
+    }
+
+    //prevent deletion if there isn't a path
+    const newVotes = r.properties.votes.toNumber() > 0 ? r.properties.votes.toNumber() : 1;
+
+    return {
+        relId: r.properties.relId,
+        votes: newVotes,
+        to: to.properties.nodeId,
+        from: from.properties.nodeId,
+        direction: Direction.AWAY,
+        type: r.type,
+    };
 }
 
 const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connection: RequestBodyConnection): Promise<NodeRelationship> => {
@@ -368,7 +375,7 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
     }))
 
     const myRels = await Promise.all([...queryFunctionCalls])
-    const r =  getField(myRels[0].records, "r");
+    const r = getField(myRels[0].records, "r");
 
     return {
         to: nodeIdTo,

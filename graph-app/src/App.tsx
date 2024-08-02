@@ -5,7 +5,7 @@ import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddConnectionPhase, clickEvent, ClickType} from "./interfaces";
+import {AddConnectionPhase, clickEvent, ClickType  } from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 import {preloadImages} from "./utills";
@@ -151,23 +151,28 @@ function App() {
     }
 
     //used to update the relationship in the state after it's changed
-    function updateRelationship(myRel1: NodeRelationship) {
+    function updateRelationship(result: NodeRelationship) {
+
+        if (result == null) {
+            console.error("REL IS NULL!!!!")
+            return ;
+        }
 
         //update the relationships using the prev state
         setRelationships(prevState => {
             if (prevState) {
                 //get the index of the existing rel
-                const existingIndex = prevState.findIndex(rel => rel.relId === myRel1.relId);
+                const existingIndex = prevState.findIndex(rel => rel.relId === result.relId);
 
                 if (existingIndex !== -1) {
                     //found existing rel, update and return
                     const toUpdate = [...prevState];
-                    toUpdate[existingIndex] = {...toUpdate[existingIndex], votes: myRel1.votes}
+                    toUpdate[existingIndex] = {...toUpdate[existingIndex], votes: result.votes}
                     return toUpdate;
                 }
 
                 //not found, insert the new rel
-                return [myRel1, ...prevState]
+                return [result, ...prevState]
             }
         });
 
@@ -188,18 +193,16 @@ function App() {
             })
         }).then(async res => {
             const result = await res.json();
-            const relationship = result.rel as NodeRelationship;
 
-            //check if removed
-            if (!mustUpvote && relationship.votes < 0) {
-                console.log("TRYING TO DELETE")
-                setRelationships(prevState => prevState?.filter(rel => rel.relId !== relationship.relId))
-                //early return in must remove
-                return;
-            }
+            const relationship = result as NodeRelationship;
+
+            console.log("RESULT: ")
+            console.log(relationship)
+            // setRelationships(prevState => prevState?.filter(rel => rel.votes > 0))
+
 
             //update the relationship on the existing graph
-            updateRelationship(relationship);
+            // updateRelationship(relationship);
         })
 
     }

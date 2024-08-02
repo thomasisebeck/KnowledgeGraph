@@ -52,7 +52,7 @@ export interface NodeRelationship {
     votes: number
     to: string,
     from: string,
-    direction: Direction
+    direction: Direction,
 }
 
 export interface GraphType {
