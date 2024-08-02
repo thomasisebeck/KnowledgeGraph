@@ -2,26 +2,19 @@ import React, {useEffect, useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
 
 import s from "./AddStackDialogue.module.scss"
+import {HOST} from "../../../../shared/variables";
+import {RequestBody, Direction, RequestBodyConnection} from "../../../../shared/interfaces"
 
-enum Direction {
-    UP,
-    DOWN,
-    NEUTRAL
-}
 
-interface Category {
-    direction: Direction
-    name: string
-}
 
-function toggleButton(toggleDoubleSided: (index: number) => void, index: number, c: Category) {
+function toggleButton(toggleDoubleSided: (index: number) => void, index: number, c: RequestBodyConnection ) {
     return <div onClick={() => toggleDoubleSided(index)} className={s.innerDiv}>
         {
-            c.direction === Direction.UP &&
+            c.direction === Direction.TOWARDS &&
             <img src={"buttons/up-arrow.svg"}/>
         }
         {
-            c.direction === Direction.DOWN &&
+            c.direction === Direction.AWAY &&
             <img src={"buttons/down-arrow.svg"}/>
         }
         {
@@ -33,9 +26,9 @@ function toggleButton(toggleDoubleSided: (index: number) => void, index: number,
 
 function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => void }) {
 
-    const [categories, setCategories] = React.useState<Category[]>([])
-    const [baseCategory, setBaseCategory] = useState<Category>({
-        direction: Direction.UP,
+    const [categories, setCategories] = React.useState<RequestBodyConnection[]>([])
+    const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
+        direction: Direction.AWAY,
         name: "Comp"
     })
     const [errorMessage, setErrorMessage] = useState("")
@@ -62,6 +55,27 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         }
 
         printDetails();
+
+        //todo: fix infoNode label
+        const body:RequestBody = {
+           classificationNodes: categories.map(c => c.name),
+           connections: categories.map(c => {
+               return {
+                   name: c.name,
+                   direction: c.direction
+               }
+           }),
+            infoNode: {
+               label: info,
+                snippet: info,
+            }
+        }
+
+        fetch(`${HOST}/createStack`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
 
 
     }
@@ -93,9 +107,9 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     function getNewCategory(dir: Direction) {
         switch (dir) {
             case Direction.NEUTRAL:
-                return Direction.DOWN;
-            case Direction.DOWN:
-                return Direction.UP;
+                return Direction.TOWARDS;
+            case Direction.TOWARDS:
+                return Direction.AWAY;
             default:
                 return Direction.NEUTRAL;
         }

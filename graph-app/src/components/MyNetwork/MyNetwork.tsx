@@ -1,6 +1,6 @@
 import { Edge, Network, Node } from '@lifeomic/react-vis-network'
 import React, {useEffect, useRef} from 'react'
-import {GraphType} from "../../../../shared/interfaces";
+import {GraphType, Direction} from "../../../../shared/interfaces";
 
 const options= {
     width: '100%',
@@ -77,7 +77,9 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
                   const MINIMUM_THICKNESS = 0.4;
 
                   const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
-                  const ARROWS = r.doubleSided ? '' : 'to'
+                  console.log("DIR")
+                  console.log(r.direction);
+                  const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
                   return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type.replaceAll('_', ' ').toLowerCase()} width={thickness} arrows={ARROWS} key={uniqueKey} />
               })
           }

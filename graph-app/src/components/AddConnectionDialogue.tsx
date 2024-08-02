@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRelRequestBody, NodeRelationship } from '../../../shared/interfaces';
+import { createRelRequestBody, NodeRelationship, Direction } from '../../../shared/interfaces';
 import Dialogue from "./Dialogue/Dialogue";
 import {HOST} from "../../../shared/variables"
 
@@ -16,7 +16,7 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
     const checkRef = React.useRef<HTMLInputElement | null>(null);
     const [message, setMessage] = React.useState('');
     //function to send an api request to create a connection
-    const createConnection = async (name: string, doubleSided: boolean) => {
+    const createConnection = async (name: string, direction: Direction) => {
         if (firstNode == null || secondNode == null) {
             console.log("First or second is null")
             reset();
@@ -27,7 +27,10 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
             name: name,
             toId: secondNode,
             fromId: firstNode,
-            doubleSided: doubleSided
+            connection: {
+                name: name,
+                direction: direction
+            }
         }
 
         console.log(body);
@@ -64,12 +67,12 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
 
     }
 
-    const tryCreateConnection = () => {
+    const tryCreateConnection = async () => {
         if (nameRef.current != null && checkRef.current != null) {
             if (nameRef.current.value != "") {
                 const name = nameRef.current.value;
                 const isDoubleSided = checkRef.current.checked;
-                createConnection(name, isDoubleSided);
+                createConnection(name, isDoubleSided ? Direction.NEUTRAL : Direction.AWAY);
                 return;
             }
             setMessage("name is not set")

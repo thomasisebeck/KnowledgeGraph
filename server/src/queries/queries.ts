@@ -1,8 +1,16 @@
 import 'dotenv/config'
-import {Driver, Record, Relationship} from "neo4j-driver";
+import {Driver, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
 import {executeGenericQuery, formatLabel, getField} from "../utils";
-import {nodeType, RequestBody, Node, NodeRelationship, CreateStackReturnBody, Neo4jNode} from "../../../shared/interfaces";
+import {
+    CreateStackReturnBody,
+    Direction,
+    Neo4jNode,
+    Node,
+    NodeRelationship,
+    RequestBody,
+    RequestBodyConnection
+} from "../../../shared/interfaces";
 
 const INFO = 'INFO'
 const CLASS = 'ClASS'
@@ -158,14 +166,14 @@ const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
 
 const getAllData = async (driver: Driver) => {
     const allNodesQuery =
-        `MATCH (from)-[r]-(to)
-        WHERE id(from) < id(to)
-        WITH from, r, to
-        OPTIONAL MATCH (to)-[r2]-(from) 
-        RETURN from, to, r, r2 IS NOT NULL AS is_double_sided`;
+        `MATCH (from)-[r1]->(to)
+        WITH from, r1, to
+        OPTIONAL MATCH (toNode { nodeId: to.nodeId })-[r2 { relId: r1.relId }]->(fromNode { nodeId: from.nodeId}) 
+        WHERE id(r2) <> id(r1)
+        RETURN from, to, r1, r2 IS NOT NULL AS is_double_sided`;
 
     const rootNodesQuery =
-        `MATCH (n:Root) RETURN n`;
+        `MATCH (n:${ROOT}) RETURN n`;
 
     const [result, rootNodes] = await Promise.all([
         executeGenericQuery(driver, allNodesQuery, {}),
@@ -207,9 +215,11 @@ const getAllData = async (driver: Driver) => {
                     fromNode = toPush;
                 if (key == 'to')
                     toNode = toPush;
-            } else if (key == 'r') {
-                const rel = record.get('r');
+            } else if (key == 'r1') {
+                const rel = record.get('r1');
                 if (fromNode != null && toNode != null) {
+
+                    console.warn("DOUBLE: ", record.get('is_double_sided'));
 
                     const toPush = {
                         to: toNode.nodeId,
@@ -217,7 +227,7 @@ const getAllData = async (driver: Driver) => {
                         votes: rel.properties.votes.toNumber(),
                         relId: rel.properties.relId,
                         type: rel.type,
-                        doubleSided: record.get('is_double_sided')
+                        direction: record.get('is_double_sided') ? Direction.NEUTRAL : Direction.AWAY
                     }
 
                     rels = tryPushToArray(toPush, rels, true);
@@ -236,7 +246,7 @@ const getAllData = async (driver: Driver) => {
 //destroy connection when it gets to 0
 //unless it creates a stray node, then just return - upvotes
 
-const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<NodeRelationship> => {
+const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<NodeRelationship | null> => {
 
     const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
@@ -247,63 +257,64 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const from = getField(result.records, 'from') as Neo4jNode;
     const to = getField(result.records, 'to') as Neo4jNode;
 
-    let isRemoved = false;
-
     console.log("R")
     console.dir(r, {depth: null})
 
-    if (r.properties.votes.toNumber() < 0) {
-        //went into the negative, remove the connection if it doesn't break anything
-        //todo: implement
-        //send request to see how many connections are present
-        console.log("REMOVING REL")
-        console.log("FROM")
-        console.log(from)
-        console.log("TO")
-        console.log(to)
 
-        //assume nodes will be stranded
-        let fromWillBeStranded = true;
-        let toWillBeStranded = true;
+    return null;
 
-        //wont be stranded if root
-        if (from.labels[0] == 'Root')
-            fromWillBeStranded = false;
-        if (to.labels[0] == 'Root')
-            toWillBeStranded = false;
-
-        if (fromWillBeStranded) { //possibility that from gets stranded, not root
-            const willGetStrandedFrom = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
-            console.dir(willGetStrandedFrom, {depth: null})
-        }
-
-        if (toWillBeStranded) {
-            const willGetStrandedTo = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
-            console.dir(willGetStrandedTo, {depth: null})
-        }
-
-        if (!fromWillBeStranded && !toWillBeStranded) {
-            //remove the relationship
-            const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
-            const result = await executeGenericQuery(driver, query, {})
-            console.warn("DELETING....")
-        }
-
-    }
-
-    //todo: return an object with isRemoved property
-    return {
-        relId: r.properties.relId,
-        type: r.type,
-        votes: r.properties.votes.toNumber(),
-        from: from.properties.nodeId,
-        to: to.properties.nodeId,
-        doubleSided: result.records.length == 2,
-    };
+    // if (r.properties.votes.toNumber() < 0) {
+    //     //went into the negative, remove the connection if it doesn't break anything
+    //     //todo: implement
+    //     //send request to see how many connections are present
+    //     console.log("REMOVING REL")
+    //     console.log("FROM")
+    //     console.log(from)
+    //     console.log("TO")
+    //     console.log(to)
+    //
+    //     //assume nodes will be stranded
+    //     let fromWillBeStranded = true;
+    //     let toWillBeStranded = true;
+    //
+    //     //wont be stranded if root
+    //     if (from.labels[0] == ROOT)
+    //         fromWillBeStranded = false;
+    //     if (to.labels[0] == ROOT)
+    //         toWillBeStranded = false;
+    //
+    //     if (fromWillBeStranded) { //possibility that from gets stranded, not root
+    //         const willGetStrandedFrom = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
+    //         console.dir(willGetStrandedFrom, {depth: null})
+    //     }
+    //
+    //     if (toWillBeStranded) {
+    //         const willGetStrandedTo = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
+    //         console.dir(willGetStrandedTo, {depth: null})
+    //     }
+    //
+    //     if (!fromWillBeStranded && !toWillBeStranded) {
+    //         //remove the relationship
+    //         const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
+    //         const result = await executeGenericQuery(driver, query, {})
+    //         console.warn("DELETING....")
+    //     }
+    //
+    // }
+    //
+    // //todo: return an object with isRemoved property
+    // return {
+    //     relId: r.properties.relId,
+    //     type: r.type,
+    //     votes: r.properties.votes.toNumber(),
+    //     from: from.properties.nodeId,
+    //     to: to.properties.nodeId,
+    //     direction:
+    // };
 }
 
-const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string, doubleSided?: boolean): Promise<NodeRelationship> => {
-    if (relationshipLabel.includes("-"))
+const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connection: RequestBodyConnection): Promise<NodeRelationship> => {
+    if (connection.name.includes("-"))
         throw "labels cannot include hyphens";
 
     const checkNodesQuery = 'MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo}) RETURN n1, n2';
@@ -318,47 +329,54 @@ const getOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeI
     if (node1 == null || node2 == null)
         throw "cannot find nodes to connect"
 
+
     const REL_ID = crypto.randomUUID();
-    const query =
-        `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})
-        MERGE (n1)-[r:${formatLabel(relationshipLabel)}]->(n2)
-        ON CREATE SET 
-        r.relId = '${REL_ID}', 
-        r.votes = 0      
-        RETURN r`;
 
-    let result = await executeGenericQuery(driver, query, {
-        nodeIdFrom: nodeIdFrom,
-        nodeIdTo: nodeIdTo
-    });
+    const merges = [];
+    const AWAY = `MERGE (n1)-[r:${formatLabel(connection.name)}]->(n2)`;
+    const TOWARDS = `MERGE (n2)-[r:${formatLabel(connection.name)}]->(n1)`;
 
-    let result2;
-
-    if (doubleSided) {
-        const query =
-            `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})
-        MERGE (n1)-[r:${formatLabel(relationshipLabel)}]->(n2)
-        ON CREATE SET 
-        r.relId = '${REL_ID}', 
-        r.votes = 0      
-        RETURN r`;
-
-        result2 = await executeGenericQuery(driver, query, {
-            nodeIdFrom: nodeIdTo,
-            nodeIdTo: nodeIdFrom
-        });
+    switch (connection.direction) {
+        case Direction.NEUTRAL:
+            merges.push(AWAY)
+            merges.push(TOWARDS)
+            break;
+        case Direction.AWAY: //normal
+            merges.push(AWAY)
+            break;
+        case Direction.TOWARDS: //backwards
+            merges.push(TOWARDS)
     }
 
-    const r = result.records.at(0)?.get("r");
-    let r2 = result2 != null ? result2.records.at(0)?.get("r") : null;
+    const queries = [];
+
+    for (const m of merges) {
+        queries.push(
+            `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})
+             ${m}
+             ON CREATE SET
+             r.relId = '${REL_ID}',
+             r.votes = 0
+             RETURN r`
+        )
+    }
+
+
+    const queryFunctionCalls = queries.map(query => executeGenericQuery(driver, query, {
+        nodeIdFrom: nodeIdFrom,
+        nodeIdTo: nodeIdTo
+    }))
+
+    const myRels = await Promise.all([...queryFunctionCalls])
+    const r =  getField(myRels[0].records, "r");
 
     return {
-        relId: r.properties.relId,
-        type: r.type,
-        votes: r.properties.votes.toNumber(),
         to: nodeIdTo,
         from: nodeIdFrom,
-        doubleSided: r2 != null
+        type: r.type,
+        relId: r.properties.relId,
+        votes: r.properties.votes.toNumber(),
+        direction: connection.direction
     }
 
 }
@@ -369,58 +387,64 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 
     const nodes: Node[] = [];
 
-    const myNodes = await Promise.all([
-        findOrCreateClassificationNode(driver, classificationNodeStrings[0]),
-        findOrCreateClassificationNode(driver, classificationNodeStrings[1]),
-        findOrCreateClassificationNode(driver, classificationNodeStrings[2]),
-        findOrCreateInformationNode(driver, infoNode.label, infoNode.snippet)
-    ])
 
-    //create 3 classification nodes
-    for (let i = 0; i < myNodes.length; i++) {
-        const n = myNodes[i];
+    const nodeFunctionCalls = body.classificationNodes.map(node => findOrCreateClassificationNode(driver, node))
+    nodeFunctionCalls.push(findOrCreateInformationNode(driver, infoNode.label, infoNode.snippet))
+    const myNodes = await Promise.all(nodeFunctionCalls)
 
-        if (i == myNodes.length - 1)
-            nodes.push({
-                label: n.label,
-                nodeId: n.nodeId,
-                nodeType: INFO,
-                snippet: n.snippet
-            })
-        else
-            nodes.push({
-                label: n.label,
-                nodeId: n.nodeId,
-                nodeType: CLASS
-            })
-    }
+    console.log("NODES")
+    console.log(myNodes)
 
-    if (body.connections.length !== 3)
-        throw "invalid number of connections";
-
-
-    const createdRels = await Promise.all([
-        getOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, body.connections[0], body.doubleSided[0]),
-        getOrCreateRelationship(driver, nodes[1].nodeId, nodes[2].nodeId, body.connections[1], body.doubleSided[1]),
-        getOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, body.connections[2], body.doubleSided[2]),
-    ])
-
-    //don't have to upvote twice, they have the same relID
-    const myRels = await Promise.all([
-        upVoteRelationship(driver, createdRels[0].relId, true),
-        // createdRels[0][1] && upVoteRelationship(driver, createdRels[0][1].relId),
-
-        upVoteRelationship(driver, createdRels[1].relId, true),
-        // createdRels[1][1] && upVoteRelationship(driver, createdRels[1][1].relId),
-
-        upVoteRelationship(driver, createdRels[2].relId, true),
-        // createdRels[2][1] && upVoteRelationship(driver, createdRels[2][1].relId),
-    ])
-
+    //todo: remove
     return {
-        nodes: nodes,
-        relationships: myRels
+        nodes: [],
+        relationships: []
     }
+
+    // for (let i = 0; i < myNodes.length; i++) {
+    //     const n = myNodes[i];
+    //
+    //     if (i == myNodes.length - 1)
+    //         nodes.push({
+    //             label: n.label,
+    //             nodeId: n.nodeId,
+    //             nodeType: INFO,
+    //             snippet: n.snippet
+    //         })
+    //     else
+    //         nodes.push({
+    //             label: n.label,
+    //             nodeId: n.nodeId,
+    //             nodeType: CLASS
+    //         })
+    // }
+    //
+    // if (body.connections.length !== 3)
+    //     throw "invalid number of connections";
+    //
+    //
+    // const createdRels = await Promise.all([
+    //     getOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, body.connections[0]),
+    //     getOrCreateRelationship(driver, nodes[1].nodeId, nodes[2].nodeId, body.connections[1]),
+    //     getOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, body.connections[2]),
+    // ])
+    //
+    // //don't have to upvote twice, they have the same relID
+    // const myRels = await Promise.all([
+    //     upVoteRelationship(driver, createdRels[0].relId, true),
+    //     // createdRels[0][1] && upVoteRelationship(driver, createdRels[0][1].relId),
+    //
+    //     upVoteRelationship(driver, createdRels[1].relId, true),
+    //     // createdRels[1][1] && upVoteRelationship(driver, createdRels[1][1].relId),
+    //
+    //     upVoteRelationship(driver, createdRels[2].relId, true),
+    //     // createdRels[2][1] && upVoteRelationship(driver, createdRels[2][1].relId),
+    // ])
+    //
+    // return {
+    //     nodes: nodes,
+    //     relationships: myRels
+    // }
 }
 
 //----------------------------- DOES EXIST FUNCTIONS -----------------------------//

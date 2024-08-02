@@ -63,7 +63,7 @@ app.post('/createRel', async (req, res) => {
         if (driver == null)
             throw "driver is null"
         const body = req.body as createRelRequestBody;
-        await q.getOrCreateRelationship(driver, body.fromId, body.toId, body.name, body.doubleSided).then(result => {
+        await q.getOrCreateRelationship(driver, body.fromId, body.toId, body.connection).then(result => {
             res.status(200).json(result);
         })
     } catch (e) {

@@ -26,11 +26,15 @@ export interface CreateStackReturnBody {
     relationships: NodeRelationship[]
 }
 
-export interface createRelRequestBody {
+export enum Direction {
+    TOWARDS,
+    AWAY,
+    NEUTRAL
+}
+
+export interface RequestBodyConnection {
     name: string,
-    fromId: string,
-    toId: string,
-    doubleSided: boolean
+    direction: Direction
 }
 
 export interface RequestBody {
@@ -39,17 +43,16 @@ export interface RequestBody {
         snippet: string
     },
     classificationNodes: string[],
-    connections: string[],
-    doubleSided: boolean[]
+    connections: RequestBodyConnection[],
 }
 
 export interface NodeRelationship {
     type: string,
     relId: string,
-    votes: number,
+    votes: number
     to: string,
     from: string,
-    doubleSided: boolean,
+    direction: Direction
 }
 
 export interface GraphType {
@@ -78,27 +81,9 @@ export interface GraphType {
     clickEvent: (event: any) => void
 }
 
-export interface RequestBody {
-    infoNode: {
-        label: string,
-        snippet: string
-    },
-    classificationNodes: string[],
-    connections: string[],
-    doubleSided: boolean[]
-}
-
 export interface createRelRequestBody {
     name: string,
     fromId: string,
     toId: string,
-    doubleSided: boolean
-}
-
-export interface NodeRelationship {
-    type: string,
-    relId: string,
-    votes: number,
-    to: string,
-    from: string
+    connection: RequestBodyConnection
 }
