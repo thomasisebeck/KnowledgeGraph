@@ -62,6 +62,8 @@ function App() {
         })
 
         const images = [
+            "add-category-node.svg",
+            "add-category-node-hover.svg",
             "add-connection.svg",
             "add-connection-hover.svg",
             "add-node.svg",

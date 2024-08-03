@@ -11,7 +11,8 @@ enum IMAGES {
     ADD_CONNECTION,
     ADD_NODE,
     EXIT,
-    PLUS
+    PLUS,
+    ADD_CATEGORY_NODE
 }
 
 const images = [
@@ -34,6 +35,11 @@ const images = [
         normal: "buttons/plus.svg",
         hover: "buttons/plus-hover.svg",
         message: "menu"
+    },
+    {
+        normal: "buttons/add-category-node.svg",
+        hover: "buttons/add-category-node-hover.svg",
+        message: "add category node between two others"
     },
 ]
 
@@ -82,6 +88,12 @@ export const AddButtons = ({showAddBox, showAddStack}: AddButtonsProps) => {
                             onclick={addConnection}
                             normalImage={images[IMAGES.ADD_CONNECTION].normal}
                             hoverImage={images[IMAGES.ADD_CONNECTION].hover}
+                        />
+                        <HoverImage
+                            message={images[IMAGES.ADD_CATEGORY_NODE].message}
+                            onclick={toggleExpanded}
+                            normalImage={images[IMAGES.ADD_CATEGORY_NODE].normal}
+                            hoverImage={images[IMAGES.ADD_CATEGORY_NODE].hover}
                         />
                         <HoverImage
                             message={images[IMAGES.EXIT].message}
