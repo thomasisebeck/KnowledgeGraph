@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 399.36 137.69">
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 153.75 142.69">
   <defs>
     <style>
       .cls-1 {
         fill: #f15822;
-        stroke-width: 0px;
       }
 
       .cls-2 {
         fill: #fff;
-        stroke: #fff;
+        stroke: #eaeaea;
         stroke-miterlimit: 10;
+        stroke-width: 6px;
       }
     </style>
   </defs>
-  <g id="Add_Node" data-name="Add Node">
-    <rect class="cls-2" x=".5" y=".5" width="398.36" height="136.69" rx="60.18" ry="60.18"/>
+  <g id="Add_Node">
+    <rect class="cls-2" x="3" y="3" width="147.75" height="136.69" rx="68.35" ry="68.35"/>
   </g>
-  <g id="Add_Node_Hover" data-name="Add Node Hover">
-    <path class="cls-1" d="M192.62,16.74l-46.3,45.03c-5.52,5.37-1.72,14.74,5.98,14.74h94.22c7.78,0,11.54-9.51,5.88-14.84l-47.92-45.03c-3.35-3.14-8.57-3.1-11.86.1Z"/>
-    <rect class="cls-1" x="178.49" y="59.65" width="42.38" height="64.85" rx="12.29" ry="12.29"/>
+  <g id="Add_Node_Hover">
+    <path class="cls-1" d="M72.17,18.62L25.87,63.65c-5.52,5.37-1.72,14.74,5.98,14.74h94.22c7.78,0,11.54-9.51,5.88-14.84l-47.92-45.03c-3.35-3.14-8.57-3.1-11.86.1Z"/>
+    <rect class="cls-1" x="58.04" y="61.54" width="42.38" height="64.85" rx="12.29" ry="12.29"/>
   </g>
 </svg>

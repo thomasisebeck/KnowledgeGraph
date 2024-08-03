@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 399.36 137.69">
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 153.75 142.69">
   <defs>
     <style>
       .cls-1 {
         fill: #f15822;
-        stroke-width: 0px;
       }
 
       .cls-2 {
         fill: #fff;
-        stroke: #fff;
+        stroke: #eaeaea;
         stroke-miterlimit: 10;
+        stroke-width: 6px;
       }
     </style>
   </defs>
-  <g id="Add_Node" data-name="Add Node">
-    <rect class="cls-2" x=".5" y=".5" width="398.36" height="136.69" rx="60.18" ry="60.18"/>
+  <g id="Add_Node">
+    <rect class="cls-2" x="3" y="3" width="147.75" height="136.69" rx="68.35" ry="68.35"/>
   </g>
-  <g id="Add_Node_Hover" data-name="Add Node Hover">
-    <rect class="cls-1" x="178.49" y="16.76" width="42.38" height="107.74" rx="8.72" ry="8.72"/>
+  <g id="Add_Node_Hover">
+    <rect class="cls-1" x="55.76" y="18.64" width="42.38" height="107.74" rx="8.72" ry="8.72"/>
   </g>
 </svg>

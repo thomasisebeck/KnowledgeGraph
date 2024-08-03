@@ -5,22 +5,37 @@ import s from "./AddStackDialogue.module.scss"
 import {HOST} from "../../../../shared/variables";
 import {RequestBody, Direction, RequestBodyConnection} from "../../../../shared/interfaces"
 
+const BASE_CATEGORY_INDEX = -1;
 
 
-function toggleButton(toggleDoubleSided: (index: number) => void, index: number, c: RequestBodyConnection ) {
-    return <div onClick={() => toggleDoubleSided(index)} className={s.innerDiv}>
+function toggleButton(toggleDoubleSided: (index: number) => void, index: number, c: RequestBodyConnection, updateCategoryName: (newCategoryName: string, index: number) => void) {
+    return <div className={s.innerDiv}>
         {
             c.direction === Direction.TOWARDS &&
-            <img src={"buttons/up-arrow.svg"}/>
+            <div className={s.toggleButtonContainer}>
+                <img onClick={() => toggleDoubleSided(index)} src={"buttons/up-arrow.svg"}/>
+            </div>
         }
         {
             c.direction === Direction.AWAY &&
-            <img src={"buttons/down-arrow.svg"}/>
+            <div className={s.toggleButtonContainer}>
+                <img onClick={() => toggleDoubleSided(index)} src={"buttons/down-arrow.svg"}/>
+            </div>
         }
         {
             c.direction === Direction.NEUTRAL &&
-            <img src={"buttons/neutral.svg"}/>
+            <div className={s.toggleButtonContainer}>
+                <img onClick={() => toggleDoubleSided(index)} src={"buttons/neutral.svg"}/>
+            </div>
         }
+        <input type={"text"} placeholder={"connection label"}
+               onClick={() => {
+                   updateCategoryName("", index);
+               }}
+               onBlur={(e) => {
+                   updateCategoryName(e.target.value, index)
+               }}
+        />
     </div>;
 }
 
@@ -40,13 +55,13 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
             console.log(" > Creating stack with the following items: < ")
             console.log("base")
 
-            console.log("dir: " , baseCategory.direction)
+            console.log("dir: ", baseCategory.direction)
             console.log("name: ", baseCategory.name)
 
             console.log(" > sub categories < ")
             for (const c of categories) {
-                console.log("name: " , c.name);
-                console.log("dir: " , c.direction);
+                console.log("name: ", c.name);
+                console.log("dir: ", c.direction);
             }
 
             console.log(" > info < ")
@@ -57,23 +72,23 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         printDetails();
 
         //todo: fix infoNode label
-        const body:RequestBody = {
-           classificationNodes: categories.map(c => c.name),
-           connections: categories.map(c => {
-               return {
-                   name: c.name,
-                   direction: c.direction
-               }
-           }),
+        const body: RequestBody = {
+            classificationNodes: categories.map(c => c.name),
+            connections: categories.map(c => {
+                return {
+                    name: c.name,
+                    direction: c.direction
+                }
+            }),
             infoNode: {
-               label: info,
+                label: info,
                 snippet: info,
             }
         }
 
         fetch(`${HOST}/createStack`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         })
 
@@ -90,6 +105,11 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     }, [categories]);
 
     function updateCategoryName(newCategoryName: string, index: number) {
+
+        if (index == BASE_CATEGORY_INDEX) { //update base category
+            setBaseCategory({...baseCategory, name: newCategoryName});
+            return;
+        }
         console.log("UPDATING INDEX " + index + " TO " + newCategoryName)
         const old = categories;
         old[index].name = newCategoryName;
@@ -115,8 +135,8 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         }
     }
 
-    function toggleDoubleSided(index: number, isBase: boolean = false) {
-        if (isBase) {
+    function toggleDoubleSided(index: number) {
+        if (index == BASE_CATEGORY_INDEX) {
             //handle base category separately
             let copyBase = baseCategory;
             if (copyBase) {
@@ -194,32 +214,42 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                 </div>
 
                 {/*arrow*/}
-                {toggleButton(() => toggleDoubleSided(0, true), -1, baseCategory)}
+                {toggleButton(() => toggleDoubleSided(BASE_CATEGORY_INDEX), BASE_CATEGORY_INDEX, baseCategory, updateCategoryName)}
             </div>
 
-            {
-                categories.map((c, index) => (
-                    <div className={s.category}>
+            <div className={s.categoriesContainer}>
 
-                        <img src={"buttons/cancel.svg"} className={s.cancel}/>
+                {
+                    categories.map((c, index) => (
+                        <div className={s.category}>
 
-                        {/*node*/}
-                        <div className={s.nodeDivOuter}>
-                            <div className={s.nodeDiv}></div>
-                            <div className={s.content}>
-                                <input
-                                    type={"text"}
-                                    onClick={(e) => e.currentTarget.value = ""}
-                                    onBlur={(e) => updateCategoryName(e.target.value, index)}
-                                />
+                            <img src={"buttons/cancel.svg"} className={s.cancel} onClick={() => {
+                                console.log("HI")
+                                setCategories(old =>
+                                    old.filter(((c, ind) => ind !== index))
+                                );
+                            }}/>
+
+
+                            {/*node*/}
+                            <div className={s.nodeDivOuter}>
+                                <div className={s.nodeDiv}></div>
+                                <div className={s.content}>
+                                    <input
+                                        type={"text"}
+                                        onBlur={(e) => updateCategoryName(e.target.value, index)}
+                                        placeholder={"new category name"}
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        {/*arrow*/}
-                        {toggleButton(toggleDoubleSided, index, c)}
-                    </div>
-                ))
-            }
+                            {/*arrow*/}
+                            {toggleButton(toggleDoubleSided, index, c, updateCategoryName)}
+                        </div>
+                    ))
+                }
+
+            </div>
 
             {categories.length <= 3 &&
                 <button onClick={addBlankCategory}>Add Category</button>

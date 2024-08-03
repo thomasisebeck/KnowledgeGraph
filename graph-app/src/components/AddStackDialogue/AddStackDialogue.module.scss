@@ -8,8 +8,23 @@
   border-color: $off-white;
 }
 
+.category img:hover {
+  transform: scale(1.15);
+  transition: 0.2s;
+}
+
 .category {
   position: relative;
+  width: 319px;
+}
+.toggleButtonContainer {
+  position: relative;
+}
+
+.toggleButtonContainer img {
+  position: absolute;
+  left: -35px;
+  top: 0;
 }
 
 .nodeDiv {
@@ -24,10 +39,17 @@
   top: 19px;
 }
 
+.categoriesContainer {
+  height: 152px;
+  overflow-y: scroll;
+  padding: 5px 0;
+}
+
 .cancel {
   position: absolute;
   right: 20px;
   top: 20px;
+  z-index: 1;
 }
 
 .textDiv {
@@ -59,6 +81,16 @@
   margin-bottom: 2px;
 }
 
+.innerDiv input {
+  width:100px;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.innerDiv input:focus {
+  outline: none;
+
+}
 .error {
   color: red;
   position: fixed;

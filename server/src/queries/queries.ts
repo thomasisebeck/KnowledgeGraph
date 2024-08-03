@@ -13,7 +13,7 @@ import {
 } from "../../../shared/interfaces";
 
 const INFO = 'INFO'
-const CLASS = 'ClASS'
+const CLASS = 'CLASS'
 const ROOT = 'ROOT'
 const BOTH = `${INFO} | ${CLASS}`
 
@@ -97,9 +97,6 @@ const createTopicNodes = async (driver: Driver) => {
         findOrCreateClassificationNode(driver, "Arts", true),
         findOrCreateClassificationNode(driver, "History", true),
         findOrCreateClassificationNode(driver, "Geography", true),
-
-        //todo: remove node
-        findOrCreateClassificationNode(driver, "TEST NODE")
     ]);
 
 }

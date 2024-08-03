@@ -57,6 +57,8 @@ function App() {
             setNodes(data.nodes as GraphNode[])
             setRelationships(data.relationships as NodeRelationship[])
             setAddPhase(AddConnectionPhase.NONE)
+        }).catch(e => {
+          console.error(e)
         })
 
         const images = [
