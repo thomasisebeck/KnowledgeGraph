@@ -3,7 +3,7 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {createRelRequestBody, RequestBody} from "../../shared/interfaces";
+import {createRelRequestBody, RequestBody, RequestBodyConnection, UpvoteResult} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
 
@@ -57,6 +57,12 @@ app.post('/createRel', async (req, res) => {
     try {
 
         const body = req.body as createRelRequestBody;
+        console.log("connection")
+        console.log(body.connection)
+
+        console.log("casted")
+        console.log(body.connection as RequestBodyConnection)
+
         await q.findOrCreateRelationship(driver, body.fromId, body.toId, body.connection).then(result => {
             res.status(200).json(result);
         })
@@ -95,10 +101,12 @@ async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
         let rel = relString.substring(relString.indexOf("]-[") + 3, relString.length);
         rel = rel.substring(0, relString.indexOf("]-[") - 1);
 
-        await q.upVoteRelationship(driver, rel, mustUpvote).then(result => {
-            res.status(200).json({
-                rel: result
-            })
+        await q.upVoteRelationship(driver, rel, mustUpvote).then(upvoted => {
+            const result: UpvoteResult = {
+                relId: upvoted.relId,
+                votes: upvoted.votes
+            }
+            res.status(200).json(result)
         })
 
         console.log("SENT")

@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
-import {GraphNode, NodeRelationship} from "../../shared/interfaces";
+import {GraphNode, NodeRelationship, UpvoteResult } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddConnectionPhase, clickEvent, ClickType  } from "./interfaces";
+import {AddConnectionPhase, clickEvent, ClickType } from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 import {preloadImages} from "./utills";
@@ -198,15 +198,24 @@ function App() {
         }).then(async res => {
             const result = await res.json();
 
-            const relationship = result as NodeRelationship;
+            const relationship = result as UpvoteResult;
 
             console.log("RESULT: ")
             console.log(relationship)
-            // setRelationships(prevState => prevState?.filter(rel => rel.votes > 0))
 
+            //find and update the relationships
+            setRelationships(prevState =>
+                prevState?.map(rel => {
+                    if (rel.relId == result.relId){
+                        return {
+                            ...rel,
+                            votes: result.votes
+                        }
+                    }
+                    return rel;
+                })
+            );
 
-            //update the relationship on the existing graph
-            // updateRelationship(relationship);
         })
 
     }
