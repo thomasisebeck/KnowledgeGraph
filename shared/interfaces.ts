@@ -33,7 +33,8 @@ export enum Direction {
 }
 
 export interface RequestBodyConnection {
-    name: string,
+    nodeName: string,
+    connectionName: string,
     direction: Direction
 }
 
@@ -42,7 +43,6 @@ export interface RequestBody {
         label: string,
         snippet: string
     },
-    classificationNodes: string[],
     connections: RequestBodyConnection[],
 }
 
@@ -53,6 +53,11 @@ export interface NodeRelationship {
     to: string,
     from: string,
     direction: Direction,
+}
+
+export interface UpvoteResult {
+    relId: string,
+    votes: number
 }
 
 export interface GraphType {

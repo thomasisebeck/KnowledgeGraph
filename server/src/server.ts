@@ -15,7 +15,6 @@ let driver: Driver;
 
 // connect here
 (async () => {
-
     if (
         process.env.NEO4J_URI == undefined ||
         process.env.NEO4J_USERNAME == undefined ||
@@ -42,11 +41,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/createStack', async (req, res) => {
-
     try {
-        if (driver == null)
-            throw "driver is null";
-
         const body = req.body as RequestBody;
         console.log("CREATE STACK REQUEST")
         console.log(body);
@@ -60,10 +55,9 @@ app.post('/createStack', async (req, res) => {
 
 app.post('/createRel', async (req, res) => {
     try {
-        if (driver == null)
-            throw "driver is null"
+
         const body = req.body as createRelRequestBody;
-        await q.getOrCreateRelationship(driver, body.fromId, body.toId, body.connection).then(result => {
+        await q.findOrCreateRelationship(driver, body.fromId, body.toId, body.connection).then(result => {
             res.status(200).json(result);
         })
     } catch (e) {

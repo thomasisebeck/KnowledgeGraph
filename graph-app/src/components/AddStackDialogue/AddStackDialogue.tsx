@@ -4,84 +4,72 @@ import Dialogue from "../Dialogue/Dialogue";
 import s from "./AddStackDialogue.module.scss"
 import {HOST} from "../../../../shared/variables";
 import {RequestBody, Direction, RequestBodyConnection} from "../../../../shared/interfaces"
+import * as zlib from "node:zlib";
 
 const BASE_CATEGORY_INDEX = -1;
 
-
-function toggleButton(toggleDoubleSided: (index: number) => void, index: number, c: RequestBodyConnection, updateCategoryName: (newCategoryName: string, index: number) => void) {
-    return <div className={s.innerDiv}>
-        {
-            c.direction === Direction.TOWARDS &&
-            <div className={s.toggleButtonContainer}>
-                <img onClick={() => toggleDoubleSided(index)} src={"buttons/up-arrow.svg"}/>
-            </div>
-        }
-        {
-            c.direction === Direction.AWAY &&
-            <div className={s.toggleButtonContainer}>
-                <img onClick={() => toggleDoubleSided(index)} src={"buttons/down-arrow.svg"}/>
-            </div>
-        }
-        {
-            c.direction === Direction.NEUTRAL &&
-            <div className={s.toggleButtonContainer}>
-                <img onClick={() => toggleDoubleSided(index)} src={"buttons/neutral.svg"}/>
-            </div>
-        }
-        <input type={"text"} placeholder={"connection label"}
-               onClick={() => {
-                   updateCategoryName("", index);
-               }}
-               onBlur={(e) => {
-                   updateCategoryName(e.target.value, index)
-               }}
-        />
-    </div>;
+enum UpdateType {
+    NODE_NAME,
+    CONNECTION_NAME,
+    CONNECTION_DIRECTION
 }
+
 
 function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => void }) {
 
     const [categories, setCategories] = React.useState<RequestBodyConnection[]>([])
     const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
         direction: Direction.AWAY,
-        name: "Comp"
+        nodeName: "Comp",
+        connectionName: ""
     })
     const [errorMessage, setErrorMessage] = useState("")
+    const [showErr, setShowErr] = useState(false);
     const [info, setInfo] = useState("")
 
     const createStack = () => {
+        console.log("CREATING...")
+
         function printDetails() {
             console.log(" ----------------------- ")
             console.log(" > Creating stack with the following items: < ")
             console.log("base")
 
+            console.log("nodeName: ", baseCategory.nodeName)
             console.log("dir: ", baseCategory.direction)
-            console.log("name: ", baseCategory.name)
-
+            console.log("conn name: ", baseCategory.connectionName)
             console.log(" > sub categories < ")
+
             for (const c of categories) {
-                console.log("name: ", c.name);
+                console.log("name: ", c.nodeName);
                 console.log("dir: ", c.direction);
+                console.log("conn name: ", c.connectionName)
             }
 
             console.log(" > info < ")
             console.log(info);
             console.log(" ----------------------- ")
-
-
         }
 
         printDetails();
 
-        //todo: fix infoNode label
+        const addedConnections = categories.map(c => {
+            return {
+                nodeName: c.nodeName,
+                direction: c.direction,
+                connectionName: c.connectionName
+            }
+        })
+
         const body: RequestBody = {
-            classificationNodes: categories.map(c => c.name),
-            connections: categories.map(c => {
-                return {
-                    name: c.name,
-                    direction: c.direction
-                }
-            }),
+            connections: [
+                {
+                    connectionName: baseCategory.connectionName,
+                    nodeName: baseCategory.nodeName,
+                    direction: baseCategory.direction
+                },
+                ...addedConnections
+            ],
             infoNode: {
                 label: info,
                 snippet: info,
@@ -92,37 +80,113 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
+        }).then(async result => {
+            console.log("AFTER CREATING STACK")
+            console.log(await result.json());
         })
 
 
     }
 
+    function toggleButton(index: number, category: RequestBodyConnection) {
+        return <div className={s.innerDiv}>
+            {
+                category.direction === Direction.TOWARDS &&
+                <div className={s.toggleButtonContainer}>
+                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/up-arrow.svg"}
+                         alt={"toggle direction up"}/>
+                </div>
+            }
+            {
+                category.direction === Direction.AWAY &&
+                <div className={s.toggleButtonContainer}>
+                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/down-arrow.svg"}
+                         alt={"toggle direction down"}/>
+                </div>
+            }
+            {
+                category.direction === Direction.NEUTRAL &&
+                <div className={s.toggleButtonContainer}>
+                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/neutral.svg"}
+                         alt={"toggle direction neutral"}/>
+                </div>
+            }
+            <input type={"text"} placeholder={"connection label"}
+                   onClick={() => {
+                       updateCategory(index, "", UpdateType.CONNECTION_NAME);
+                   }}
+                   onBlur={(e) => {
+                       updateCategory(index, e.target.value, UpdateType.CONNECTION_NAME);
+                   }}
+            />
+        </div>;
+    }
+
     useEffect(() => {
-        console.log("CURRENT CATEGORIES")
+        console.log("CURRENT CATEGORIES:")
+        console.log("BASE:")
+        console.log("name: ", baseCategory.nodeName)
+        console.log("direction: ", baseCategory.direction)
+        console.log("conn: ", baseCategory.connectionName)
+        console.log("-------------------")
+        console.log("OTHERS:")
         categories.map(c => {
-            console.log("name: ", c.name)
+            console.log("name: ", c.nodeName)
             console.log("direction: ", c.direction)
+            console.log("conn: ", c.connectionName)
         })
         console.log("-------------------")
-    }, [categories]);
+    }, [categories, baseCategory]);
 
-    function updateCategoryName(newCategoryName: string, index: number) {
-
+    function updateCategory(index: number, value: string | Direction, updateType: UpdateType) {
         if (index == BASE_CATEGORY_INDEX) { //update base category
-            setBaseCategory({...baseCategory, name: newCategoryName});
+            switch (updateType) {
+                case UpdateType.CONNECTION_DIRECTION:
+                    setBaseCategory({...baseCategory, direction: value as Direction})
+                    break;
+                case UpdateType.CONNECTION_NAME:
+                    setBaseCategory({...baseCategory, connectionName: value as string})
+                    break;
+                case UpdateType.NODE_NAME:
+                    setBaseCategory({...baseCategory, nodeName: value as string});
+                    break;
+            }
+
             return;
         }
-        console.log("UPDATING INDEX " + index + " TO " + newCategoryName)
-        const old = categories;
-        old[index].name = newCategoryName;
-        setCategories(old);
-        console.log("UPDATED")
+
+        switch (updateType) {
+            case UpdateType.CONNECTION_DIRECTION:
+                setCategories(categories.map(((e, ind) => {
+                    if (ind == index)
+                        return {...e, direction: value as Direction}
+                    return e;
+                })));
+                break;
+            case UpdateType.CONNECTION_NAME:
+                setCategories(categories.map(((e, ind) => {
+                    if (ind == index)
+                        return {...e, connectionName: value as string}
+                    return e;
+                })));
+
+                break;
+            case UpdateType.NODE_NAME:
+                setCategories(categories.map(((e, ind) => {
+                    if (ind == index)
+                        return {...e, nodeName: value as string}
+                    return e;
+                })));
+
+                break;
+        }
     }
 
     function addBlankCategory() {
         setCategories([...categories, {
             direction: Direction.NEUTRAL,
-            name: "new category"
+            nodeName: "",
+            connectionName: ""
         }])
     }
 
@@ -143,18 +207,26 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
             let copyBase = baseCategory;
             if (copyBase) {
                 copyBase.direction = getNewCategory(copyBase?.direction);
-                console.log("Setting base category")
-                setBaseCategory({
-                    name: copyBase.name,
-                    direction: copyBase.direction
-                });
+                setBaseCategory({...copyBase});
                 return;
             }
-            console.error("NO base category found")
-            return;
+            throw "no base category found"
         }
         categories[index].direction = getNewCategory(categories[index].direction)
         setCategories([...categories]);
+    }
+
+    function showError(err: string) {
+        setErrorMessage(err)
+        setShowErr(true)
+        console.log("SHOWING...")
+        setTimeout(() => {
+            setShowErr(false)
+        }, 4000)
+    }
+
+    function isValidCategory(c: RequestBodyConnection) {
+        return !(c.nodeName == "" || c.connectionName == "");
     }
 
     function tryCreateStack() {
@@ -162,19 +234,24 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         //loop through the categories and see that they have the correct info
 
         for (const c of categories) {
-            if (c.name == "new category" || c.name == "") {
-                setErrorMessage("please fill out all the categories")
+            if (!isValidCategory(c)) {
+                showError("please fill out all the categories")
                 return;
             }
         }
 
+        if (!isValidCategory(baseCategory)) {
+            showError("please fill out all the categories")
+            return;
+        }
+
         if (categories.length < 2) {
-            setErrorMessage("please create at least two subcategories")
+            showError("please create at least two subcategories")
             return;
         }
 
         if (info == "") {
-            setErrorMessage("please fill out information in the space provided")
+            showError("please fill out information in the space provided")
             return;
         }
 
@@ -187,7 +264,7 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
     return (
         <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
             {
-                errorMessage != "" &&
+                showErr &&
                 <div className={s.error}>
                     <div className={s.errorInner}>
                         {errorMessage}
@@ -216,7 +293,7 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                 </div>
 
                 {/*arrow*/}
-                {toggleButton(() => toggleDoubleSided(BASE_CATEGORY_INDEX), BASE_CATEGORY_INDEX, baseCategory, updateCategoryName)}
+                {toggleButton(BASE_CATEGORY_INDEX, baseCategory)}
             </div>
 
             <div className={s.categoriesContainer}>
@@ -239,14 +316,14 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                                 <div className={s.content}>
                                     <input
                                         type={"text"}
-                                        onBlur={(e) => updateCategoryName(e.target.value, index)}
+                                        onBlur={(e) => updateCategory(index, e.target.value, UpdateType.NODE_NAME)}
                                         placeholder={"new category name"}
                                     />
                                 </div>
                             </div>
 
                             {/*arrow*/}
-                            {toggleButton(toggleDoubleSided, index, c, updateCategoryName)}
+                            {toggleButton(index, c)}
                         </div>
                     ))
                 }

@@ -151,11 +151,11 @@ describe('queries', () => {
 
         const relFunctionCalls = [
             //from->to AWAY
-            q.getOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, {name: "ONE", direction: Direction.AWAY}),
+            q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, {name: "ONE", direction: Direction.AWAY}),
             //from<-to TOWARDS
-            q.getOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, {name: "TWO", direction: Direction.TOWARDS}),
+            q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, {name: "TWO", direction: Direction.TOWARDS}),
             //NEUTRAL
-            q.getOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId, {name: "THREE", direction: Direction.NEUTRAL}),
+            q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId, {name: "THREE", direction: Direction.NEUTRAL}),
         ]
 
         console.log("RELS RESULT")
