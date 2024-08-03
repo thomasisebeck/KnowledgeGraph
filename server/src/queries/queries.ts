@@ -325,8 +325,8 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
     //merge forms part of a query
     const merges = [];
-    const AWAY = `MERGE (n1)-[r:${formatLabel(connection.connectionName)}]->(n2)`;
-    const TOWARDS = `MERGE (n2)-[r:${formatLabel(connection.connectionName)}]->(n1)`;
+    const AWAY = `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})`;
+    const TOWARDS = `MATCH (n1 {nodeId: $nodeIdTo}), (n2 {nodeId: $nodeIdFrom})`;
 
     switch (connection.direction) {
         case Direction.NEUTRAL:
@@ -344,8 +344,8 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
     for (const m of merges) {
         queries.push(
-            `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})
-             ${m}
+            `${m}
+             MERGE (n1)-[r:${formatLabel(connection.connectionName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
              r.votes = 0

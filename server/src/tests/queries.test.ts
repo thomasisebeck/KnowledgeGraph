@@ -147,29 +147,33 @@ describe('queries', () => {
         ];
 
         const nodes = await Promise.all(functionCalls);
-        console.dir(nodes, {depth: null});
+        // console.dir(nodes, {depth: null});
 
         const relFunctionCalls = [
             //from->to AWAY
-            q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, {name: "ONE", direction: Direction.AWAY}),
+            q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, {nodeName: "ONE", direction: Direction.AWAY, connectionName: "new conn 1"}),
             //from<-to TOWARDS
-            q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, {name: "TWO", direction: Direction.TOWARDS}),
+            q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, {nodeName: "TWO", direction: Direction.TOWARDS, connectionName: "new conn 2"}),
             //NEUTRAL
-            q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId, {name: "THREE", direction: Direction.NEUTRAL}),
+            q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId, {nodeName: "THREE", direction: Direction.NEUTRAL, connectionName: "new conn 3"}),
         ]
 
-        console.log("RELS RESULT")
         const rels = await Promise.all(relFunctionCalls);
-        console.dir(rels, {depth: null});
+
+        //NB: don't swap the form and to, just return the direction!!!!
+        //swapping from and to adds too much complexity and edge cases
 
         expect(rels[0].from).toBe(nodes[0].nodeId)
         expect(rels[0].to).toBe(nodes[1].nodeId)
+        expect(rels[0].direction).toBe(Direction.AWAY)
 
-        expect(rels[1].from).toBe(nodes[3].nodeId)
-        expect(rels[1].to).toBe(nodes[2].nodeId)
+        expect(rels[1].from).toBe(nodes[2].nodeId)
+        expect(rels[1].to).toBe(nodes[3].nodeId)
+        expect(rels[1].direction).toBe(Direction.TOWARDS)
 
         expect(rels[2].from).toBe(nodes[4].nodeId)
         expect(rels[2].to).toBe(nodes[5].nodeId)
+        expect(rels[2].direction).toBe(Direction.NEUTRAL)
 
 
     }, 20000)
