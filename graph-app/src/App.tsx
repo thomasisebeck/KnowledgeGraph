@@ -287,10 +287,16 @@ function App() {
                         if (rel.relId === relationship.relId) {
                             console.log("updating id to " + relationship.newRelId)
                             console.log("setting votes to " + relationship.votes)
+
+                            console.log("REL")
+                            console.log(rel)
+
                             setClickEvent({
                                 clickType: ClickType.EDGE,
                                 id: relationship.newRelId!
                             })
+
+                            console.log("returning new rel with relID" + relationship.relId);
                             return {
                                 ...rel,
                                 relId: relationship.newRelId!,

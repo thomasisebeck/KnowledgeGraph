@@ -53,8 +53,15 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
 
 
     const sigmoid = (x : number) => {
-        const STRETCH_FACTOR = 10;
-        return 1 / (1 + Math.exp(-x / STRETCH_FACTOR));
+        const NUMERATOR = 1.3;
+        const X_SCALE_FACTOR = 0.1;
+        const Y_SHIFT = -0.05;
+
+        console.log("INPUT: " , x)
+
+        const sig =  NUMERATOR / (1 + Math.exp(-x * X_SCALE_FACTOR));
+        console.log("OUTPUT: " , sig + Y_SHIFT)
+        return sig + Y_SHIFT;
     }
 
     return (
