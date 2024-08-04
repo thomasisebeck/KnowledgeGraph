@@ -3,7 +3,7 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {createRelRequestBody, RequestBody, RequestBodyConnection, UpvoteResult} from "../../shared/interfaces";
+import {CreateRelRequestBody, RequestBody, RequestBodyConnection, UpvoteResult} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
 
@@ -56,14 +56,14 @@ app.post('/createStack', async (req, res) => {
 app.post('/createRel', async (req, res) => {
     try {
 
-        const body = req.body as createRelRequestBody;
+        const body = req.body as CreateRelRequestBody;
         console.log("connection")
-        console.log(body.connection)
-
+        console.log(body.direction)
         console.log("casted")
-        console.log(body.connection as RequestBodyConnection)
 
-        await q.findOrCreateRelationship(driver, body.fromId, body.toId, body.connection).then(result => {
+
+
+        await q.findOrCreateRelationship(driver, body.fromId, body.toId, body.name, body.direction).then(result => {
             res.status(200).json(result);
         })
     } catch (e) {

@@ -32,6 +32,15 @@ export enum Direction {
     NEUTRAL
 }
 
+//connect an individual relationship
+export interface CreateRelRequestBody {
+    name: string,
+    fromId: string,
+    toId: string,
+    direction: Direction
+}
+
+//create relationships in a stack
 export interface RequestBodyConnection {
     nodeName: string,
     connectionName: string,
@@ -84,11 +93,4 @@ export interface GraphType {
     nodes: GraphNode[] | undefined,
     relationships: NodeRelationship[] | undefined,
     clickEvent: (event: any) => void
-}
-
-export interface createRelRequestBody {
-    name: string,
-    fromId: string,
-    toId: string,
-    connection: RequestBodyConnection
 }

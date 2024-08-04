@@ -301,8 +301,8 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     };
 }
 
-const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connection: RequestBodyConnection): Promise<NodeRelationship> => {
-    if (connection.connectionName.includes("-"))
+const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction): Promise<NodeRelationship> => {
+    if (connName.includes("-"))
         throw "labels cannot include hyphens";
 
     //----------------- see if the nodes exist ----------------------//
@@ -328,7 +328,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
     const AWAY = `MATCH (n1 {nodeId: $nodeIdFrom}), (n2 {nodeId: $nodeIdTo})`;
     const TOWARDS = `MATCH (n1 {nodeId: $nodeIdTo}), (n2 {nodeId: $nodeIdFrom})`;
 
-    switch (connection.direction) {
+    switch (direction) {
         case Direction.NEUTRAL:
             merges.push(AWAY)
             merges.push(TOWARDS)
@@ -345,7 +345,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
     for (const m of merges) {
         queries.push(
             `${m}
-             MERGE (n1)-[r:${formatLabel(connection.connectionName)}]->(n2)
+             MERGE (n1)-[r:${formatLabel(connName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
              r.votes = 0
@@ -367,7 +367,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
         type: r.type,
         relId: r.properties.relId,
         votes: r.properties.votes.toNumber(),
-        direction: connection.direction
+        direction: direction
     }
 
 }
@@ -391,7 +391,7 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 
     //stack connection function calls
     const relFunctionCalls = body.connections.map((conn, index) =>
-        findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId, conn)
+        findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId, conn.connectionName, conn.direction)
     );
 
     //create all connections

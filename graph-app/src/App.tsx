@@ -46,7 +46,6 @@ function App() {
     const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
 
-
     //fetch the initial data and preload images
     useEffect(() => {
         //fetch data

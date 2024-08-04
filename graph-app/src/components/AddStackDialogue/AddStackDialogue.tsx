@@ -83,6 +83,10 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         }).then(async result => {
             console.log("AFTER CREATING STACK")
             console.log(await result.json());
+
+            //todo: update the interface....
+
+
         })
 
 

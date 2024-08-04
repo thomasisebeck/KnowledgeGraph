@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRelRequestBody, NodeRelationship, Direction } from '../../../shared/interfaces';
+import { CreateRelRequestBody, NodeRelationship, Direction } from '../../../shared/interfaces';
 import Dialogue from "./Dialogue/Dialogue";
 import {HOST} from "../../../shared/variables"
 
@@ -23,14 +23,11 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
             return;
         }
 
-        const body: createRelRequestBody = {
+        const body: CreateRelRequestBody = {
             name: name,
             toId: secondNode,
             fromId: firstNode,
-            connection: {
-                name: name,
-                direction: direction
-            }
+            direction: direction
         }
 
         console.log(body);
@@ -72,7 +69,7 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
             if (nameRef.current.value != "") {
                 const name = nameRef.current.value;
                 const isDoubleSided = checkRef.current.checked;
-                createConnection(name, isDoubleSided ? Direction.NEUTRAL : Direction.AWAY);
+                await createConnection(name, isDoubleSided ? Direction.NEUTRAL : Direction.AWAY);
                 return;
             }
             setMessage("name is not set")
