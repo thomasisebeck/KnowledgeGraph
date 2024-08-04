@@ -216,20 +216,8 @@ const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: st
         WHERE none(rel in relationships(p) WHERE rel.relId = '${relId}')
         RETURN p
         `
-       //MATCH p=((myNode {nodeId: '${nodeIdFrom}'})-[r*1..100 WHERE r.relId != '${relId}']-(root:ROOT)) RETURN p
-    console.warn("to remove rel: ")
-    console.log(relId)
-
-    console.warn("TRYING...")
     const result = await executeGenericQuery(driver, pathToRootQuery, {})
-
-    console.log("---------------------------")
     const hasPath = getField(result.records, 'p')
-    console.log("PATH")
-    console.dir(hasPath, {depth: null})
-    console.log("---------------------------")
-
-    //no path, will get stranded
     return (hasPath === undefined);
 }
 
@@ -252,31 +240,19 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     if (r.properties.votes.toNumber() < 0) {
 
         //assume nodes will be stranded
-        let fromWillBeStranded = true;
-        let toWillBeStranded = true;
+        let fromWillBeStranded = false;
+        let toWillBeStranded = false;
 
-        //wont be stranded if root
-        if (from.labels[0] == ROOT) {
-            console.log("FROM IS A ROOT NODE")
-            fromWillBeStranded = false;
+        //won't be stranded if root
+        //double check if not a root
+        if (from.labels[0] != ROOT) {
+            fromWillBeStranded = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
         }
-        if (to.labels[0] == ROOT) {
-            console.log("TO IS A ROOT NODE")
-            toWillBeStranded = false;
-        }
-
-        if (fromWillBeStranded) { //possibility that from gets stranded, not root
-            console.log("FROM WILL BE STRANDED")
-            const willGetStrandedFrom = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
-            console.log(willGetStrandedFrom)
+        if (to.labels[0] != ROOT) {
+            toWillBeStranded = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
         }
 
-        if (toWillBeStranded) {
-            console.log("TO WILL BE STRANDED")
-            const willGetStrandedTo = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
-            console.dir(willGetStrandedTo)
-        }
-
+        //both won't get stranded, continue with deletion
         if (!fromWillBeStranded && !toWillBeStranded) {
             //remove the relationship
             const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
@@ -292,8 +268,6 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
 
     //prevent deletion if there isn't a path
     const newVotes = r.properties.votes.toNumber() > 0 ? r.properties.votes.toNumber() : 1;
-
-    //todo: find a way to preserve direction
 
     return {
         relId: r.properties.relId,

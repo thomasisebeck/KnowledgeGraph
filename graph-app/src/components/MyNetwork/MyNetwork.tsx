@@ -71,15 +71,10 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
 
           {
               relationships && relationships.map(r => {
-                  //todo: check if double sided and set arrows accordingly
                   const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
                   const THICKNESS_MULTIPLIER = 15;
                   const MINIMUM_THICKNESS = 0.4;
-
                   const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
-                  console.log("ADDING")
-                  console.log(r);
-
                   const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
                   return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type != null ? r.type.replaceAll('_', ' ').toLowerCase() : "NULL TYPE"} width={thickness} arrows={ARROWS} key={uniqueKey} />
               })

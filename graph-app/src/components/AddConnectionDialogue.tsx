@@ -10,7 +10,8 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
     secondNode: string | null,
     reset: () => void,
     updateRelationship: (myRel1:NodeRelationship) => void
-}) {
+})
+{
 
     const nameRef = React.useRef<HTMLInputElement | null>(null);
     const checkRef = React.useRef<HTMLInputElement | null>(null);

@@ -1,14 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
-import {GraphNode, NodeRelationship, UpvoteResult } from "../../shared/interfaces";
+import {GraphNode, NodeRelationship, UpvoteResult} from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddConnectionPhase, clickEvent, ClickType } from "./interfaces";
+import {AddConnectionPhase, clickEvent, ClickType} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
-import {preloadImages} from "./utills";
 
 function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
     return <div className={s.upvoteDownvoteContainer}>
@@ -57,7 +56,7 @@ function App() {
             setRelationships(data.relationships as NodeRelationship[])
             setAddPhase(AddConnectionPhase.NONE)
         }).catch(e => {
-          console.error(e)
+            console.error(e)
         })
 
         const images = [
@@ -88,14 +87,10 @@ function App() {
 
     }, []);
 
-    //register clicks for nodes and edges
-    useEffect(() => {
-        console.log("CLICKED")
+    const handleClickingNodesToConnectWhenAddingEdge = () => {
+        if (addPhase == AddConnectionPhase.FIRST || addPhase == AddConnectionPhase.SECOND)
+            if (clickEvent && clickEvent.clickType == ClickType.NODE) {
 
-        if (clickEvent != null) {
-
-            //node
-            if (clickEvent.clickType == ClickType.NODE) {
                 //click first node
                 if (addPhase == AddConnectionPhase.FIRST) {
                     setFirstNode(clickEvent.id)
@@ -104,13 +99,25 @@ function App() {
 
                 //click second node
                 if (addPhase == AddConnectionPhase.SECOND) {
-                    console.log("SECOND")
                     if (clickEvent.id !== firstNode) {
                         setSecondNode(clickEvent.id)
                         setAddPhase(AddConnectionPhase.ADD_BOX)
                     }
                 }
             }
+    }
+
+    //register clicks for nodes and edges
+    useEffect(() => {
+        if (clickEvent != null) {
+
+            console.log("CLICK EVENT FIRED")
+
+            //in process of adding an edge
+            handleClickingNodesToConnectWhenAddingEdge();
+
+            //want to upvote or downvote edge
+            // handleClickingEdgesForVoting();
 
         }
     }, [clickEvent])
@@ -120,22 +127,20 @@ function App() {
 
         //has nodes, set node event on click
         if (event.nodes.length > 0) {
-            console.log("SETTING NODE")
             setClickEvent({
                 clickType: ClickType.NODE,
                 id: event.nodes[0]
             })
+            handleClickingNodesToConnectWhenAddingEdge()
             return;
         }
 
         //has edges, set edge event on click
         if (event.edges.length > 0) {
-            console.log("SETTING EDGE")
             setClickEvent({
                 clickType: ClickType.EDGE,
                 id: event.edges[0]
             })
-
             return;
         }
     }
@@ -158,7 +163,7 @@ function App() {
 
         if (result == null) {
             console.error("REL IS NULL!!!!")
-            return ;
+            return;
         }
 
         //update the relationships using the prev state
@@ -199,13 +204,13 @@ function App() {
 
             const relationship = result as UpvoteResult;
 
-            console.log("RESULT: ")
+            console.log("RESULT AFTER UPVOTE: ")
             console.log(relationship)
 
-            //find and update the relationships
+            //find and update the relationships (only in current vasinity)
             setRelationships(prevState =>
                 prevState?.map(rel => {
-                    if (rel.relId == result.relId){
+                    if (rel.relId == result.relId) {
                         return {
                             ...rel,
                             votes: result.votes
@@ -213,8 +218,9 @@ function App() {
                     }
                     return rel;
                 })
+                    //filter out deleted relationships
+                    .filter(rel => rel.votes > 0)
             );
-
         })
 
     }
