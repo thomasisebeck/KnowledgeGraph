@@ -1,13 +1,12 @@
 import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
 import {
-    GraphNode,
-    NodeRelationship,
-    UpvoteResult,
     CreateStackReturnBody,
-    nodeType,
     FrontendBaseCateogries,
-    Node
+    Node,
+    NodeRelationship,
+    nodeType,
+    UpvoteResult
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
@@ -45,8 +44,8 @@ function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: s
 
 function App() {
 
-    const [nodes, setNodes] = useState<GraphNode[]>()
-    const [relationships, setRelationships] = useState<NodeRelationship[]>()
+    const [nodes, setNodes] = useState<Node[]>([])
+    const [relationships, setRelationships] = useState<NodeRelationship[]>([])
     const [addPhase, setAddPhase] = useState<AddConnectionPhase>(AddConnectionPhase.NONE)
     const [firstNode, setFirstNode] = useState<string | null>(null)
     const [secondNode, setSecondNode] = useState<string | null>(null)
@@ -71,7 +70,7 @@ function App() {
                 }
             }));
 
-            const myNodes: GraphNode[] = data.nodes.map((n: Node) => {
+            const myNodes: Node[] = data.nodes.map((n: Node) => {
                 if (n.nodeType == "ROOT")
                     return {
                         ...n,
@@ -190,18 +189,24 @@ function App() {
     }
 
     const addStackToFrontend = (body: CreateStackReturnBody) => {
-        console.log("App.ts: Add stack to frontend")
-        const nodes = body.nodes;
-        const rels = body.relationships;
+        const requestNodes = body.nodes as Node[];
+        const requestRelationships = body.relationships;
 
+        console.log("nodes")
+        console.log(nodes)
 
-        //todo: hide the dialogue
-        //todo: make loading button
+        console.log("rels")
+        console.log(requestRelationships)
 
-        setTimeout(() => {
-            setShowAddStackDialogue(false);
-            setStackLoading(false);
-        }, 2000)
+        for (const n of requestNodes)
+            updateNode(n)
+
+        //update or add rel
+        for (const r of requestRelationships)
+            updateRelationship(r);
+
+        setShowAddStackDialogue(false);
+        setStackLoading(false);
 
     }
 
@@ -210,6 +215,23 @@ function App() {
         setAddPhase(AddConnectionPhase.NONE)
         setFirstNode(null)
         setSecondNode(null)
+    }
+
+    function updateNode(toAdd: Node) {
+        if (toAdd == null) {
+            console.error("Node is null")
+            return;
+        }
+
+        setNodes(prevState => {
+            const existingIndex = prevState.findIndex(node => node.nodeId == toAdd.nodeId);
+            if (existingIndex !== -1)  //node already added
+                return prevState; //return old state
+
+            //not found, insert new node
+            return [...prevState, toAdd];
+        })
+
     }
 
     //used to update the relationship in the state after it's changed
@@ -222,20 +244,16 @@ function App() {
 
         //update the relationships using the prev state
         setRelationships(prevState => {
-            if (prevState) {
-                //get the index of the existing rel
-                const existingIndex = prevState.findIndex(rel => rel.relId === result.relId);
+            const existingIndex = prevState.findIndex(rel => rel.relId === result.relId);
 
-                if (existingIndex !== -1) {
-                    //found existing rel, update and return
-                    const toUpdate = [...prevState];
-                    toUpdate[existingIndex] = {...toUpdate[existingIndex], votes: result.votes}
-                    return toUpdate;
-                }
-
-                //not found, insert the new rel
-                return [result, ...prevState]
+            if (existingIndex !== -1) {
+                const toUpdate = [...prevState];
+                toUpdate[existingIndex] = {...toUpdate[existingIndex], votes: result.votes}
+                return toUpdate;
             }
+
+            //not found, insert the new rel
+            return [result, ...prevState]
         });
 
         reset();
@@ -261,13 +279,39 @@ function App() {
             console.log("RESULT AFTER UPVOTE: ")
             console.log(relationship)
 
-            //find and update the relationships (only in current vasinity)
+            if (relationship.newRelId != null) { //rel kept alive, add back
+                console.log("Rel kept alive... adding back")
+                console.log("set votes to 5 and update relID")
+                setRelationships(prevState =>
+                    prevState?.map(rel => {
+                        if (rel.relId === relationship.relId) {
+                            console.log("updating id to " + relationship.newRelId)
+                            console.log("setting votes to " + relationship.votes)
+                            setClickEvent({
+                                clickType: ClickType.EDGE,
+                                id: relationship.newRelId!
+                            })
+                            return {
+                                ...rel,
+                                relId: relationship.newRelId!,
+                                votes: relationship.votes
+                            }
+                        }
+                        return rel;
+                    })
+                );
+
+                //nothing more to do after adding back
+                return ;
+            }
+
+            //find and update the relationships, remove ones with 0 votes
             setRelationships(prevState =>
                 prevState?.map(rel => {
-                    if (rel.relId == result.relId) {
+                    if (rel.relId === relationship.relId) {
                         return {
                             ...rel,
-                            votes: result.votes
+                            votes: relationship.votes
                         }
                     }
                     return rel;

@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 app.post('/createStack', async (req, res) => {
     try {
         const body = req.body as RequestBody;
-        console.log("CREATE STACK REQUEST")
+        console.log("serve.ts /createStack CREATE STACK REQUEST")
         console.log(body);
 
         const result = await q.createStack(driver, body);
@@ -106,7 +106,8 @@ async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
         await q.upVoteRelationship(driver, rel, mustUpvote).then(upvoted => {
             const result: UpvoteResult = {
                 relId: upvoted.relId,
-                votes: upvoted.votes
+                votes: upvoted.votes,
+                newRelId: upvoted.newRelId
             }
             res.status(200).json(result)
         })

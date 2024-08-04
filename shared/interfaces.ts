@@ -73,11 +73,12 @@ export interface NodeRelationship {
 
 export interface UpvoteResult {
     relId: string,
-    votes: number
+    votes: number,
+    newRelId?: string
 }
 
 export interface GraphType {
-    nodes: GraphNode[] | undefined,
+    nodes: Node[] | undefined,
     relationships: NodeRelationship[] | undefined,
     clickEvent: (event: any) => void
 }
@@ -89,15 +90,8 @@ export interface HoverImageInterface {
     message: string
 }
 
-export interface GraphNode {
-    label: string,
-    nodeId: string
-    snippet?: string
-    nodeType: nodeType
-}
-
 export interface GraphType {
-    nodes: GraphNode[] | undefined,
+    nodes: Node[] | undefined,
     relationships: NodeRelationship[] | undefined,
     clickEvent: (event: any) => void
 }

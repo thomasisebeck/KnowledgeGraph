@@ -277,36 +277,93 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const from = getField(result.records, 'from') as Neo4jNode;
     const to = getField(result.records, 'to') as Neo4jNode;
 
-    if (r.properties.votes.toNumber() <= 0) {
+    console.log("NODES")
+    console.log(to)
+    console.log(from)
+
+    //if undefined remove
+    if (!r) {
+        return {
+           relId: relId,
+           votes: 0
+        }
+    }
+
+    if (r.properties != null && r.properties.votes.toNumber() <= 0) {
         //1. Delete the relationship
         //2. if node is stranded, add it back with an (is deleted) connection
 
         const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
         const result = await executeGenericQuery(driver, query, {})
-        console.log("Setting votes to 0 to delete")
-
-        //check if either node is stranded...
-        const toStranded = `
-            MATCH (start {nodeId: '${to.properties.nodeId}'}), (end:${ROOT})
-            MATCH path = shortestPath((start)-[*]-(end))
-            RETURN path IS NOT NULL as path_exists`
 
         const fromStranded = `
             MATCH (start {nodeId: '${from.properties.nodeId}'}), (end:${ROOT})
             MATCH path = shortestPath((start)-[*]-(end))
             RETURN path IS NOT NULL as path_exists`
 
-        const [toStrandedResult, fromStrandedResult] = await Promise.all([
-            await executeGenericQuery(driver, toStranded, {}),
-            await executeGenericQuery(driver, fromStranded, {})
-        ])
+        const toStranded = `
+            MATCH (start {nodeId: '${to.properties.nodeId}'}), (end:${ROOT})
+            MATCH path = shortestPath((start)-[*]-(end))
+            RETURN path IS NOT NULL as path_exists`
+
+        const toExecute = [];
+
+        //check if either node is stranded...
+        if (to.labels.indexOf("ROOT") == -1) {
+            //to not a root, push query
+            toExecute.push(toStranded)
+        }
+        if (from.labels.indexOf("ROOT") == -1) {
+            //from not a root, push query
+            toExecute.push(fromStranded)
+        }
+
+
+        const strandedResults = await Promise.all(toExecute.map(
+            async fun => await executeGenericQuery(driver, fun, {})
+        ));
+
+        let mayBeStranded = false;
+
+        for (const res of strandedResults) {
+            console.log(res)
+            if (res.records.length == 0)
+                mayBeStranded = true;
+        }
 
         console.log("Result of node is stranded...")
-        console.log("From stranded")
-        console.log(fromStrandedResult)
-        console.log(getField(fromStrandedResult.records, "path_exists"))
-        console.log("To stranded")
-        console.log(getField(toStrandedResult.records, "path_exists"))
+        console.log(mayBeStranded);
+
+        if (!mayBeStranded) {
+            return {
+                relId: r.properties.relId,
+                votes: 0
+            }
+        } else {
+            console.log("KEEPING CONNECTION ALIVE")
+            console.log("Adding connection back")
+
+            const numRelsDeleted = result.summary.counters.updates().relationshipsDeleted;
+            let res;
+            if (numRelsDeleted === 1) {
+                console.log("adding single sided connection")
+                res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type, Direction.AWAY);
+            } else {
+                console.log("adding double sided connection")
+                res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type, Direction.NEUTRAL);
+            }
+
+            console.dir(r, {depth: null})
+            console.log("VOTES")
+            console.log(r.properties.votes.toNumber());
+
+            //keep connection alive
+            return {
+                relId: r.properties.relId,
+                newRelId: res.relId,
+                votes: 5
+            }
+        }
 
     }
 
@@ -373,6 +430,8 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
 }
 
 const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction): Promise<NodeRelationship> => {
+    const VOTES_ON_CREATION = 5;
+
     if (connName.includes("-"))
         throw "labels cannot include hyphens";
 
@@ -413,13 +472,14 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
     const queries = [];
 
+    //NB: votes set to 5 intialiall
     for (const m of merges) {
         queries.push(
             `${m}
              MERGE (n1)-[r:${formatLabel(connName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
-             r.votes = 0
+             r.votes = ${VOTES_ON_CREATION}
              RETURN r`
         )
     }
@@ -514,7 +574,7 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
         }
     })
 
-    console.log("AFTER CREATION....")
+    console.log("queries.ts createStack AFTER CREATION....")
     console.dir({
         nodes: myNodes,
         relationships: myRelationships

@@ -93,7 +93,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         }).then(async result => {
-            console.log("AFTER CREATING STACK")
+            console.log("App.ts AFTER CREATING STACK")
 
             if (result.status === 200) {
                 const body = await result.json() as CreateStackReturnBody;
