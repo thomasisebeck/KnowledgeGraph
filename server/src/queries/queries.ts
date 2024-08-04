@@ -26,12 +26,17 @@ const BOTH = `${INFO} | ${CLASS}`
 //----------------------------- CREATION / MODIFICATION FUNCTIONS -----------------------------//
 
 const findOrCreateInformationNode = async (driver: Driver, label: string, snippet: string): Promise<Node> => {
+
+    console.log("CALL findOrCreateInformationNode")
+
     let searchQuery = `MATCH (n:${INFO} {label: $label}) RETURN n.nodeId AS nodeId`;
     let searchResult = await executeGenericQuery(driver, searchQuery, {
         label: label
     })
+    console.log("DONE FINDING")
     if (searchResult.records.length != 0) {
         //node already created, return it
+        console.log("DONE")
         return {
             nodeId: getField(searchResult.records, "nodeId"),
             label: label,
@@ -44,20 +49,43 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
     let {records, summary} = await executeGenericQuery(driver, query, {
         label: label, snippet: snippet, nodeId: crypto.randomUUID()
     })
+    console.log("DONE")
     return {
         nodeId: getField(records, "nodeId"),
         label: label,
         snippet: snippet,
         nodeType: INFO
     }
+
 }
 
-const findOrCreateClassificationNode = async (driver: Driver, label: string, createRoot?: boolean): Promise<Node> => {
-    let query;
-    if (createRoot)
-        query = `MERGE (n:${ROOT} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
-    else
-        query = `MERGE (n:${CLASS} {label: $label}) ON CREATE SET n.nodeId = '${crypto.randomUUID()}' RETURN n.nodeId AS nodeId, n.label AS label`;
+const createRootNode = async (driver: Driver, label: string): Promise<Node> => {
+    const query =
+        `MERGE (n:${ROOT} {label: $label}) 
+        ON CREATE SET n.nodeId = '${crypto.randomUUID()}' 
+        RETURN n.nodeId AS nodeId, n.label AS label`;
+
+    let {records, summary} = await executeGenericQuery(driver, query, {
+        label: label
+    })
+
+    return {
+        nodeType: ROOT,
+        nodeId: getField(records, "nodeId"),
+        label: getField(records, "label")
+    }
+
+}
+
+const findOrCreateClassificationNode = async (driver: Driver, label: string): Promise<Node> => {
+
+    console.log("CALL findOrCreateClassificationNode")
+
+    const query = `MERGE (n:${CLASS} {label: $label})
+        ON CREATE SET n.nodeId = '${crypto.randomUUID()}'
+        SET n.label = $label
+        RETURN n.nodeId AS nodeId, n.label AS label`;
+
     let {records, summary} = await executeGenericQuery(driver, query, {
         label: label
     })
@@ -89,15 +117,15 @@ const createTopicNodes = async (driver: Driver) => {
     //8. Geography
 
     return await Promise.all([
-        findOrCreateClassificationNode(driver, "Computer &\nInfo Science", true),
-        findOrCreateClassificationNode(driver, "Philosophy", true),
-        findOrCreateClassificationNode(driver, "Psychology", true),
-        findOrCreateClassificationNode(driver, "Science", true),
-        findOrCreateClassificationNode(driver, "Language", true),
-        findOrCreateClassificationNode(driver, "Technology", true),
-        findOrCreateClassificationNode(driver, "Arts", true),
-        findOrCreateClassificationNode(driver, "History", true),
-        findOrCreateClassificationNode(driver, "Geography", true),
+        createRootNode(driver, "Computer &\nInfo Science"),
+        createRootNode(driver, "Philosophy"),
+        createRootNode(driver, "Psychology"),
+        createRootNode(driver, "Science"),
+        createRootNode(driver, "Language"),
+        createRootNode(driver, "Technology"),
+        createRootNode(driver, "Arts"),
+        createRootNode(driver, "History"),
+        createRootNode(driver, "Geography"),
     ]);
 
 }
@@ -210,14 +238,26 @@ const getAllData = async (driver: Driver) => {
 
 //todo: continue with this!!!!
 const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: string) => {
-
     const pathToRootQuery =
-        `MATCH p=(myNode {nodeId: '${nodeIdFrom}'})-[*..100]-(root:${ROOT})
-        WHERE none(rel in relationships(p) WHERE rel.relId = '${relId}')
-        RETURN p
-        `
+        `MATCH (start {nodeId: '${nodeIdFrom}'}), (end:${ROOT})
+        MATCH path = shortestPath((start)-[*]-(end))
+        RETURN path`
+
+
+    //WHERE NONE (rel in relationships(path) WHERE rel.relId = '${relId}')
+
+    // const pathToRootQuery =
+    //    `MATCH (myNode {nodeId: '${nodeIdFrom}'})
+    //     CALL apoc.path.shortest(myNode, {end_node: (root:${ROOT})}) YIELD path
+    //     WHERE none(rel in relationships(path) WHERE rel.relId = '${relId}')
+    //     RETURN path AS p`;
+
+    console.log("trying to execute query...")
     const result = await executeGenericQuery(driver, pathToRootQuery, {})
-    const hasPath = getField(result.records, 'p')
+    console.log("Result of node is stranded...")
+    console.dir(result.records, {depth: null})
+    const hasPath = getField(result.records, 'path')
+    return true;
     return (hasPath === undefined);
 }
 
@@ -226,6 +266,7 @@ const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: st
 //unless it creates a stray node, then just return - upvotes
 
 const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<UpvoteResult> => {
+
 
     const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
@@ -236,33 +277,36 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     const from = getField(result.records, 'from') as Neo4jNode;
     const to = getField(result.records, 'to') as Neo4jNode;
 
+    if (r.properties.votes.toNumber() <= 0) {
+        //1. Delete the relationship
+        //2. if node is stranded, add it back with an (is deleted) connection
 
-    if (r.properties.votes.toNumber() < 0) {
+        const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
+        const result = await executeGenericQuery(driver, query, {})
+        console.log("Setting votes to 0 to delete")
 
-        //assume nodes will be stranded
-        let fromWillBeStranded = false;
-        let toWillBeStranded = false;
+        //check if either node is stranded...
+        const toStranded = `
+            MATCH (start {nodeId: '${to.properties.nodeId}'}), (end:${ROOT})
+            MATCH path = shortestPath((start)-[*]-(end))
+            RETURN path IS NOT NULL as path_exists`
 
-        //won't be stranded if root
-        //double check if not a root
-        if (from.labels[0] != ROOT) {
-            fromWillBeStranded = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
-        }
-        if (to.labels[0] != ROOT) {
-            toWillBeStranded = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
-        }
+        const fromStranded = `
+            MATCH (start {nodeId: '${from.properties.nodeId}'}), (end:${ROOT})
+            MATCH path = shortestPath((start)-[*]-(end))
+            RETURN path IS NOT NULL as path_exists`
 
-        //both won't get stranded, continue with deletion
-        if (!fromWillBeStranded && !toWillBeStranded) {
-            //remove the relationship
-            const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
-            const result = await executeGenericQuery(driver, query, {})
-            console.warn("Setting votes to 0 to delete")
-            return {
-                relId: r.properties.relId,
-                votes: 0,
-            }
-        }
+        const [toStrandedResult, fromStrandedResult] = await Promise.all([
+            await executeGenericQuery(driver, toStranded, {}),
+            await executeGenericQuery(driver, fromStranded, {})
+        ])
+
+        console.log("Result of node is stranded...")
+        console.log("From stranded")
+        console.log(fromStrandedResult)
+        console.log(getField(fromStrandedResult.records, "path_exists"))
+        console.log("To stranded")
+        console.log(getField(toStrandedResult.records, "path_exists"))
 
     }
 
@@ -273,6 +317,59 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         relId: r.properties.relId,
         votes: newVotes,
     };
+
+    //
+    //     console.log("VOTES = 0 or negative...")
+    //
+    //     //assume nodes will be stranded
+    //     let fromWillBeStranded = false;
+    //     let toWillBeStranded = false;
+    //
+    //     //won't be stranded if root
+    //     //double check if not a root
+    //     if (from.labels[0] != ROOT) {
+    //         console.log("trying stranded from...")
+    //         fromWillBeStranded = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
+    //         console.log("done")
+    //
+    //     }
+    //     if (to.labels[0] != ROOT) {
+    //         console.log("trying stranded to...")
+    //         toWillBeStranded = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
+    //         console.log("done")
+    //     }
+    //
+    //     console.log("stranded from:")
+    //     console.log(fromWillBeStranded)
+    //     console.log("stranded to:")
+    //     console.log(toWillBeStranded)
+    //
+    //     //both won't get stranded, continue with deletion
+    //     if (!fromWillBeStranded && !toWillBeStranded) {
+    //         console.log("trying to delete")
+    //         //remove the relationship
+    //         const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
+    //         const result = await executeGenericQuery(driver, query, {})
+    //         console.log("Setting votes to 0 to delete")
+    //
+    //         return {
+    //             relId: r.properties.relId,
+    //             votes: 0,
+    //         }
+    //
+    //     } else {
+    //         console.log("Node will get stranded, not deleting...")
+    //     }
+    //
+    // }
+    //
+    // //prevent deletion if there isn't a path
+    // const newVotes = r.properties.votes.toNumber() > 0 ? r.properties.votes.toNumber() : 1;
+    //
+    // return {
+    //     relId: r.properties.relId,
+    //     votes: newVotes,
+    // };
 }
 
 const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction): Promise<NodeRelationship> => {
@@ -346,36 +443,64 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
 }
 
-const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
-    const infoNode = body.infoNode;
 
+const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
+
+    console.log("create stack...")
+    console.dir(body, {depth: null});
+
+    console.log("pushing functions")
     //stack node function calls
-    const nodeFunctionCalls = body.connections.map(conn =>
-        findOrCreateClassificationNode(driver, conn.nodeName)
-    )
+    const nodeFunctionCalls = body.connections.map(((conn, index) => {
+        return async () => {
+            if (index == 0) { //root
+                const rootNode = await getNodeById(driver, body.rootNodeId) as Neo4jNode;
+                console.log("ROOOT")
+                console.log(rootNode)
+                return {
+                    nodeType: ROOT,
+                    nodeId: rootNode.properties.nodeId,
+                    label: rootNode.labels[0]
+                }
+            }
+            return findOrCreateClassificationNode(driver, conn.nodeName)
+        }
+    }));
+
     nodeFunctionCalls.push(
-        findOrCreateInformationNode(driver, infoNode.label, infoNode.snippet)
+        async () => {
+            return findOrCreateInformationNode(driver, body.infoNode.label, body.infoNode.snippet)
+        }
     )
+
+    console.log("calling...")
+
+    console.dir("CALLS")
+    console.dir(nodeFunctionCalls, {depth: null})
 
     //create all nodes
-    const myNodes = await Promise.all(nodeFunctionCalls)
+    const myNodes = await Promise.all(nodeFunctionCalls.map((call) => call()))
 
-    console.log("NODES AFTER CREATION")
+    console.log("NODES")
     console.log(myNodes)
 
-    //stack connection function calls
+    //stack connection function calls then fire to create connections
     const relFunctionCalls = body.connections.map((conn, index) =>
-        findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId, conn.connectionName, conn.direction)
+        async () => {
+            console.log("MY NODE", myNodes[index])
+            console.log("+ 1: ", myNodes[index + 1].nodeId)
+            return findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId, conn.connectionName, conn.direction)
+        }
     );
+    const myRelationships = await Promise.all(relFunctionCalls.map((call) => call()))
 
-    //create all connections
-    const myRelationships = await Promise.all(relFunctionCalls)
-
-    //upvote all connections
+    //stack upvote function calls then fire to upvote all relationships
     const upvoteRelFunctionCalls = myRelationships.map((conn) =>
-        upVoteRelationship(driver, conn.relId, true)
+        async () => {
+            return upVoteRelationship(driver, conn.relId, true)
+        }
     )
-    const upvotedRelationshipsCalls = await Promise.all(upvoteRelFunctionCalls)
+    const upvotedRelationshipsCalls = await Promise.all(upvoteRelFunctionCalls.map((call) => call()))
 
     const upvotedRelationships: NodeRelationship[] = upvotedRelationshipsCalls.map((conn, index) => {
         //only thing that needs to change is the votes
@@ -389,8 +514,11 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
         }
     })
 
-    console.log("CONNECTIONS AFTER CREATION")
-    console.log(myRelationships)
+    console.log("AFTER CREATION....")
+    console.dir({
+        nodes: myNodes,
+        relationships: myRelationships
+    }, {depth: null})
 
     return {
         nodes: myNodes,
@@ -410,11 +538,13 @@ const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string
     return getField(records, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
 }
 
-const getNodeById = async (driver: Driver, nodeId: any) => {
-    let query = `MATCH (n:${BOTH}) WHERE n.nodeId = $nodeId RETURN n`;
-    return await executeGenericQuery(driver, query, {
+const getNodeById = async (driver: Driver, nodeId: any): Promise<Neo4jNode> => {
+    console.log("CALL getNodeById")
+    let query = `MATCH (n) WHERE n.nodeId = $nodeId RETURN n`;
+    const result = await executeGenericQuery(driver, query, {
         nodeId: nodeId
     });
+    return getField(result.records, 'n') as Neo4jNode;
 }
 
 const getRelationshipById = async (driver: Driver, relId: string) => {

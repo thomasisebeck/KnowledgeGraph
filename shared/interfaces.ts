@@ -44,7 +44,8 @@ export interface CreateRelRequestBody {
 export interface RequestBodyConnection {
     nodeName: string,
     connectionName: string,
-    direction: Direction
+    direction: Direction,
+    nodeId?: string
 }
 
 export interface RequestBody {
@@ -53,6 +54,12 @@ export interface RequestBody {
         snippet: string
     },
     connections: RequestBodyConnection[],
+    rootNodeId: string
+}
+
+export interface FrontendBaseCateogries {
+    nodeId: string,
+    label: string
 }
 
 export interface NodeRelationship {

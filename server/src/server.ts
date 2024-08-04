@@ -49,6 +49,7 @@ app.post('/createStack', async (req, res) => {
         const result = await q.createStack(driver, body);
         res.status(200).send(result);
     } catch (e) {
+        console.error(e);
         res.status(400).send(e as string)
     }
 })
@@ -76,7 +77,7 @@ app.post('/createRel', async (req, res) => {
 app.get('/initialData', async (req, res) => {
     console.log("CALLED INIT DATA")
     try {
-        await q.createTopicNodes(driver);
+        const topicNodes = await q.createTopicNodes(driver);
 
         //return all data
         await q.getAllData(driver).then(allData => {
@@ -84,6 +85,7 @@ app.get('/initialData', async (req, res) => {
             console.dir(allData, {depth: null})
 
             res.status(200).json({
+                topicNodes:topicNodes,
                 nodes: allData.nodes,
                 relationships: allData.relationships
             });
@@ -108,8 +110,6 @@ async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
             }
             res.status(200).json(result)
         })
-
-        console.log("SENT")
     } catch (e) {
         console.error(e)
         res.status(400).json(e as string)

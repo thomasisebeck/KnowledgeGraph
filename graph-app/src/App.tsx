@@ -1,6 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
-import {GraphNode, NodeRelationship, UpvoteResult, CreateStackReturnBody} from "../../shared/interfaces";
+import {
+    GraphNode,
+    NodeRelationship,
+    UpvoteResult,
+    CreateStackReturnBody,
+    nodeType,
+    FrontendBaseCateogries,
+    Node
+} from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
@@ -45,6 +53,7 @@ function App() {
     const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
     const [stackLoading, setStackLoading] = useState<boolean>(false)
+    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
 
     //fetch the initial data and preload images
     useEffect(() => {
@@ -53,8 +62,36 @@ function App() {
             const data = await res.json();
             console.log("FRONTEND INIT DATA")
             console.log(data)
-            setNodes(data.nodes as GraphNode[])
-            setRelationships(data.relationships as NodeRelationship[])
+
+            //set the categories for the dropdown menu
+            setBaseCategories(data.topicNodes.map((n: Node) => {
+                return {
+                    nodeId: n.nodeId,
+                    label: n.label
+                }
+            }));
+
+            const myNodes: GraphNode[] = data.nodes.map((n: Node) => {
+                if (n.nodeType == "ROOT")
+                    return {
+                        ...n,
+                        nodeType: nodeType.ROOT
+                    }
+                if (n.nodeType == "CLASS")
+                    return {
+                        ...n,
+                        nodeType: nodeType.CLASSIFICATION
+                    }
+                return {
+                    ...n,
+                    nodeType: nodeType.INFORMATION
+                }
+            })
+
+            const myRels: NodeRelationship[] = data.relationships;
+
+            setNodes([...myNodes])
+            setRelationships([...myRels])
             setAddPhase(AddConnectionPhase.NONE)
         }).catch(e => {
             console.error(e)
@@ -156,7 +193,6 @@ function App() {
         console.log("App.ts: Add stack to frontend")
         const nodes = body.nodes;
         const rels = body.relationships;
-
 
 
         //todo: hide the dialogue
@@ -292,6 +328,7 @@ function App() {
                     addStackToFrontend={addStackToFrontend}
                     isLoading={stackLoading}
                     setStackLoading={setStackLoading}
+                    baseCategories={baseCategories}
                 />
             }
 

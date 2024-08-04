@@ -4,7 +4,7 @@ import Dialogue from "../Dialogue/Dialogue";
 import s from "./AddStackDialogue.module.scss"
 import g from "../../index.scss"
 import {HOST} from "../../../../shared/variables";
-import {RequestBody, Direction, RequestBodyConnection, CreateStackReturnBody} from "../../../../shared/interfaces"
+import {RequestBody, Direction, RequestBodyConnection, CreateStackReturnBody, FrontendBaseCateogries} from "../../../../shared/interfaces"
 import * as zlib from "node:zlib";
 
 const BASE_CATEGORY_INDEX = -1;
@@ -16,18 +16,20 @@ enum UpdateType {
 }
 
 
-function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading}: {
+function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading, baseCategories}: {
     hideAddStackDialogue: () => void,
     addStackToFrontend: (body: CreateStackReturnBody) => void,
     isLoading: boolean,
-    setStackLoading: (value: (((prevState: boolean) => boolean) | boolean)) => void
+    setStackLoading: (value: (((prevState: boolean) => boolean) | boolean)) => void,
+    baseCategories: FrontendBaseCateogries[]
 }) {
 
     const [categories, setCategories] = React.useState<RequestBodyConnection[]>([])
     const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
         direction: Direction.AWAY,
-        nodeName: "Comp",
-        connectionName: ""
+        nodeName: "",
+        connectionName: "",
+        nodeId: ""
     })
     const [errorMessage, setErrorMessage] = useState("")
     const [showErr, setShowErr] = useState(false);
@@ -44,6 +46,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             console.log("nodeName: ", baseCategory.nodeName)
             console.log("dir: ", baseCategory.direction)
             console.log("conn name: ", baseCategory.connectionName)
+            console.log("node id: ", baseCategory.nodeId)
             console.log(" > sub categories < ")
 
             for (const c of categories) {
@@ -59,7 +62,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
 
         printDetails();
 
-        const addedConnections = categories.map(c => {
+        const addedConnections:RequestBodyConnection[] = categories.map(c => {
             return {
                 nodeName: c.nodeName,
                 direction: c.direction,
@@ -68,6 +71,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         })
 
         const body: RequestBody = {
+            rootNodeId: baseCategory.nodeId!,
             connections: [
                 {
                     connectionName: baseCategory.connectionName,
@@ -251,8 +255,6 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         //check that eveything has been filled out
         //loop through the categories and see that they have the correct info
 
-        setStackLoading
-
         for (const c of categories) {
             if (!isValidCategory(c)) {
                 showError("please fill out all the categories")
@@ -298,16 +300,29 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 <div className={s.nodeDivOuter}>
                     <div className={s.nodeDiv}></div>
                     <div className={[s.content, s.customSelect].join(' ')}>
-                        <select name={"base-category"}>
-                            <option value={"Comp"}>Computer and Info Science</option>
-                            <option value={"Phil"}>Philosophy</option>
-                            <option value={"Psych"}>Psychology</option>
-                            <option value={"Sci"}>Science</option>
-                            <option value={"Lang"}>Language</option>
-                            <option value={"Tech"}>Technology</option>
-                            <option value={"Arts"}>Arts</option>
-                            <option value={"Hist"}>History</option>
-                            <option value={"Geo"}>Geography</option>
+                        <select name={"base-category"} onChange={(e) => {
+                            const index = baseCategories.findIndex(el => el.nodeId == e.target.value)
+
+                            //selected the empty category, so it won't be found
+                            if (index == -1) {
+                                //clear the base category if no option is selected
+                                setBaseCategory({...baseCategory, nodeId: "", nodeName: ""})
+                            } else
+                            //just set the name and nodeId when selecting the base category
+                            setBaseCategory({
+                                ...baseCategory,
+                                nodeId: baseCategories[index].nodeId,
+                                nodeName: baseCategories[index].label
+                            })
+
+                        }}>
+                            <option value={""} key={""}></option>
+                            {
+                                //the id's are the root node id's
+                                baseCategories.map(c => {
+                                    return <option value={c.nodeId} key={c.nodeId}>{c.label}</option>
+                                })
+                            }
                         </select>
                     </div>
                 </div>
@@ -320,7 +335,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
 
                 {
                     categories.map((c, index) => (
-                        <div className={s.category}>
+                        <div className={s.category} key={index}>
 
                             <img src={"buttons/cancel.svg"} className={s.cancel} onClick={() => {
                                 console.log("HI")
