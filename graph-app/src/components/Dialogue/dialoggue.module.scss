@@ -1,0 +1,43 @@
+@import "../../variables";
+
+.container {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $off-white;
+  z-index: 2;
+}
+
+.box {
+  background-color: #39405c;
+  border-radius: $border-rad;
+  padding: $padding;
+}
+
+.box h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: $padding;
+}
+
+.box label {
+  width: 170px;
+  display: inline-block;
+  transform: translateY(-3px);
+}
+
+.background {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  background-color: rgba(19, 19, 19, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: -1;
+}

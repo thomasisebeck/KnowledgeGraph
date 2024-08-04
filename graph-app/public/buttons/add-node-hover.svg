@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 399.36 137.69">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-1, .cls-2 {
+        stroke-width: 0px;
+      }
+
+      .cls-3 {
+        fill: #b9e5f4;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        fill: #50c7e0;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="148.65" y1="67.24" x2="244.65" y2="67.24" gradientUnits="userSpaceOnUse">
+      <stop offset=".06" stop-color="#86c540"/>
+      <stop offset=".96" stop-color="#beb131"/>
+    </linearGradient>
+  </defs>
+  <g id="Add_Node" data-name="Add Node">
+    <rect class="cls-3" x=".5" y=".5" width="398.36" height="136.69" rx="60.18" ry="60.18"/>
+    <circle class="cls-1" cx="196.65" cy="67.24" r="48"/>
+  </g>
+  <g id="Add_Node_Hover" data-name="Add Node Hover">
+    <circle class="cls-2" cx="196.65" cy="67.24" r="48"/>
+  </g>
+</svg>

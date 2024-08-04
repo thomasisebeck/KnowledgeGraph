@@ -1,0 +1,141 @@
+@import "../../variables";
+
+.category img {
+  height: 28px;
+  border-width: .125rem;
+  border-radius: 14px;
+  margin-bottom: 7px;
+  border-color: $off-white;
+}
+
+.category img:hover {
+  transform: scale(1.15);
+  transition: 0.2s;
+}
+
+.category {
+  position: relative;
+  width: 319px;
+}
+.toggleButtonContainer {
+  position: relative;
+}
+
+.toggleButtonContainer img {
+  position: absolute;
+  left: -35px;
+  top: 0;
+}
+
+.nodeDiv {
+  background-color: #fea400;
+  border-radius: 100%;
+  width: 70px;
+  height: 70px;
+}
+
+.content {
+  position: absolute;
+  top: 19px;
+}
+
+.categoriesContainer {
+  height: 152px;
+  overflow-y: scroll;
+  padding: 5px 0;
+}
+
+.cancel {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  z-index: 1;
+}
+
+.textDiv {
+  position: relative;
+}
+
+.textDiv textarea {
+  width: calc(100% - 12px);
+}
+
+.textDiv label {
+  display: block;
+}
+
+.textDiv textarea:focus {
+  outline: 3px solid grey;
+}
+
+.nodeDivOuter {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.innerDiv {
+  display: flex;
+  justify-content: center;
+  margin-top: 7px;
+  margin-bottom: 2px;
+}
+
+.innerDiv input {
+  width:100px;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.innerDiv input:focus {
+  outline: none;
+
+}
+.error {
+  color: red;
+  position: fixed;
+  bottom: 20px;
+  text-align: center;
+  width: 100%;
+  left: 0;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  5% {
+    transform: translateX(-20px);
+  }
+  10% {
+    transform: translateX(20px);
+  }
+  15% {
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.errorInner {
+  background-color: white;
+  font-weight: bold;
+  border-radius: $border-rad;
+  padding: $padding;
+  animation: shake 4s ease-in-out;
+  animation-fill-mode: forwards;
+  position: relative;
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 10px;
+}
