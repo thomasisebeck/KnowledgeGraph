@@ -2,8 +2,9 @@ import React, {useEffect, useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
 
 import s from "./AddStackDialogue.module.scss"
+import g from "../../index.scss"
 import {HOST} from "../../../../shared/variables";
-import {RequestBody, Direction, RequestBodyConnection} from "../../../../shared/interfaces"
+import {RequestBody, Direction, RequestBodyConnection, CreateStackReturnBody} from "../../../../shared/interfaces"
 import * as zlib from "node:zlib";
 
 const BASE_CATEGORY_INDEX = -1;
@@ -15,7 +16,12 @@ enum UpdateType {
 }
 
 
-function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => void }) {
+function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading}: {
+    hideAddStackDialogue: () => void,
+    addStackToFrontend: (body: CreateStackReturnBody) => void,
+    isLoading: boolean,
+    setStackLoading: (value: (((prevState: boolean) => boolean) | boolean)) => void
+}) {
 
     const [categories, setCategories] = React.useState<RequestBodyConnection[]>([])
     const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
@@ -76,16 +82,24 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
             }
         }
 
+        setStackLoading(true);
+
         fetch(`${HOST}/createStack`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         }).then(async result => {
             console.log("AFTER CREATING STACK")
-            console.log(await result.json());
 
-            //todo: update the interface....
-
+            if (result.status === 200) {
+                const body = await result.json() as CreateStackReturnBody;
+                addStackToFrontend(body);
+            } else {
+                console.error("Cannot add stack to frontend");
+                console.error(result.status)
+                console.error(result)
+                setStackLoading(false);
+            }
 
         })
 
@@ -237,6 +251,8 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
         //check that eveything has been filled out
         //loop through the categories and see that they have the correct info
 
+        setStackLoading
+
         for (const c of categories) {
             if (!isValidCategory(c)) {
                 showError("please fill out all the categories")
@@ -348,7 +364,19 @@ function AddStackDialogue({hideAddStackDialogue}: { hideAddStackDialogue: () => 
                 }
                 }></textarea>
             </div>
-            <button onClick={tryCreateStack}>Create Stack</button>
+            {
+                isLoading ?
+                    <button className={"buttonDisabled"}>
+                        <div>
+                            Please wait...
+                        </div>
+                    </button>
+                    :
+                    <button onClick={tryCreateStack}>
+                            Create Stack
+                    </button>
+
+            }
         </Dialogue>
     )
 }

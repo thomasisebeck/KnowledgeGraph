@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
-import {GraphNode, NodeRelationship, UpvoteResult} from "../../shared/interfaces";
+import {GraphNode, NodeRelationship, UpvoteResult, CreateStackReturnBody} from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
@@ -44,6 +44,7 @@ function App() {
     const [secondNode, setSecondNode] = useState<string | null>(null)
     const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
+    const [stackLoading, setStackLoading] = useState<boolean>(false)
 
     //fetch the initial data and preload images
     useEffect(() => {
@@ -149,6 +150,23 @@ function App() {
     const createConn = () => {
         reset();
         setAddPhase(AddConnectionPhase.FIRST)
+    }
+
+    const addStackToFrontend = (body: CreateStackReturnBody) => {
+        console.log("App.ts: Add stack to frontend")
+        const nodes = body.nodes;
+        const rels = body.relationships;
+
+
+
+        //todo: hide the dialogue
+        //todo: make loading button
+
+        setTimeout(() => {
+            setShowAddStackDialogue(false);
+            setStackLoading(false);
+        }, 2000)
+
     }
 
     //reset the state
@@ -271,6 +289,9 @@ function App() {
                 showAddStackDialogue &&
                 <AddStackDialogue
                     hideAddStackDialogue={() => setShowAddStackDialogue(false)}
+                    addStackToFrontend={addStackToFrontend}
+                    isLoading={stackLoading}
+                    setStackLoading={setStackLoading}
                 />
             }
 

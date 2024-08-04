@@ -37,6 +37,27 @@ button {
   margin-top: $padding;
 }
 
+.buttonDisabled {
+  background-color: $dark-grey;
+  color: $off-white;
+}
+
+@keyframes breathe {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.buttonDisabled div {
+  animation: breathe 1.5s infinite;
+}
+
 button:hover {
   transform: scale(1.05);
 }
