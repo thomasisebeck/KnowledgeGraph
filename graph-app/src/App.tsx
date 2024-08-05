@@ -55,12 +55,14 @@ function App() {
     const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
     const [showPopup, setShowPopup] = useState<Popup | null>(null)
 
+    //add a node when clicking on a snippet to show the information
     const addNode = (newNode: any) => {
         if (newNode.snippet) {
-
+            
             console.log("ADDING NODE")
             console.log(newNode.snippet)
 
+            //create new id's so as not to conflict
             const INFO_ID = newNode.nodeId + "-info";
             const REL_ID = newNode.nodeId + "-rel";
 
@@ -70,6 +72,7 @@ function App() {
                     return;
             }
 
+            //add the node
             setNodes([
                 {
                     nodeId: INFO_ID,
@@ -89,9 +92,7 @@ function App() {
                 type: ""
             }, ...relationships])
 
-
         }
-
     }
 
     //fetch the initial data and preload images
