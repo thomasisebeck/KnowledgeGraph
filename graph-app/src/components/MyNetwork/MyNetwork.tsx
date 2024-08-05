@@ -1,10 +1,29 @@
-import { Edge, Network, Node } from '@lifeomic/react-vis-network'
-import React, {useEffect, useRef} from 'react'
+import {Edge, Network, Node} from '@lifeomic/react-vis-network'
+import React, {useEffect, useRef, useState} from 'react'
 import {GraphType, Direction} from "../../../../shared/interfaces";
+import s from "./myNetwork.module.scss"
+import ReactDOM from "react-dom";
+import {node} from "prop-types";
 
-const options= {
+const options = {
     width: '100%',
     height: '100%',
+    interaction: {
+        hover: true
+    },
+    physics: {
+        maxVelocity: 20,
+        barnesHut: {
+            gravitationalConstant: -5000,
+            centralGravity: 0.5,
+            springLength: 95,
+            springConstant: 0.07,
+            damping: 0.3,
+            avoidOverlap: 0
+        },
+
+    },
+
     nodes: {
         borderWidth: 2,
         color: 'rgb(141,234,255)',
@@ -19,9 +38,9 @@ const options= {
             color: 'white'
         },
         shape: 'dot',
-        scaling:{
-            min: 10,
-            max: 30
+        scaling: {
+            min: 15,
+            max: 25
         }
     },
     edges: {
@@ -38,9 +57,35 @@ const options= {
     }
 }
 
-const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
+interface snippet {
+    snippet: string,
+    heading: string
+}
+
+
+const MyNetwork = ({nodes, relationships, clickEvent, addNode}: GraphType) => {
 
     const networkRef = useRef(null);
+    const [snippet, setSnippet] = useState<snippet | null>(null)
+    const [xPos, setXPos] = useState(0);
+    const [yPos, setYPos] = useState(0);
+
+    const showInfoOfNodeId = (id: string, clientX: number, clientY: number) => {
+        console.log("SHOWING INFO FOR: ", id)
+
+        if (nodes) {
+            for (const node of nodes) {
+                console.log(node)
+                if (node.nodeId == id) {
+                    //add the snippet to the graph
+                    addNode(node);
+                    return ;
+                }
+            }
+        }
+
+        console.error("could not find node!!! something went wrong");
+    }
 
     useEffect(() => {
         if (networkRef.current) {
@@ -48,46 +93,109 @@ const MyNetwork = ({nodes, relationships, clickEvent} : GraphType) => {
             networkRef.current.network.on('click', (event) => {
                 clickEvent(event);
             })
+            // @ts-ignore
+            networkRef.current.network.on('selectNode', (event) => {
+                if (event.nodes[0] != undefined) {
+                    showInfoOfNodeId(event.nodes[0], event.event.clientX, event.event.clientY);
+                } else {
+                    console.log("selected node is undefined")
+                    console.log("He")
+                }
+            })
         }
     }, [networkRef])
 
 
-    const sigmoid = (x : number) => {
+    const sigmoid = (x: number) => {
         const NUMERATOR = 1.3;
         const X_SCALE_FACTOR = 0.1;
         const Y_SHIFT = -0.05;
 
-        console.log("INPUT: " , x)
-
-        const sig =  NUMERATOR / (1 + Math.exp(-x * X_SCALE_FACTOR));
-        console.log("OUTPUT: " , sig + Y_SHIFT)
+        const sig = NUMERATOR / (1 + Math.exp(-x * X_SCALE_FACTOR));
         return sig + Y_SHIFT;
     }
 
+    const getColor = (myNode: string, isSnippet?: boolean) => {
+        if (isSnippet)
+            return '#242e1c'
+
+        switch (myNode) {
+            case "ROOT":
+                return '#87b66f'
+            case "CLASS":
+                return '#a6e68a'
+            case "INFO":
+                return '#ffffff'
+        }
+    }
+
+    function getValueBaseOnType(n: string) {
+        switch (n) {
+            case "ROOT":
+                return 12
+            case "CLASS":
+                return 11
+            case "INFO":
+                return 10
+        }
+    }
+
     return (
-      <Network
-        options={options}
-        ref={networkRef}>
+        <React.Fragment>
+            {
+                snippet?.snippet &&
+                <div
+                    className={s.snippetDialogue} style={{
+                    left: xPos - 10,
+                    top: yPos - 10
+                }}
+                >
+                    <div className={s.snippetHeading}>
+                        {snippet.heading}
+                    </div>
+                    <div>
+                        {snippet.snippet}
+                    </div>
+                </div>
+            }
 
-          {
-              nodes && nodes.map(el => {
-                  //todo: scaling doesn't work
-                  return <Node color={'orange'} value={100} key={el.nodeId} id={el.nodeId} label={el.label} />
-              })
-          }
+            <Network
+                options={options}
+                ref={networkRef}
+            >
 
-          {
-              relationships && relationships.map(r => {
-                  const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
-                  const THICKNESS_MULTIPLIER = 15;
-                  const MINIMUM_THICKNESS = 0.4;
-                  const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
-                  const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
-                  return <Edge id={uniqueKey} from={r.from} to={r.to} label={r.type != null ? r.type.replaceAll('_', ' ').toLowerCase() : "NULL TYPE"} width={thickness} arrows={ARROWS} key={uniqueKey} />
-              })
-          }
+                {
+                    nodes && nodes.map(el => {
+                            return (
+                                <Node
+                                    color={el.isSnippetNode ? getColor(el.nodeType, true) : getColor(el.nodeType)}
+                                    value={getValueBaseOnType(el.nodeType)}
+                                    shape={el.isSnippetNode ? "box" : "dot"}
+                                    key={el.nodeId}
+                                    id={el.nodeId}
+                                    label={el.label}
 
-      </Network>
+                                />
+                            )
+                        }
+                    )
+                }
+
+                {
+                    relationships && relationships.map(r => {
+                        const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
+                        const THICKNESS_MULTIPLIER = 15;
+                        const MINIMUM_THICKNESS = 0.4;
+                        const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
+                        const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
+                        return <Edge id={uniqueKey} from={r.from} to={r.to}
+                                     label={r.type != null ? r.type.replaceAll('_', ' ').toLowerCase() : "NULL TYPE"}
+                                     width={thickness} arrows={ARROWS} key={uniqueKey}/>
+                    })
+                }
+
+            </Network>
+        </React.Fragment>
     )
 }
 

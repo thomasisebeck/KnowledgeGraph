@@ -1,14 +1,9 @@
-export enum nodeType {
-    CLASSIFICATION,
-    INFORMATION,
-    ROOT
-}
-
 export interface Node {
     label: string,
     nodeId: string
     snippet?: string
     nodeType: string
+    isSnippetNode?:boolean
 }
 
 export interface Neo4jNode {
@@ -81,6 +76,7 @@ export interface GraphType {
     nodes: Node[] | undefined,
     relationships: NodeRelationship[] | undefined,
     clickEvent: (event: any) => void
+    addNode: (newNode: any) => void
 }
 
 export interface HoverImageInterface {

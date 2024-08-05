@@ -91,7 +91,6 @@ describe('queries', () => {
     //     expect(resclass2.label).toBe("myNode4");
     //     expect(resclass2.nodeId).not.toBe(null);
     //
-    //     //todo: implement
     //
     // }, 15000)
     //

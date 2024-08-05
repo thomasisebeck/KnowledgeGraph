@@ -5,14 +5,14 @@ import {
     FrontendBaseCateogries,
     Node,
     NodeRelationship,
-    nodeType,
-    UpvoteResult
+    UpvoteResult,
+    Direction
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddConnectionPhase, clickEvent, ClickType} from "./interfaces";
+import {AddConnectionPhase, clickEvent, ClickType, Popup} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 
@@ -53,6 +53,46 @@ function App() {
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
     const [stackLoading, setStackLoading] = useState<boolean>(false)
     const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
+    const [showPopup, setShowPopup] = useState<Popup | null>(null)
+
+    const addNode = (newNode: any) => {
+        if (newNode.snippet) {
+
+            console.log("ADDING NODE")
+            console.log(newNode.snippet)
+
+            const INFO_ID = newNode.nodeId + "-info";
+            const REL_ID = newNode.nodeId + "-rel";
+
+            //check that no duplicates are added
+            for (const n of nodes) {
+                if (n.nodeId == INFO_ID)
+                    return;
+            }
+
+            setNodes([
+                {
+                    nodeId: INFO_ID,
+                    label: newNode.label,
+                    snippet: newNode.snippet,
+                    nodeType: "INFO",
+                    isSnippetNode: true
+                }, ...nodes])
+
+            //add rel
+            setRelationships([{
+                direction: Direction.AWAY,
+                votes: 5,
+                relId: REL_ID,
+                from: newNode.nodeId,
+                to: INFO_ID,
+                type: ""
+            }, ...relationships])
+
+
+        }
+
+    }
 
     //fetch the initial data and preload images
     useEffect(() => {
@@ -60,7 +100,6 @@ function App() {
         fetch(`${HOST}/initialData`).then(async res => {
             const data = await res.json();
             console.log("FRONTEND INIT DATA")
-            console.log(data)
 
             //set the categories for the dropdown menu
             setBaseCategories(data.topicNodes.map((n: Node) => {
@@ -70,22 +109,26 @@ function App() {
                 }
             }));
 
-            const myNodes: Node[] = data.nodes.map((n: Node) => {
-                if (n.nodeType == "ROOT")
-                    return {
-                        ...n,
-                        nodeType: nodeType.ROOT
-                    }
-                if (n.nodeType == "CLASS")
-                    return {
-                        ...n,
-                        nodeType: nodeType.CLASSIFICATION
-                    }
-                return {
-                    ...n,
-                    nodeType: nodeType.INFORMATION
-                }
-            })
+            const myNodes: Node[] = data.nodes
+            // .map((n: any) => {
+            // if (n.nodeType == "ROOT")
+            //     return {
+            //         ...n,
+            //         nodeType: nodeType.ROOT
+            //     }
+            // if (n.nodeType == "CLASS")
+            //     return {
+            //         ...n,
+            //         nodeType: nodeType.CLASSIFICATION
+            //     }
+
+            //     console.log(n)
+            //     return {
+            //         ...n,
+            //         snippet: n.snippet,
+            //         nodeType: nodeType.INFORMATION
+            //     }
+            // })
 
             const myRels: NodeRelationship[] = data.relationships;
 
@@ -148,9 +191,7 @@ function App() {
     useEffect(() => {
         if (clickEvent != null) {
 
-            console.log("CLICK EVENT FIRED")
-
-            //in process of adding an edge
+            console.log("CLICK EVENT USE EFFECT")            //in process of adding an edge
             handleClickingNodesToConnectWhenAddingEdge();
 
             //want to upvote or downvote edge
@@ -164,11 +205,28 @@ function App() {
 
         //has nodes, set node event on click
         if (event.nodes.length > 0) {
+
+            console.log("HAS NODES")
+
             setClickEvent({
                 clickType: ClickType.NODE,
                 id: event.nodes[0]
             })
             handleClickingNodesToConnectWhenAddingEdge()
+
+
+            const mouseX = event.pointer.DOM.x;
+            const mouseY = event.pointer.DOM.y;
+
+            console.log("MOUSE")
+            console.log(mouseX)
+            console.log(mouseY)
+
+            setShowPopup({
+                mouseY: mouseY,
+                mouseX: mouseX
+            })
+
             return;
         }
 
@@ -308,7 +366,7 @@ function App() {
                 );
 
                 //nothing more to do after adding back
-                return ;
+                return;
             }
 
             //find and update the relationships, remove ones with 0 votes
@@ -332,11 +390,12 @@ function App() {
     return (
         <div className={s.Container}>
             {
-                nodes && relationships &&
+                nodes.length > 0 && relationships.length > 0 &&
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
                     clickEvent={handleClickEvent}
+                    addNode={addNode}
                 />
             }
 

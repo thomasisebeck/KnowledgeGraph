@@ -1,16 +1,13 @@
-.button {
-  position: relative;
-  top: 20px;
-  background-color: green;
-  border-radius: 100%;
+.snippetDialogue {
+  position: absolute;
+  max-width: 200px;
+  background-color: white;
+  color: black;
+  z-index: 5;
+  padding: 15px;
+  border-radius: 4px;
 }
-.expandButton {
 
-}
-
-.readButton {
-
-}
-.buttonsContainer {
+.snippetHeading {
 
 }

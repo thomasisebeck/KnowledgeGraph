@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="358c2303-e335-43d2-8994-351a39097ee2" name="Changes" comment="" />
+    <list default="true" id="358c2303-e335-43d2-8994-351a39097ee2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../graph-app/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../graph-app/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../graph-app/src/components/MyNetwork/MyNetwork.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../graph-app/src/components/MyNetwork/MyNetwork.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../graph-app/src/components/MyNetwork/myNetwork.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/../graph-app/src/components/MyNetwork/myNetwork.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../graph-app/src/interfaces.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../graph-app/src/interfaces.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/queries/queries.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/queries/queries.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/tests/queries.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/tests/queries.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interfaces.ts" beforeDir="false" afterPath="$PROJECT_DIR$/interfaces.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +23,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2jxnK9FkmqQ9zD2XU153NRrTDin" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -25,7 +35,8 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "feature/display-nodes-on-frontend",
+    "git-widget-placeholder": "show-information-on-info-node-click",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Git Repos/IMY761-Research/shared",
     "node.js.detected.package.eslint": "true",
@@ -37,6 +48,21 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="shared" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="shared" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -54,6 +80,7 @@
       <option name="presentableId" value="Default" />
       <updated>1722337528597</updated>
       <workItem from="1722337529733" duration="1237000" />
+      <workItem from="1722865885204" duration="1276000" />
     </task>
     <servers />
   </component>

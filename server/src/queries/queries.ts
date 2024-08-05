@@ -13,10 +13,12 @@ import {
     UpvoteResult
 } from "../../../shared/interfaces";
 
-const INFO = 'INFO'
-const CLASS = 'CLASS'
-const ROOT = 'ROOT'
-const BOTH = `${INFO} | ${CLASS}`
+
+const ROOT = "ROOT";
+const BOTH = "INFO | CLASS";
+const INFO = "INFO";
+const CLASS = "CLASS";
+
 
 // get nodes fully connected:
 // MATCH (n)-[r]-() RETURN n,r
@@ -164,7 +166,7 @@ const getAllData = async (driver: Driver) => {
         WITH from, r1, to
         OPTIONAL MATCH (toNode { nodeId: to.nodeId })-[r2 { relId: r1.relId }]->(fromNode { nodeId: from.nodeId}) 
         WHERE id(r2) <> id(r1)
-        RETURN from, to, r1, r2 IS NOT NULL AS is_double_sided`;
+        RETURN from, to, to.snippet, from.snippet, r1, r2 IS NOT NULL AS is_double_sided`;
 
     const rootNodesQuery =
         `MATCH (n:${ROOT}) RETURN n`;
@@ -180,14 +182,14 @@ const getAllData = async (driver: Driver) => {
     let fromNode: Node | null = null;
     let toNode: Node | null = null;
 
+    //only get root nodes
     rootNodes.records.forEach(record => {
         const node = getField([record], 'n');
-        const toPush: Node = {
+        nodes = tryPushToArray({
             label: node.properties.label,
             nodeType: node.labels[0],
             nodeId: node.properties.nodeId,
-        }
-        nodes = tryPushToArray(toPush, nodes);
+        }, nodes);
     })
 
     result.records.forEach(record => {
@@ -202,6 +204,7 @@ const getAllData = async (driver: Driver) => {
                     label: node.properties.label,
                     nodeType: node.labels[0],
                     nodeId: node.properties.nodeId,
+                    snippet: node.properties.snippet
                 }
                 nodes = tryPushToArray(toPush, nodes);
 
@@ -284,8 +287,8 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
     //if undefined remove
     if (!r) {
         return {
-           relId: relId,
-           votes: 0
+            relId: relId,
+            votes: 0
         }
     }
 
