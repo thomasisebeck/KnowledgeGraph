@@ -12,5 +12,11 @@ export enum ClickType {
 
 export interface clickEvent {
     clickType: ClickType,
-    id: string
+    id: string,
+    node?: any
+}
+
+export interface Popup {
+    mouseX: number,
+    mouseY: number
 }
