@@ -18,7 +18,7 @@ const executeGenericQuery = async (driver: Driver, query: string, params: any) =
 
 
 const toSnakeCase = (input: string) => {
-    return input.toLowerCase().trim().replaceAll(' ', '_').replace(/[^a-zA-Z0-9_]/g, '');
+    return input.toLowerCase().trim().replaceAll(' ', '_').replace(/[^a-zA-Z0-9_&]/g, '');
 }
 
 const clearDB = async (driver: Driver) => {

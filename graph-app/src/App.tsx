@@ -417,6 +417,8 @@ function App() {
                 return prevState; //return old state
 
             if (toAdd.snippet != undefined) {
+                //todo: fix this:
+                toAdd.isSnippetNode = true;
                 console.log(toAdd)
                 console.log("ADDING NODE WITH SNIPPET")
             }

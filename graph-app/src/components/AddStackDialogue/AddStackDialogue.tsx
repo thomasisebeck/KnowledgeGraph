@@ -34,6 +34,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
     const [errorMessage, setErrorMessage] = useState("")
     const [showErr, setShowErr] = useState(false);
     const [info, setInfo] = useState("")
+    const [heading, setHeading] = useState("")
 
     const createStack = () => {
         console.log("CREATING...")
@@ -56,6 +57,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             }
 
             console.log(" > info < ")
+            console.log(heading)
             console.log(info);
             console.log(" ----------------------- ")
         }
@@ -81,7 +83,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 ...addedConnections
             ],
             infoNode: {
-                label: info,
+                label: heading,
                 snippet: info,
             }
         }
@@ -372,9 +374,13 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
 
             <hr/>
             <div className={s.textDiv}>
+                <input
+                    type={"text"}
+                    onBlur={(e) => setHeading(e.target.value)}
+                    placeholder={"title"}
+                />
                 <label>Information</label>
                 <textarea onBlur={(e) => {
-                    console.log("SETTING INFO")
                     setInfo(e.target.value)
                 }
                 }></textarea>
