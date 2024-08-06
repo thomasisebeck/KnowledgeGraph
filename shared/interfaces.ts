@@ -79,10 +79,12 @@ export interface Segment {
     startNodeId: string,
     rel: {
         properties: {
-            relId: string
+            relId: string,
+            votes: any
         }
         type: string
-    }
+    },
+    isDoubleSided: boolean
 }
 
 export interface GraphType {

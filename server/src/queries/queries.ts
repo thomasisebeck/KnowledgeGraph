@@ -506,19 +506,40 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
 const tryPushSegment = (segment: Segment, array: Segment[]): Segment[] => {
    const index = array.findIndex(seg => seg.rel.properties.relId == segment.rel.properties.relId)
-    if (index != -1) //already there
+    if (index !== -1) //already there
         return array;
+
+    console.log("PUSHING: ", segment.rel.properties.relId);
 
     return [{
         rel: {
             type: segment.rel.type,
             properties: {
                 relId: segment.rel.properties.relId,
+                votes: segment.rel.properties.votes.toNumber()
             }
         },
         endNodeId: segment.endNodeId,
-        startNodeId: segment.startNodeId
+        startNodeId: segment.startNodeId,
+        isDoubleSided: segment.isDoubleSided
     }, ...array]
+}
+
+const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelationship[] => {
+    const res: NodeRelationship[] = [];
+
+    for (const s of toRetSegments) {
+       res.push({
+           relId: s.rel.properties.relId,
+           votes: s.rel.properties.votes,
+           direction: s.isDoubleSided ? Direction.NEUTRAL : Direction.AWAY,
+           type: s.rel.type,
+           from: s.startNodeId,
+           to: s.endNodeId
+       })
+    }
+
+    return res;
 }
 
 const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
@@ -557,7 +578,7 @@ RETURN collect(DISTINCT {
     const result = await driver.executeQuery(query, {})
 
     const segments = getField(result.records, 'segments') as Segment[];
-    console.dir(segments, {depth: null})
+    // console.dir(segments, {depth: null})
 
     let toRetSegments:Segment[] = [];
 
@@ -565,8 +586,12 @@ RETURN collect(DISTINCT {
         toRetSegments = tryPushSegment(s, toRetSegments);
     }
 
+    // console.dir(toRetSegments, {depth: null})
+
+    const relationships = convertSegmentsToNodeRelationships(toRetSegments);
+
     console.log("RETURNING")
-    console.dir(toRetSegments, {depth: null})
+    console.log(relationships);
 
     //todo: remove
     return [];
