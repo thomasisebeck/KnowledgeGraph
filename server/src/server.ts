@@ -63,7 +63,6 @@ app.post('/createRel', async (req, res) => {
         console.log("casted")
 
 
-
         await q.findOrCreateRelationship(driver, body.fromId, body.toId, body.name, body.direction).then(result => {
             res.status(200).json(result);
         })
@@ -74,8 +73,23 @@ app.post('/createRel', async (req, res) => {
     }
 })
 
+//only get the topic nodes
 app.get('/initialData', async (req, res) => {
-    console.log("CALLED INIT DATA")
+    console.log("CALLED INITIAL DATA")
+    try {
+        await q.createTopicNodes(driver).then(nodes => {
+            res.status(200).json({
+                topicNodes: nodes
+            })
+        })
+    } catch (e) {
+        console.error(e)
+        res.status(400).json(e as string);
+    }
+})
+
+app.get('/allData', async (req, res) => {
+    console.log("CALLED ALL DATA")
     try {
         const topicNodes = await q.createTopicNodes(driver);
 
@@ -85,7 +99,7 @@ app.get('/initialData', async (req, res) => {
             console.dir(allData, {depth: null})
 
             res.status(200).json({
-                topicNodes:topicNodes,
+                topicNodes: topicNodes,
                 nodes: allData.nodes,
                 relationships: allData.relationships
             });
@@ -123,6 +137,25 @@ app.post('/upvoteRel', async (req, res) => {
 
 app.post('/downvoteRel', async (req, res) => {
     await upOrDownVote(req, res, false);
+})
+
+app.get('/neighborhood/:id/:depth', async (req, res) => {
+    try {
+        if (req.params.id == null || typeof req.params.id != "string")
+            throw "node id is null or not a string"
+        if (req.params.depth == null || typeof req.params.depth != "string")
+            throw "depth is null or not a number"
+
+        const depth = Number(req.params.depth);
+        console.log("ID")
+        console.log(req.params.id);
+        const neighborhood = await q.getNeighborhood(driver, req.params.id, depth);
+        res.status(200).send(neighborhood);
+
+    } catch (e) {
+        console.error(e)
+        res.status(400).json(e as string);
+    }
 })
 
 app.listen(process.env.PORT, () => {

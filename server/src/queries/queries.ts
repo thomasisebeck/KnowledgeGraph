@@ -1,23 +1,21 @@
 import 'dotenv/config'
 import {Driver, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
-import {executeGenericQuery, formatLabel, getField} from "../utils";
+import {executeGenericQuery, getField, toSnakeCase} from "../utils";
 import {
+    BOTH,
+    CLASS,
     CreateStackReturnBody,
     Direction,
+    INFO,
     Neo4jNode,
     Node,
     NodeRelationship,
     RequestBody,
-    RequestBodyConnection,
+    ROOT,
+    Segment,
     UpvoteResult
 } from "../../../shared/interfaces";
-
-
-const ROOT = "ROOT";
-const BOTH = "INFO | CLASS";
-const INFO = "INFO";
-const CLASS = "CLASS";
 
 
 // get nodes fully connected:
@@ -41,7 +39,7 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
         console.log("DONE")
         return {
             nodeId: getField(searchResult.records, "nodeId"),
-            label: label,
+            label: toSnakeCase(label),
             snippet: snippet,
             nodeType: INFO
         }
@@ -49,17 +47,19 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
 
     let query = `MERGE (n:${INFO} {label: $label, snippet: $snippet, nodeId: $nodeId}) RETURN n.nodeId AS nodeId`;
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label, snippet: snippet, nodeId: crypto.randomUUID()
+        label: toSnakeCase(label), snippet: snippet, nodeId: crypto.randomUUID()
     })
     console.log("DONE")
     return {
         nodeId: getField(records, "nodeId"),
-        label: label,
+        label: toSnakeCase(label),
         snippet: snippet,
         nodeType: INFO
     }
 
 }
+
+
 
 const createRootNode = async (driver: Driver, label: string): Promise<Node> => {
     const query =
@@ -68,7 +68,7 @@ const createRootNode = async (driver: Driver, label: string): Promise<Node> => {
         RETURN n.nodeId AS nodeId, n.label AS label`;
 
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label
+        label: toSnakeCase(label)
     })
 
     return {
@@ -89,7 +89,7 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string): Pr
         RETURN n.nodeId AS nodeId, n.label AS label`;
 
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label
+        label: toSnakeCase(label)
     })
 
     return {
@@ -131,7 +131,6 @@ const createTopicNodes = async (driver: Driver) => {
     ]);
 
 }
-
 
 const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
 
@@ -312,11 +311,11 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         const toExecute = [];
 
         //check if either node is stranded...
-        if (to.labels.indexOf("ROOT") == -1) {
+        if (to.labels.indexOf(ROOT) == -1) {
             //to not a root, push query
             toExecute.push(toStranded)
         }
-        if (from.labels.indexOf("ROOT") == -1) {
+        if (from.labels.indexOf(ROOT) == -1) {
             //from not a root, push query
             toExecute.push(fromStranded)
         }
@@ -479,7 +478,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
     for (const m of merges) {
         queries.push(
             `${m}
-             MERGE (n1)-[r:${formatLabel(connName)}]->(n2)
+             MERGE (n1)-[r:${toSnakeCase(connName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
              r.votes = ${VOTES_ON_CREATION}
@@ -506,6 +505,104 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
 }
 
+const tryPushSegment = (segment: Segment, array: Segment[]): Segment[] => {
+   const index = array.findIndex(seg => seg.rel.properties.relId == segment.rel.properties.relId)
+    if (index !== -1) //already there
+        return array;
+
+    return [{
+        rel: {
+            type: segment.rel.type,
+            properties: {
+                relId: segment.rel.properties.relId,
+                votes: segment.rel.properties.votes.toNumber()
+            }
+        },
+        endNodeId: segment.endNodeId,
+        startNodeId: segment.startNodeId,
+        isDoubleSided: segment.isDoubleSided
+    }, ...array]
+}
+
+const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelationship[] => {
+    const res: NodeRelationship[] = [];
+
+    for (const s of toRetSegments) {
+       res.push({
+           relId: s.rel.properties.relId,
+           votes: s.rel.properties.votes,
+           direction: s.isDoubleSided ? Direction.NEUTRAL : Direction.AWAY,
+           type: s.rel.type,
+           from: s.startNodeId,
+           to: s.endNodeId
+       })
+    }
+
+    return res;
+}
+
+const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
+    console.log("ID: " + nodeId)
+    console.log("DEPTH: " + depth)
+
+    const relationshipsQuery =
+        `MATCH (start {nodeId: '${nodeId}'})
+        MATCH p=(start)-[r*..${depth + 1}]-(end)
+        UNWIND relationships(p) AS rel
+        WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
+        OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]-(startNode)
+        RETURN collect(DISTINCT {
+            startNodeId: startNode.nodeId,
+            endNodeId: endNode.nodeId,
+            rel: rel,
+            isDoubleSided: r2 IS NOT NULL
+        }) AS segments`;
+
+
+    const nodeQuery =
+        `MATCH (start {nodeId: '${nodeId}'})-[*..${depth}]-(neighbors)
+        RETURN neighbors`
+
+    const [relsResult, nodeResult] = await Promise.all([
+        await driver.executeQuery(relationshipsQuery, {}),
+        await driver.executeQuery(nodeQuery, {})
+    ]);
+
+    const segments = getField(relsResult.records, 'segments') as Segment[];
+    // console.dir(segments, {depth: null})
+
+    let toRetSegments:Segment[] = [];
+    let toRetNodes:Node[] = [];
+
+    for (const s of segments) {
+        toRetSegments = tryPushSegment(s, toRetSegments);
+    }
+
+    for (const n of nodeResult.records) {
+        const neighbors = getField([n], 'neighbors');
+        const newNode: Node = {
+            nodeId: neighbors.properties.nodeId,
+            label: neighbors.properties.label,
+            nodeType: neighbors.labels[0],
+            snippet: neighbors.properties.snippet,
+            isSnippetNode: neighbors.properties.snippet != null,
+        }
+        toRetNodes = tryPushToArray(newNode, toRetNodes, false);
+    }
+
+    console.log("--------------------------")
+    console.log({
+        relationships: convertSegmentsToNodeRelationships(toRetSegments),
+        nodes: toRetNodes
+    })
+    console.log("--------------------------")
+
+    return {
+        relationships: convertSegmentsToNodeRelationships(toRetSegments),
+        nodes: toRetNodes
+    }
+
+}
 
 const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
 
@@ -592,13 +689,13 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 //----------------------------- DOES EXIST FUNCTIONS -----------------------------//
 
 const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
-    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
+    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${toSnakeCase(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${toSnakeCase(relationshipLabel)}]-(n2))`;
     const {records, summary} = await executeGenericQuery(driver, query, {});
 
     if (records.length == 0)
         return false;
 
-    return getField(records, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
+    return getField(records, `EXISTS((n1)-[:${toSnakeCase(relationshipLabel)}]-(n2))`);
 }
 
 const getNodeById = async (driver: Driver, nodeId: any): Promise<Neo4jNode> => {
@@ -616,7 +713,6 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     return records.at(0)?.get("r")
 }
 
-
 export default {
     findOrCreateInformationNode,
     removeNode,
@@ -628,5 +724,6 @@ export default {
     createStack,
     createTopicNodes,
     upVoteRelationship,
-    getAllData
+    getAllData,
+    getNeighborhood
 }
