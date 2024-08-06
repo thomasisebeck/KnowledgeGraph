@@ -17,6 +17,9 @@ const executeGenericQuery = async (driver: Driver, query: string, params: any) =
 }
 
 
+const toSnakeCase = (input: string) => {
+    return input.toLowerCase().trim().replaceAll(' ', '_').replace(/[^a-zA-Z0-9_]/g, '');
+}
 
 const clearDB = async (driver: Driver) => {
     let query = 'MATCH (n) DETACH DELETE n';
@@ -26,13 +29,10 @@ const getField = (records: Record[], field: string) => {
     return records?.at(0)?.get(field);
 }
 
-const formatLabel = (relationshipLabel: string) => {
-    return relationshipLabel.replaceAll(' ', '_').toLocaleUpperCase();
-}
 
 export {
     getField,
-    formatLabel,
     executeGenericQuery,
-    clearDB
+    clearDB,
+    toSnakeCase
 }

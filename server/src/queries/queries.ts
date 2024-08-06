@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import {Driver, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
-import {executeGenericQuery, formatLabel, getField} from "../utils";
+import {executeGenericQuery, getField, toSnakeCase} from "../utils";
 import {
     BOTH,
     CLASS,
@@ -39,7 +39,7 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
         console.log("DONE")
         return {
             nodeId: getField(searchResult.records, "nodeId"),
-            label: label,
+            label: toSnakeCase(label),
             snippet: snippet,
             nodeType: INFO
         }
@@ -47,17 +47,19 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
 
     let query = `MERGE (n:${INFO} {label: $label, snippet: $snippet, nodeId: $nodeId}) RETURN n.nodeId AS nodeId`;
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label, snippet: snippet, nodeId: crypto.randomUUID()
+        label: toSnakeCase(label), snippet: snippet, nodeId: crypto.randomUUID()
     })
     console.log("DONE")
     return {
         nodeId: getField(records, "nodeId"),
-        label: label,
+        label: toSnakeCase(label),
         snippet: snippet,
         nodeType: INFO
     }
 
 }
+
+
 
 const createRootNode = async (driver: Driver, label: string): Promise<Node> => {
     const query =
@@ -66,7 +68,7 @@ const createRootNode = async (driver: Driver, label: string): Promise<Node> => {
         RETURN n.nodeId AS nodeId, n.label AS label`;
 
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label
+        label: toSnakeCase(label)
     })
 
     return {
@@ -87,7 +89,7 @@ const findOrCreateClassificationNode = async (driver: Driver, label: string): Pr
         RETURN n.nodeId AS nodeId, n.label AS label`;
 
     let {records, summary} = await executeGenericQuery(driver, query, {
-        label: label
+        label: toSnakeCase(label)
     })
 
     return {
@@ -476,7 +478,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
     for (const m of merges) {
         queries.push(
             `${m}
-             MERGE (n1)-[r:${formatLabel(connName)}]->(n2)
+             MERGE (n1)-[r:${toSnakeCase(connName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
              r.votes = ${VOTES_ON_CREATION}
@@ -687,13 +689,13 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
 //----------------------------- DOES EXIST FUNCTIONS -----------------------------//
 
 const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
-    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${formatLabel(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`;
+    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${toSnakeCase(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${toSnakeCase(relationshipLabel)}]-(n2))`;
     const {records, summary} = await executeGenericQuery(driver, query, {});
 
     if (records.length == 0)
         return false;
 
-    return getField(records, `EXISTS((n1)-[:${formatLabel(relationshipLabel)}]-(n2))`);
+    return getField(records, `EXISTS((n1)-[:${toSnakeCase(relationshipLabel)}]-(n2))`);
 }
 
 const getNodeById = async (driver: Driver, nodeId: any): Promise<Neo4jNode> => {
@@ -710,7 +712,6 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     const {records} = await executeGenericQuery(driver, query, {});
     return records.at(0)?.get("r")
 }
-
 
 export default {
     findOrCreateInformationNode,

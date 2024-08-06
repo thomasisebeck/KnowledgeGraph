@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { CreateRelRequestBody, NodeRelationship, Direction } from '../../../shared/interfaces';
 import Dialogue from "./Dialogue/Dialogue";
 import {HOST} from "../../../shared/variables"
@@ -16,6 +16,8 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
     const nameRef = React.useRef<HTMLInputElement | null>(null);
     const checkRef = React.useRef<HTMLInputElement | null>(null);
     const [message, setMessage] = React.useState('');
+    const [isLoading, setIsLoading] = useState(false)
+
     //function to send an api request to create a connection
     const createConnection = async (name: string, direction: Direction) => {
         if (firstNode == null || secondNode == null) {
@@ -68,9 +70,12 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
     const tryCreateConnection = async () => {
         if (nameRef.current != null && checkRef.current != null) {
             if (nameRef.current.value != "") {
+                setIsLoading(true)
                 const name = nameRef.current.value;
                 const isDoubleSided = checkRef.current.checked;
                 await createConnection(name, isDoubleSided ? Direction.NEUTRAL : Direction.AWAY);
+                setIsLoading(false)
+                hideAddBox();
                 return;
             }
             setMessage("name is not set")
@@ -87,7 +92,12 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
                 <label>Double sided:</label>
                 <input type={"checkbox"} ref={checkRef}/>
             </div>
-            <button onClick={tryCreateConnection}>Create</button>
+            {
+                isLoading ?
+                    <button className={"buttonDisabled"}>Please wait...</button>
+                    :
+                    <button onClick={tryCreateConnection}>Create</button>
+            }
         </Dialogue>
     )
 

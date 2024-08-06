@@ -63,7 +63,7 @@ interface snippet {
 }
 
 
-const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) => {
+const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}: GraphType) => {
 
     const networkRef = useRef(null);
     const [snippet, setSnippet] = useState<snippet | null>(null)
@@ -72,13 +72,12 @@ const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) =>
 
     let counter = 0;
 
-    const tryExpand = async (id: string) => {
+    /* const tryExpand = async (id: string) => {
 
         if (nodes) {
             for (const node of nodes) {
                 if (node.nodeId == id && node.nodeType != INFO) {
                     //add the snippet to the graph
-                    // console.log("Calling expand ", + counter++)
                     const res = await expandNode(node);
                     return;
                 }
@@ -86,23 +85,35 @@ const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) =>
         }
 
         console.error("could not find node, is it an INFO node?");
-    }
+    } */
 
     useEffect(() => {
         if (networkRef.current) {
-            // @ts-ignore
-            networkRef.current.network.on('click', (event) => {
-                clickEvent(event);
-            })
+
+            //set the state in the parent component, hooks listening
+
             // @ts-ignore
             networkRef.current.network.on('selectNode', async (event) => {
-                if (event.nodes[0] != undefined) {
-                    // console.log("NODES[0]")
-                    // console.log(event.nodes[0])
-                    await tryExpand(event.nodes[0]);
-                } else {
-                    console.log("selected node is undefined")
+                if (event.nodes[0] != null) {
+
+                    //select a node, remove a node
+                    console.log("select node")
+                    setSelectedNodeId(event.nodes[0])
+                    setSelectedEdgeId(null)
+                    return;
                 }
+            })
+
+            // @ts-ignore
+            networkRef.current.network.on('selectEdge', async (event) => {
+                if (event.nodes[0] == null) //no nodes selected
+                    if (event.edges[0] != null) {
+                        //select and edge, remove a node
+
+                        console.log("select edge")
+                        setSelectedEdgeId(event.edges[0])
+                        setSelectedNodeId(null)
+                    }
             })
         }
     }, [networkRef])
@@ -175,8 +186,7 @@ const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) =>
                                     shape={el.isSnippetNode ? "box" : "dot"}
                                     key={el.nodeId}
                                     id={el.nodeId}
-                                    label={el.label}
-
+                                    label={el.label.replaceAll('_', ' ')}
                                 />
                             )
                         }

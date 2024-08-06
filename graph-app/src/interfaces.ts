@@ -1,8 +1,14 @@
-export enum AddConnectionPhase {
+export enum Phase {
     NONE,
     FIRST,
     SECOND,
     ADD_BOX
+}
+
+export interface AddPhase {
+    phase: Phase,
+    firstNodeId: string,
+    secondNodeId: string
 }
 
 export enum ClickType {

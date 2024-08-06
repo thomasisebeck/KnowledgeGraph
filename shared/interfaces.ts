@@ -87,11 +87,16 @@ export interface Segment {
     isDoubleSided: boolean
 }
 
+export interface NodePair {
+    firstNodeId: string,
+    secondNodeId: string
+}
+
 export interface GraphType {
     nodes: Node[] | undefined,
     relationships: NodeRelationship[] | undefined,
-    clickEvent: (event: any) => void
-    expandNode: (newNode: Node) => void
+    setSelectedNodeId: (nodeId: string | null) => void
+    setSelectedEdgeId: (edgeId: string | null) => void
 }
 
 export interface HoverImageInterface {
@@ -99,12 +104,6 @@ export interface HoverImageInterface {
     hoverImage: string,
     onclick: () => void,
     message: string
-}
-
-export interface GraphType {
-    nodes: Node[] | undefined,
-    relationships: NodeRelationship[] | undefined,
-    clickEvent: (event: any) => void
 }
 
 export const ROOT = "ROOT";

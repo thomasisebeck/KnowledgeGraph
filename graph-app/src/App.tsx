@@ -12,11 +12,11 @@ import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddConnectionPhase, clickEvent, ClickType, Popup} from "./interfaces";
+import {AddPhase, Phase} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 
-function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
+function upvoteDownvoteButtons(selectedEdgeId: string, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
     return <div className={s.upvoteDownvoteContainer}>
         <HoverImage
             message={"upvote edge"}
@@ -24,8 +24,7 @@ function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: s
             hoverImage={"buttons/upvote-hover.svg"}
             onclick={async () => {
                 //upvote the edge
-                if (clickE && clickE.clickType == ClickType.EDGE)
-                    await upvoteEdge(clickE.id, true).then(r => console.log(r))
+                await upvoteEdge(selectedEdgeId, true)
             }}
         />
         <HoverImage
@@ -34,28 +33,32 @@ function upvoteDownvoteButtons(clickE: clickEvent | null, upvoteEdge: (edgeId: s
             hoverImage={"buttons/downvote-hover.svg"}
             onclick={async () => {
                 //downvote the edge
-                if (clickE && clickE.clickType == ClickType.EDGE)
-                    await upvoteEdge(clickE.id, false).then(r => console.log(r))
+                await upvoteEdge(selectedEdgeId, false)
             }}
         />
 
     </div>;
 }
 
+
 function App() {
 
     const [nodes, setNodes] = useState<Node[]>([])
     const [relationships, setRelationships] = useState<NodeRelationship[]>([])
-    const [addPhase, setAddPhase] = useState<AddConnectionPhase>(AddConnectionPhase.NONE)
-    const [firstNode, setFirstNode] = useState<string | null>(null)
-    const [secondNode, setSecondNode] = useState<string | null>(null)
-    const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
+    const [addPhase, setAddPhase] = useState<AddPhase>({
+        phase: Phase.NONE,
+        secondNodeId: "",
+        firstNodeId: ""
+    })
+    // const [firstNode, setFirstNode] = useState<string | null>(null)
+    // const [secondNode, setSecondNode] = useState<string | null>(null)
+    // const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
     const [stackLoading, setStackLoading] = useState<boolean>(false)
     const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
-    const [showPopup, setShowPopup] = useState<Popup | null>(null)
+    const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
-    let counter = 0;
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
 
@@ -133,9 +136,7 @@ function App() {
         }
     }
 
-    //fetch the initial data and preload images
-    useEffect(() => {
-        //fetch data
+    function getData() {
         fetch(`${HOST}/initialData`).then(async res => {
             const data = await res.json();
             console.log("FRONTEND INIT DATA")
@@ -147,12 +148,9 @@ function App() {
             setBaseCategories(nodes.map((n: Node) => {
                 return {
                     nodeId: n.nodeId,
-                    label: n.label
+                    label: n.label.replaceAll('_', ' ')
                 }
             }));
-
-            //not adding anything yet
-            setAddPhase(AddConnectionPhase.NONE)
 
             //add nodes to frontend
             setNodes(nodes.map((n: Node) => {
@@ -170,6 +168,12 @@ function App() {
         }).catch(e => {
             console.error(e)
         })
+    }
+
+//fetch the initial data and preload images
+    useEffect(() => {
+        //fetch data
+        getData();
 
         const images = [
             "add-category-node.svg",
@@ -198,12 +202,128 @@ function App() {
         })
 
     }, []);
+    //
+    // const tryUpvoteEdge = async () => {
+    //     if (clickEvent != null) {
+    //         if (clickEvent.clickType == ClickType.EDGE) {
+    //             await upvoteEdge(clickEvent.id, true)
+    //         }
+    //     }
+    // }
+    //
+    // const tryDownvoteEdge = async () => {
+    //     if (clickEvent != null) {
+    //         if (clickEvent.clickType == ClickType.EDGE) {
+    //             await upvoteEdge(clickEvent.id, false)
+    //         }
+    //     }
+    // }
 
-    const handleClickingNodesToConnectWhenAddingEdge = () => {
-        if (clickEvent && clickEvent.clickType == ClickType.NODE) {
+    //handle selecting edges
+    useEffect(() => {
+        if (selectedEdgeId != null) {
+            console.log("handling select edge with id: " + selectedEdgeId)
+        }
+    }, [selectedEdgeId]);
+
+    useEffect(() => {
+        if (selectedNodeId != null) {
+            //click first node
+            if (addPhase.phase == Phase.FIRST) {
+                console.log("clicked first node, id: " + selectedNodeId)
+                setAddPhase({
+                    ...addPhase,
+                    phase: Phase.SECOND,
+                    firstNodeId: selectedNodeId
+                })
+                return;
+            }
+
+            if (addPhase.phase == Phase.SECOND) {
+                console.log("clicked second node, id: " + selectedNodeId)
+                setAddPhase({
+                    ...addPhase,
+                    phase: Phase.ADD_BOX,
+                    secondNodeId: selectedNodeId
+                })
+                return;
+            }
+
+            //handle expanding nodes
+            if (nodes) {
+                for (const node of nodes)
+                    if (node.nodeId == selectedNodeId && node.nodeType != "INFO") {
+                        expandNode(node)
+                        return;
+                    }
+            }
+        }
+    }, [selectedNodeId]);
+
+    //register clicks for nodes and edges
+    // useEffect(() => {
+    //     // if (clickEvent && (addPhase == AddConnectionPhase.FIRST || addPhase == AddConnectionPhase.SECOND))
+    //     //     handleClickingNodesToConnectWhenAddingEdge();
+    //
+    //     if (clickEvent?.clickType == ClickType.NODE) {
+    //         handleSelectNode(clickEvent.id);
+    //     }
+    //
+    //     if (clickEvent?.clickType == ClickType.EDGE) {
+    //         handleSelectEdge(clickEvent.id);
+    //     }
+    // }, [clickEvent])
+    //
+    // handle clicks for nodes and edges
+    /*   const handleClickEvent = (event: any) => {
+
+          //has nodes, set node event on click
+          if (event.nodes.length > 0) {
+
+              console.log(event);
+
+              console.log("HAS NODES")
+
+              //todo: prevent clicking on info node
+              setClickEvent({
+                  clickType: ClickType.NODE,
+                  id: event.nodes[0]
+              })
+
+              const mouseX = event.pointer.DOM.x;
+              const mouseY = event.pointer.DOM.y;
+
+              console.log("MOUSE")
+              console.log(mouseX)
+              console.log(mouseY)
+
+              setShowPopup({
+                  mouseY: mouseY,
+                  mouseX: mouseX
+              })
+
+              return;
+          }
+
+          //has edges, set edge event on click
+          if (event.edges.length > 0) {
+              setClickEvent({
+                  clickType: ClickType.EDGE,
+                  id: event.edges[0]
+              })
+              return;
+          }
+      }*/
+
+    /*
+
+    if (clickEvent && clickEvent.clickType == ClickType.NODE) {
 
             //click first node
             if (addPhase == AddConnectionPhase.FIRST) {
+                console.log("MY NODE")
+                console.log(clickEvent);
+                console.log(clickEvent.node)
                 setFirstNode(clickEvent.id)
                 setAddPhase(AddConnectionPhase.SECOND)
             }
@@ -216,58 +336,49 @@ function App() {
                 }
             }
         }
-    }
+     */
 
+    // const handleSelectNode = async (nodeId: string) => {
+    //
+    // }
 
-    //register clicks for nodes and edges
-    useEffect(() => {
-        if (clickEvent && (addPhase == AddConnectionPhase.FIRST || addPhase == AddConnectionPhase.SECOND))
-            handleClickingNodesToConnectWhenAddingEdge();
-    }, [clickEvent])
+    // useEffect(() => {
+    //     console.log("handling select node with id: " + nodeId)
+    //     console.log(addPhase)
+    //
+    //     //see if you are adding a connection
+    //     if (addPhase != AddConnectionPhase.NONE) {
+    //         console.log("currently adding a connection")
+    //
+    //         //click first node
+    //         if (addPhase == AddConnectionPhase.FIRST) {
+    //             console.log("MY NODE")
+    //             setFirstNode(nodeId)
+    //             setAddPhase(AddConnectionPhase.SECOND)
+    //         }
+    //
+    //         //click second node
+    //         if (addPhase == AddConnectionPhase.SECOND) {
+    //             setSecondNode(nodeId)
+    //             setAddPhase(AddConnectionPhase.ADD_BOX)
+    //         }
+    //
+    //         return;
+    //     }
+    //
+    //
+    //     if (nodes) {
+    //         for (const node of nodes)
+    //             if (node.nodeId == nodeId && node.nodeType != INFO) {
+    //                 const res = await expandNode(node)
+    //             }
+    //     }
+    // }, [addPhase]);
 
-    //handle clicks for nodes and edges
-    const handleClickEvent = (event: any) => {
-
-        //has nodes, set node event on click
-        if (event.nodes.length > 0) {
-
-            console.log("HAS NODES")
-
-            setClickEvent({
-                clickType: ClickType.NODE,
-                id: event.nodes[0]
-            })
-
-            const mouseX = event.pointer.DOM.x;
-            const mouseY = event.pointer.DOM.y;
-
-            console.log("MOUSE")
-            console.log(mouseX)
-            console.log(mouseY)
-
-            setShowPopup({
-                mouseY: mouseY,
-                mouseX: mouseX
-            })
-
-            return;
-        }
-
-        //has edges, set edge event on click
-        if (event.edges.length > 0) {
-            setClickEvent({
-                clickType: ClickType.EDGE,
-                id: event.edges[0]
-            })
-            return;
-        }
-    }
 
     //start adding a connection, show the dialogue to click on the first node
-    const createConn = () => {
-        reset();
-        setAddPhase(AddConnectionPhase.FIRST)
-    }
+    // const createConn = () => {
+    // }
 
     const addStackToFrontend = (body: CreateStackReturnBody) => {
         const requestNodes = body.nodes as Node[];
@@ -289,13 +400,6 @@ function App() {
         setShowAddStackDialogue(false);
         setStackLoading(false);
 
-    }
-
-    //reset the state
-    const reset = () => {
-        setAddPhase(AddConnectionPhase.NONE)
-        setFirstNode(null)
-        setSecondNode(null)
     }
 
     function updateNode(toAdd: Node) {
@@ -342,8 +446,6 @@ function App() {
             //not found, insert the new rel
             return [result, ...prevState]
         });
-
-        reset();
     }
 
     //make an api request to upvote a relationship
@@ -372,16 +474,11 @@ function App() {
                 setRelationships(prevState =>
                     prevState?.map(rel => {
                         if (rel.relId === relationship.relId) {
-                            console.log("updating id to " + relationship.newRelId)
-                            console.log("setting votes to " + relationship.votes)
-
-                            console.log("REL")
+                            console.log("new rel REL")
                             console.log(rel)
 
-                            setClickEvent({
-                                clickType: ClickType.EDGE,
-                                id: relationship.newRelId!
-                            })
+                            //allow continual upvote
+                            setSelectedEdgeId(relationship.newRelId!)
 
                             console.log("returning new rel with relID" + relationship.relId);
                             return {
@@ -423,37 +520,43 @@ function App() {
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
-                    clickEvent={handleClickEvent}
-                    expandNode={expandNode}
+                    setSelectedNodeId={setSelectedNodeId}
+                    setSelectedEdgeId={setSelectedEdgeId}
                 />
             }
 
             {/*dialogue when creating a connection*/}
             <div className={s.CreateConnectionContainer}>
-                {addPhase == AddConnectionPhase.FIRST && <p>Click on first node</p>}
-                {addPhase == AddConnectionPhase.SECOND && <p>Click on second node</p>}
+                {addPhase.phase == Phase.FIRST && <p>Click on first node</p>}
+                {addPhase.phase == Phase.SECOND && <p>Click on second node</p>}
             </div>
 
             {/*buttons to add relationships and nodes*/}
             <div className={s.plus}>
                 <AddButtons
-                    showAddBox={() => createConn()}
+                    showAddBox={() => setAddPhase({
+                        ...addPhase,
+                        phase: Phase.FIRST
+                    })}
                     showAddStack={() => setShowAddStackDialogue(true)}
                 />
             </div>
 
             {/* when the add connection phase requires the dialogue to be shown, */}
             {
-                addPhase == AddConnectionPhase.ADD_BOX &&
+                addPhase.phase == Phase.ADD_BOX &&
                 <AddConnectionDialogue
-                    firstNode={firstNode}
-                    hideAddBox={() => {
-                        setAddPhase(AddConnectionPhase.NONE)
-                        setFirstNode(null)
-                        setSecondNode(null)
-                    }}
-                    secondNode={secondNode}
-                    reset={reset}
+                    firstNode={addPhase.firstNodeId}
+                    hideAddBox={() => setAddPhase({
+                        ...addPhase,
+                        phase: Phase.NONE
+                    })
+                    }
+                    secondNode={addPhase.secondNodeId}
+                    reset={() => setAddPhase({
+                        ...addPhase,
+                        phase: Phase.NONE
+                    })}
                     updateRelationship={updateRelationship}
                 />
             }
@@ -471,7 +574,10 @@ function App() {
             }
 
             {/*buttons to upvote and downvote relationships*/}
-            {upvoteDownvoteButtons(clickEvent, upvoteEdge)}
+            {
+                selectedEdgeId != null &&
+                upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)
+            }
         </div>
     )
 }
