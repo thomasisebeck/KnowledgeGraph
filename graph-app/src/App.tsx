@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
 import {
     CreateStackReturnBody,
@@ -56,9 +56,13 @@ function App() {
     const [showPopup, setShowPopup] = useState<Popup | null>(null)
 
     //add a node when clicking on a snippet to show the information
-    const addNode = (newNode: any) => {
+    const expandNode = async (newNode: any) => {
+        console.log("Expanding node")
+        console.dir(newNode, {depth: null});
+
+        //expand the snippet of an info node
         if (newNode.snippet) {
-            
+
             console.log("ADDING NODE")
             console.log(newNode.snippet)
 
@@ -92,6 +96,22 @@ function App() {
                 type: ""
             }, ...relationships])
 
+            return;
+        }
+
+        //expand a classification node
+        const DEPTH = 2;
+
+        if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
+
+            console.log("CALLING EXPAND ON CLASSIFICATION NODE, ID: ");
+            console.log(newNode.nodeId)
+
+            await fetch(`${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`).then(async result => {
+                console.log("NEIGHBORHOOD")
+                const data = await result.json()
+                console.log(data);
+            })
         }
     }
 
@@ -101,41 +121,34 @@ function App() {
         fetch(`${HOST}/initialData`).then(async res => {
             const data = await res.json();
             console.log("FRONTEND INIT DATA")
+            console.log(data)
+
+            const nodes = data.topicNodes as Node[];
 
             //set the categories for the dropdown menu
-            setBaseCategories(data.topicNodes.map((n: Node) => {
+            setBaseCategories(nodes.map((n: Node) => {
                 return {
                     nodeId: n.nodeId,
                     label: n.label
                 }
             }));
 
-            const myNodes: Node[] = data.nodes
-            // .map((n: any) => {
-            // if (n.nodeType == "ROOT")
-            //     return {
-            //         ...n,
-            //         nodeType: nodeType.ROOT
-            //     }
-            // if (n.nodeType == "CLASS")
-            //     return {
-            //         ...n,
-            //         nodeType: nodeType.CLASSIFICATION
-            //     }
-
-            //     console.log(n)
-            //     return {
-            //         ...n,
-            //         snippet: n.snippet,
-            //         nodeType: nodeType.INFORMATION
-            //     }
-            // })
-
-            const myRels: NodeRelationship[] = data.relationships;
-
-            setNodes([...myNodes])
-            setRelationships([...myRels])
+            //not adding anything yet
             setAddPhase(AddConnectionPhase.NONE)
+
+            //add nodes to frontend
+            setNodes(nodes.map((n: Node) => {
+                return {
+                    nodeId: n.nodeId,
+                    label: n.label,
+                    snippet: undefined,
+                    isSnippetNode: false,
+                    nodeType: n.nodeType
+                }
+            }));
+
+            console.log("NODES SET")
+
         }).catch(e => {
             console.error(e)
         })
@@ -169,36 +182,29 @@ function App() {
     }, []);
 
     const handleClickingNodesToConnectWhenAddingEdge = () => {
-        if (addPhase == AddConnectionPhase.FIRST || addPhase == AddConnectionPhase.SECOND)
-            if (clickEvent && clickEvent.clickType == ClickType.NODE) {
+        if (clickEvent && clickEvent.clickType == ClickType.NODE) {
 
-                //click first node
-                if (addPhase == AddConnectionPhase.FIRST) {
-                    setFirstNode(clickEvent.id)
-                    setAddPhase(AddConnectionPhase.SECOND)
-                }
+            //click first node
+            if (addPhase == AddConnectionPhase.FIRST) {
+                setFirstNode(clickEvent.id)
+                setAddPhase(AddConnectionPhase.SECOND)
+            }
 
-                //click second node
-                if (addPhase == AddConnectionPhase.SECOND) {
-                    if (clickEvent.id !== firstNode) {
-                        setSecondNode(clickEvent.id)
-                        setAddPhase(AddConnectionPhase.ADD_BOX)
-                    }
+            //click second node
+            if (addPhase == AddConnectionPhase.SECOND) {
+                if (clickEvent.id !== firstNode) {
+                    setSecondNode(clickEvent.id)
+                    setAddPhase(AddConnectionPhase.ADD_BOX)
                 }
             }
+        }
     }
+
 
     //register clicks for nodes and edges
     useEffect(() => {
-        if (clickEvent != null) {
-
-            console.log("CLICK EVENT USE EFFECT")            //in process of adding an edge
+        if (clickEvent && (addPhase == AddConnectionPhase.FIRST || addPhase == AddConnectionPhase.SECOND))
             handleClickingNodesToConnectWhenAddingEdge();
-
-            //want to upvote or downvote edge
-            // handleClickingEdgesForVoting();
-
-        }
     }, [clickEvent])
 
     //handle clicks for nodes and edges
@@ -213,8 +219,6 @@ function App() {
                 clickType: ClickType.NODE,
                 id: event.nodes[0]
             })
-            handleClickingNodesToConnectWhenAddingEdge()
-
 
             const mouseX = event.pointer.DOM.x;
             const mouseY = event.pointer.DOM.y;
@@ -277,6 +281,9 @@ function App() {
     }
 
     function updateNode(toAdd: Node) {
+        console.log("TO ADD")
+        console.log(toAdd)
+
         if (toAdd == null) {
             console.error("Node is null")
             return;
@@ -286,6 +293,9 @@ function App() {
             const existingIndex = prevState.findIndex(node => node.nodeId == toAdd.nodeId);
             if (existingIndex !== -1)  //node already added
                 return prevState; //return old state
+
+            if (toAdd.snippet != undefined)
+                console.log("ADDING NODE WITH SNIPPET")
 
             //not found, insert new node
             return [...prevState, toAdd];
@@ -391,12 +401,12 @@ function App() {
     return (
         <div className={s.Container}>
             {
-                nodes.length > 0 && relationships.length > 0 &&
+                nodes.length > 0 &&
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
                     clickEvent={handleClickEvent}
-                    addNode={addNode}
+                    expandNode={expandNode}
                 />
             }
 

@@ -10,14 +10,13 @@ import {
     NodeRelationship,
     RequestBody,
     RequestBodyConnection,
-    UpvoteResult
+    UpvoteResult,
+    ROOT,
+    INFO,
+    BOTH,
+    CLASS,
+    Segment
 } from "../../../shared/interfaces";
-
-
-const ROOT = "ROOT";
-const BOTH = "INFO | CLASS";
-const INFO = "INFO";
-const CLASS = "CLASS";
 
 
 // get nodes fully connected:
@@ -131,7 +130,6 @@ const createTopicNodes = async (driver: Driver) => {
     ]);
 
 }
-
 
 const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
 
@@ -312,11 +310,11 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         const toExecute = [];
 
         //check if either node is stranded...
-        if (to.labels.indexOf("ROOT") == -1) {
+        if (to.labels.indexOf(ROOT) == -1) {
             //to not a root, push query
             toExecute.push(toStranded)
         }
-        if (from.labels.indexOf("ROOT") == -1) {
+        if (from.labels.indexOf(ROOT) == -1) {
             //from not a root, push query
             toExecute.push(fromStranded)
         }
@@ -506,6 +504,74 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
 }
 
+const tryPushSegment = (segment: Segment, array: Segment[]): Segment[] => {
+   const index = array.findIndex(seg => seg.rel.properties.relId == segment.rel.properties.relId)
+    if (index != -1) //already there
+        return array;
+
+    return [{
+        rel: {
+            type: segment.rel.type,
+            properties: {
+                relId: segment.rel.properties.relId,
+            }
+        },
+        endNodeId: segment.endNodeId,
+        startNodeId: segment.startNodeId
+    }, ...array]
+}
+
+const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
+    console.log("ID: " + nodeId)
+    console.log("DEPTH: " + depth)
+    // const query =
+    //     `MATCH (start {nodeId: '${nodeId}'})
+    //      MATCH p=(start)-[r*..depth]-()
+    //      RETURN p, start, r`
+    //
+    // const query =
+    //     `MATCH (start {nodeId: '${nodeId}'})
+    //     MATCH p=(start)-[r*..${depth}]-()
+    //     UNWIND relationships(p) AS rel
+    //     RETURN collect(DISTINCT {
+    //     startNodeId: startNode(rel).nodeId,
+    //     endNodeId: endNode(rel).nodeId,
+    //     rel: rel
+    //     }) AS segments`
+
+    const query =
+        `MATCH (start {nodeId: '${nodeId}'})
+MATCH p=(start)-[r*..${depth}]->(end)
+UNWIND relationships(p) AS rel
+WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
+OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]->(startNode)
+RETURN collect(DISTINCT {
+    startNodeId: startNode.nodeId,
+    endNodeId: endNode.nodeId,
+    rel: rel,
+    isDoubleSided: r2 IS NOT NULL
+}) AS segments`;
+
+    console.dir("CALLED EXPAND NODE.....")
+
+    const result = await driver.executeQuery(query, {})
+
+    const segments = getField(result.records, 'segments') as Segment[];
+    console.dir(segments, {depth: null})
+
+    let toRetSegments:Segment[] = [];
+
+    for (const s of segments) {
+        toRetSegments = tryPushSegment(s, toRetSegments);
+    }
+
+    console.log("RETURNING")
+    console.dir(toRetSegments, {depth: null})
+
+    //todo: remove
+    return [];
+
+}
 
 const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
 
@@ -628,5 +694,6 @@ export default {
     createStack,
     createTopicNodes,
     upVoteRelationship,
-    getAllData
+    getAllData,
+    getNeighborhood
 }

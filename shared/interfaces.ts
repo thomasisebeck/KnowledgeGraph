@@ -57,6 +57,8 @@ export interface FrontendBaseCateogries {
     label: string
 }
 
+
+
 export interface NodeRelationship {
     type: string,
     relId: string,
@@ -72,11 +74,22 @@ export interface UpvoteResult {
     newRelId?: string
 }
 
+export interface Segment {
+    endNodeId: string,
+    startNodeId: string,
+    rel: {
+        properties: {
+            relId: string
+        }
+        type: string
+    }
+}
+
 export interface GraphType {
     nodes: Node[] | undefined,
     relationships: NodeRelationship[] | undefined,
     clickEvent: (event: any) => void
-    addNode: (newNode: any) => void
+    expandNode: (newNode: Node) => void
 }
 
 export interface HoverImageInterface {
@@ -91,3 +104,8 @@ export interface GraphType {
     relationships: NodeRelationship[] | undefined,
     clickEvent: (event: any) => void
 }
+
+export const ROOT = "ROOT";
+export const BOTH = "INFO | CLASS";
+export const INFO = "INFO";
+export const CLASS = "CLASS";

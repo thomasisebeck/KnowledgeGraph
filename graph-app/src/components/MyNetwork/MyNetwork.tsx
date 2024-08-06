@@ -1,6 +1,6 @@
 import {Edge, Network, Node} from '@lifeomic/react-vis-network'
 import React, {useEffect, useRef, useState} from 'react'
-import {GraphType, Direction} from "../../../../shared/interfaces";
+import {GraphType, Direction, ROOT, INFO, CLASS} from "../../../../shared/interfaces";
 import s from "./myNetwork.module.scss"
 import ReactDOM from "react-dom";
 import {node} from "prop-types";
@@ -63,28 +63,25 @@ interface snippet {
 }
 
 
-const MyNetwork = ({nodes, relationships, clickEvent, addNode}: GraphType) => {
+const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) => {
 
     const networkRef = useRef(null);
     const [snippet, setSnippet] = useState<snippet | null>(null)
     const [xPos, setXPos] = useState(0);
     const [yPos, setYPos] = useState(0);
 
-    const showInfoOfNodeId = (id: string, clientX: number, clientY: number) => {
-        console.log("SHOWING INFO FOR: ", id)
-
+    const tryExpand = (id: string) => {
         if (nodes) {
             for (const node of nodes) {
-                console.log(node)
-                if (node.nodeId == id) {
+                if (node.nodeId == id && node.nodeType != INFO) {
                     //add the snippet to the graph
-                    addNode(node);
+                    expandNode(node);
                     return ;
                 }
             }
         }
 
-        console.error("could not find node!!! something went wrong");
+        console.error("could not find node, is it an INFO node?");
     }
 
     useEffect(() => {
@@ -96,7 +93,10 @@ const MyNetwork = ({nodes, relationships, clickEvent, addNode}: GraphType) => {
             // @ts-ignore
             networkRef.current.network.on('selectNode', (event) => {
                 if (event.nodes[0] != undefined) {
-                    showInfoOfNodeId(event.nodes[0], event.event.clientX, event.event.clientY);
+                    console.log("NODES[0]")
+                    console.log(event.nodes[0])
+
+                    tryExpand(event.nodes[0]);
                 } else {
                     console.log("selected node is undefined")
                     console.log("He")
@@ -120,22 +120,22 @@ const MyNetwork = ({nodes, relationships, clickEvent, addNode}: GraphType) => {
             return '#4f1350'
 
         switch (myNode) {
-            case "ROOT":
+            case ROOT:
                 return '#87b66f'
-            case "CLASS":
+            case CLASS:
                 return '#a6e68a'
-            case "INFO":
+            case INFO:
                 return '#ffffff'
         }
     }
 
     function getValueBaseOnType(n: string) {
         switch (n) {
-            case "ROOT":
+            case ROOT:
                 return 17
-            case "CLASS":
+            case CLASS:
                 return 11
-            case "INFO":
+            case INFO:
                 return 8
         }
     }
