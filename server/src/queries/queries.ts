@@ -545,10 +545,10 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
 
     const relationshipsQuery =
         `MATCH (start {nodeId: '${nodeId}'})
-        MATCH p=(start)-[r*..${depth}]->(end)
+        MATCH p=(start)-[r*..${depth + 1}]-(end)
         UNWIND relationships(p) AS rel
         WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
-        OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]->(startNode)
+        OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]-(startNode)
         RETURN collect(DISTINCT {
             startNodeId: startNode.nodeId,
             endNodeId: endNode.nodeId,

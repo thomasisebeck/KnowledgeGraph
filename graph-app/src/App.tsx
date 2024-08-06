@@ -1,12 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import MyNetwork from './components/MyNetwork/MyNetwork.js'
 import {
     CreateStackReturnBody,
+    Direction,
     FrontendBaseCateogries,
     Node,
     NodeRelationship,
-    UpvoteResult,
-    Direction
+    UpvoteResult
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
@@ -105,12 +105,31 @@ function App() {
 
             // console.log(`${counter++} CALLING EXPAND ON CLASSIFICATION NODE, ID: ${newNode.nodeId}`);
 
-            return await fetch(`${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`).then(async result => {
-                console.log("NEIGHBORHOOD")
-                const data = await result.json()
-                console.log(data);
-                return data;
-            })
+            const neighborhood = await fetch(`${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`)
+                .then(async result => {
+                    return await result.json();
+                })
+
+            console.log("adding neighborhood to frontend...")
+            console.log("adding nodes...")
+            const newNodes = nodes;
+
+            for (const node of neighborhood.nodes) {
+                const index = newNodes.findIndex((n) => n.nodeId == node.nodeId);
+                if (index == -1)
+                    newNodes.push(node);
+            }
+
+            const newRels = relationships;
+            for (const rel of neighborhood.relationships) {
+                const index = newRels.findIndex((r) => r.relId == rel.relId);
+                if (index == -1)
+                    newRels.push(rel);
+            }
+
+            console.log("setting...")
+            setNodes([...newNodes])
+            setRelationships([...newRels])
         }
     }
 
