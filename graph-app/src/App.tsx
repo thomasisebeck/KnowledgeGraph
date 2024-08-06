@@ -10,35 +10,11 @@ import {
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
-import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
 import {AddPhase, Phase} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
-
-function upvoteDownvoteButtons(selectedEdgeId: string, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
-    return <div className={s.upvoteDownvoteContainer}>
-        <HoverImage
-            message={"upvote edge"}
-            normalImage={"buttons/upvote.svg"}
-            hoverImage={"buttons/upvote-hover.svg"}
-            onclick={async () => {
-                //upvote the edge
-                await upvoteEdge(selectedEdgeId, true)
-            }}
-        />
-        <HoverImage
-            message={"downvote edge"}
-            normalImage={"buttons/downvote.svg"}
-            hoverImage={"buttons/downvote-hover.svg"}
-            onclick={async () => {
-                //downvote the edge
-                await upvoteEdge(selectedEdgeId, false)
-            }}
-        />
-
-    </div>;
-}
+import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
 
 
 function App() {
@@ -133,6 +109,7 @@ function App() {
         }
     }
 
+    //initial data from database
     function getData() {
         fetch(`${HOST}/initialData`).then(async res => {
             const data = await res.json();
@@ -207,6 +184,7 @@ function App() {
         }
     }, [selectedEdgeId]);
 
+    //handle selecting nodes
     useEffect(() => {
         if (selectedNodeId != null) {
             //click first node
@@ -241,6 +219,7 @@ function App() {
         }
     }, [selectedNodeId]);
 
+    //hide the dialogue and update the nodes and relationships
     const addStackToFrontend = (body: CreateStackReturnBody) => {
         const requestNodes = body.nodes as Node[];
         const requestRelationships = body.relationships;
