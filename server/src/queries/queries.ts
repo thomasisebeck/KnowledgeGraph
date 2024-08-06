@@ -3,19 +3,18 @@ import {Driver, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
 import {executeGenericQuery, formatLabel, getField} from "../utils";
 import {
+    BOTH,
+    CLASS,
     CreateStackReturnBody,
     Direction,
+    INFO,
     Neo4jNode,
     Node,
     NodeRelationship,
     RequestBody,
-    RequestBodyConnection,
-    UpvoteResult,
     ROOT,
-    INFO,
-    BOTH,
-    CLASS,
-    Segment
+    Segment,
+    UpvoteResult
 } from "../../../shared/interfaces";
 
 
@@ -509,8 +508,6 @@ const tryPushSegment = (segment: Segment, array: Segment[]): Segment[] => {
     if (index !== -1) //already there
         return array;
 
-    console.log("PUSHING: ", segment.rel.properties.relId);
-
     return [{
         rel: {
             type: segment.rel.type,
@@ -545,56 +542,63 @@ const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelat
 const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
     console.log("ID: " + nodeId)
     console.log("DEPTH: " + depth)
-    // const query =
-    //     `MATCH (start {nodeId: '${nodeId}'})
-    //      MATCH p=(start)-[r*..depth]-()
-    //      RETURN p, start, r`
-    //
-    // const query =
-    //     `MATCH (start {nodeId: '${nodeId}'})
-    //     MATCH p=(start)-[r*..${depth}]-()
-    //     UNWIND relationships(p) AS rel
-    //     RETURN collect(DISTINCT {
-    //     startNodeId: startNode(rel).nodeId,
-    //     endNodeId: endNode(rel).nodeId,
-    //     rel: rel
-    //     }) AS segments`
 
-    const query =
+    const relationshipsQuery =
         `MATCH (start {nodeId: '${nodeId}'})
-MATCH p=(start)-[r*..${depth}]->(end)
-UNWIND relationships(p) AS rel
-WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
-OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]->(startNode)
-RETURN collect(DISTINCT {
-    startNodeId: startNode.nodeId,
-    endNodeId: endNode.nodeId,
-    rel: rel,
-    isDoubleSided: r2 IS NOT NULL
-}) AS segments`;
+        MATCH p=(start)-[r*..${depth}]->(end)
+        UNWIND relationships(p) AS rel
+        WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
+        OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]->(startNode)
+        RETURN collect(DISTINCT {
+            startNodeId: startNode.nodeId,
+            endNodeId: endNode.nodeId,
+            rel: rel,
+            isDoubleSided: r2 IS NOT NULL
+        }) AS segments`;
 
-    console.dir("CALLED EXPAND NODE.....")
 
-    const result = await driver.executeQuery(query, {})
+    const nodeQuery =
+        `MATCH (start {nodeId: '${nodeId}'})-[*..${depth}]-(neighbors)
+        RETURN neighbors`
 
-    const segments = getField(result.records, 'segments') as Segment[];
+    const [relsResult, nodeResult] = await Promise.all([
+        await driver.executeQuery(relationshipsQuery, {}),
+        await driver.executeQuery(nodeQuery, {})
+    ]);
+
+    const segments = getField(relsResult.records, 'segments') as Segment[];
     // console.dir(segments, {depth: null})
 
     let toRetSegments:Segment[] = [];
+    let toRetNodes:Node[] = [];
 
     for (const s of segments) {
         toRetSegments = tryPushSegment(s, toRetSegments);
     }
 
-    // console.dir(toRetSegments, {depth: null})
+    for (const n of nodeResult.records) {
+        const neighbors = getField([n], 'neighbors');
+        const newNode: Node = {
+            nodeId: neighbors.properties.nodeId,
+            label: neighbors.properties.label,
+            nodeType: neighbors.labels[0],
+            snippet: neighbors.properties.snippet,
+            isSnippetNode: neighbors.properties.snippet != null,
+        }
+        toRetNodes = tryPushToArray(newNode, toRetNodes, false);
+    }
 
-    const relationships = convertSegmentsToNodeRelationships(toRetSegments);
+    console.log("--------------------------")
+    console.log({
+        relationships: convertSegmentsToNodeRelationships(toRetSegments),
+        nodes: toRetNodes
+    })
+    console.log("--------------------------")
 
-    console.log("RETURNING")
-    console.log(relationships);
-
-    //todo: remove
-    return [];
+    return {
+        relationships: convertSegmentsToNodeRelationships(toRetSegments),
+        nodes: toRetNodes
+    }
 
 }
 

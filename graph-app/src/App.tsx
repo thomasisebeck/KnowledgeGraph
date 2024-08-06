@@ -55,10 +55,9 @@ function App() {
     const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
     const [showPopup, setShowPopup] = useState<Popup | null>(null)
 
+    let counter = 0;
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
-        console.log("Expanding node")
-        console.dir(newNode, {depth: null});
 
         //expand the snippet of an info node
         if (newNode.snippet) {
@@ -104,13 +103,13 @@ function App() {
 
         if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
 
-            console.log("CALLING EXPAND ON CLASSIFICATION NODE, ID: ");
-            console.log(newNode.nodeId)
+            // console.log(`${counter++} CALLING EXPAND ON CLASSIFICATION NODE, ID: ${newNode.nodeId}`);
 
-            await fetch(`${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`).then(async result => {
+            return await fetch(`${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`).then(async result => {
                 console.log("NEIGHBORHOOD")
                 const data = await result.json()
                 console.log(data);
+                return data;
             })
         }
     }

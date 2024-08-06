@@ -70,13 +70,17 @@ const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) =>
     const [xPos, setXPos] = useState(0);
     const [yPos, setYPos] = useState(0);
 
-    const tryExpand = (id: string) => {
+    let counter = 0;
+
+    const tryExpand = async (id: string) => {
+
         if (nodes) {
             for (const node of nodes) {
                 if (node.nodeId == id && node.nodeType != INFO) {
                     //add the snippet to the graph
-                    expandNode(node);
-                    return ;
+                    // console.log("Calling expand ", + counter++)
+                    const res = await expandNode(node);
+                    return;
                 }
             }
         }
@@ -91,15 +95,13 @@ const MyNetwork = ({nodes, relationships, clickEvent, expandNode}: GraphType) =>
                 clickEvent(event);
             })
             // @ts-ignore
-            networkRef.current.network.on('selectNode', (event) => {
+            networkRef.current.network.on('selectNode', async (event) => {
                 if (event.nodes[0] != undefined) {
-                    console.log("NODES[0]")
-                    console.log(event.nodes[0])
-
-                    tryExpand(event.nodes[0]);
+                    // console.log("NODES[0]")
+                    // console.log(event.nodes[0])
+                    await tryExpand(event.nodes[0]);
                 } else {
                     console.log("selected node is undefined")
-                    console.log("He")
                 }
             })
         }
