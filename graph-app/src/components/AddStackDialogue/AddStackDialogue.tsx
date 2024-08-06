@@ -15,7 +15,6 @@ enum UpdateType {
     CONNECTION_DIRECTION
 }
 
-
 function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading, baseCategories}: {
     hideAddStackDialogue: () => void,
     addStackToFrontend: (body: CreateStackReturnBody) => void,
@@ -36,10 +35,12 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
     const [info, setInfo] = useState("")
     const [heading, setHeading] = useState("")
 
+    //send the request to the api to add the stack
+    //then update the UI
     const createStack = () => {
-        console.log("CREATING...")
 
-        function printDetails() {
+        //print details
+        (() => {
             console.log(" ----------------------- ")
             console.log(" > Creating stack with the following items: < ")
             console.log("base")
@@ -60,10 +61,9 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             console.log(heading)
             console.log(info);
             console.log(" ----------------------- ")
-        }
+        })()
 
-        printDetails();
-
+        //get the connections from the state
         const addedConnections:RequestBodyConnection[] = categories.map(c => {
             return {
                 nodeName: c.nodeName,
@@ -72,6 +72,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             }
         })
 
+        //construct the request
         const body: RequestBody = {
             rootNodeId: baseCategory.nodeId!,
             connections: [
@@ -88,6 +89,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             }
         }
 
+        //button loading
         setStackLoading(true);
 
         fetch(`${HOST}/createStack`, {
@@ -104,34 +106,34 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 console.error("Cannot add stack to frontend");
                 console.error(result.status)
                 console.error(result)
-                setStackLoading(false);
             }
 
+            setStackLoading(false);
         })
-
 
     }
 
+    //component to set the direction of the connection
     function toggleButton(index: number, category: RequestBodyConnection) {
         return <div className={s.innerDiv}>
             {
                 category.direction === Direction.TOWARDS &&
                 <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/up-arrow.svg"}
+                    <img onClick={() => toggleCategoryDirection(index)} src={"buttons/up-arrow.svg"}
                          alt={"toggle direction up"}/>
                 </div>
             }
             {
                 category.direction === Direction.AWAY &&
                 <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/down-arrow.svg"}
+                    <img onClick={() => toggleCategoryDirection(index)} src={"buttons/down-arrow.svg"}
                          alt={"toggle direction down"}/>
                 </div>
             }
             {
                 category.direction === Direction.NEUTRAL &&
                 <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/neutral.svg"}
+                    <img onClick={() => toggleCategoryDirection(index)} src={"buttons/neutral.svg"}
                          alt={"toggle direction neutral"}/>
                 </div>
             }
@@ -146,22 +148,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         </div>;
     }
 
-    useEffect(() => {
-        console.log("CURRENT CATEGORIES:")
-        console.log("BASE:")
-        console.log("name: ", baseCategory.nodeName)
-        console.log("direction: ", baseCategory.direction)
-        console.log("conn: ", baseCategory.connectionName)
-        console.log("-------------------")
-        console.log("OTHERS:")
-        categories.map(c => {
-            console.log("name: ", c.nodeName)
-            console.log("direction: ", c.direction)
-            console.log("conn: ", c.connectionName)
-        })
-        console.log("-------------------")
-    }, [categories, baseCategory]);
-
+    //update different parts of the category
     function updateCategory(index: number, value: string | Direction, updateType: UpdateType) {
         if (index == BASE_CATEGORY_INDEX) { //update base category
             switch (updateType) {
@@ -206,6 +193,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         }
     }
 
+    //when you click on add category
     function addBlankCategory() {
         setCategories([...categories, {
             direction: Direction.NEUTRAL,
@@ -214,6 +202,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         }])
     }
 
+    //cycle the direction of the arrow
     function getNewCategory(dir: Direction) {
         switch (dir) {
             case Direction.NEUTRAL:
@@ -225,7 +214,8 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         }
     }
 
-    function toggleDoubleSided(index: number) {
+    //fire the cycling of directions
+    function toggleCategoryDirection(index: number) {
         if (index == BASE_CATEGORY_INDEX) {
             //handle base category separately
             let copyBase = baseCategory;
@@ -240,19 +230,21 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         setCategories([...categories]);
     }
 
+    //show the error message for a short time
     function showError(err: string) {
         setErrorMessage(err)
         setShowErr(true)
-        console.log("SHOWING...")
         setTimeout(() => {
             setShowErr(false)
         }, 4000)
     }
 
+    //category is not blank
     function isValidCategory(c: RequestBodyConnection) {
         return !(c.nodeName == "" || c.connectionName == "");
     }
 
+    //validate that everything is filled out
     function tryCreateStack() {
         //check that eveything has been filled out
         //loop through the categories and see that they have the correct info
@@ -282,11 +274,11 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         //all info filled out....
         //send a request
         createStack();
-
     }
 
     return (
         <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
+
             {
                 showErr &&
                 <div className={s.error}>
@@ -371,8 +363,8 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 <button onClick={addBlankCategory}>Add Category</button>
             }
 
-
             <hr/>
+
             <div className={s.textDiv}>
                 <input
                     type={"text"}
@@ -385,6 +377,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 }
                 }></textarea>
             </div>
+
             {
                 isLoading ?
                     <button className={"buttonDisabled"}>
@@ -398,6 +391,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                     </button>
 
             }
+
         </Dialogue>
     )
 }
