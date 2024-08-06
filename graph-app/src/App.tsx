@@ -416,8 +416,11 @@ function App() {
             if (existingIndex !== -1)  //node already added
                 return prevState; //return old state
 
-            if (toAdd.snippet != undefined)
+            if (toAdd.snippet != undefined) {
+                console.log(toAdd)
                 console.log("ADDING NODE WITH SNIPPET")
+            }
+
 
             //not found, insert new node
             return [...prevState, toAdd];

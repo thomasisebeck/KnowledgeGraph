@@ -153,6 +153,25 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
         }
     }
 
+    const getLabel = (el: any) => {
+        if (!el.isSnippetNode)
+            return el.label.replaceAll('_', ' ');
+
+        function getUnderline(label: string) {
+            let str = "‾‾‾‾‾‾‾";
+            for (let i = 0; i < label.length; i++) {
+                str += '‾'
+            }
+        return str;
+        }
+
+        if (el.snippet != null) {
+            return `${el.label}\n${getUnderline(el.label)}\n${el.snippet}`
+        }
+
+        console.error("snipeet is null on snippet node")
+    }
+
     return (
         <React.Fragment>
             {
@@ -164,10 +183,10 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
                 }}
                 >
                     <div className={s.snippetHeading}>
-                        {snippet.heading}
+                        heading:{snippet.heading}
                     </div>
                     <div>
-                        {snippet.snippet}
+                        snippet:{snippet.snippet}
                     </div>
                 </div>
             }
@@ -186,7 +205,8 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
                                     shape={el.isSnippetNode ? "box" : "dot"}
                                     key={el.nodeId}
                                     id={el.nodeId}
-                                    label={el.label.replaceAll('_', ' ')}
+                                    label={getLabel(el)}
+                                    margin={el.isSnippetNode ? 10: 0}
                                 />
                             )
                         }
