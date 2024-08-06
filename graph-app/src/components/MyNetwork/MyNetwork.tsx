@@ -117,7 +117,7 @@ const MyNetwork = ({nodes, relationships, clickEvent, addNode}: GraphType) => {
 
     const getColor = (myNode: string, isSnippet?: boolean) => {
         if (isSnippet)
-            return '#242e1c'
+            return '#4f1350'
 
         switch (myNode) {
             case "ROOT":
@@ -132,11 +132,11 @@ const MyNetwork = ({nodes, relationships, clickEvent, addNode}: GraphType) => {
     function getValueBaseOnType(n: string) {
         switch (n) {
             case "ROOT":
-                return 12
+                return 17
             case "CLASS":
                 return 11
             case "INFO":
-                return 10
+                return 8
         }
     }
 
