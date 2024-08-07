@@ -149,9 +149,8 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
         console.error("snipeet is null on snippet node")
     }
 
-    useEffect(() => {
-
-    }, [displayLabels]);
+    //force rerender when label changes to update
+    useEffect(() => {}, [displayLabels]);
 
     return (
         <React.Fragment>
