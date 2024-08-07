@@ -29,6 +29,7 @@ Cardiovascular System contains Heart Rate
 Heart Rate has Hummingbird Heart Rate
      */
 
+    //The heart of a hummingbird
     //A hummingbird's heart can beat up to 1,200 times per minute.
     {
         question: "How many times can a hummingbird's heart beat in one minute?",
@@ -37,6 +38,7 @@ Heart Rate has Hummingbird Heart Rate
         totalTime: 0
     },
 
+    //Is the platypus deadly?
     //The platypus, a unique egg-laying mammal native to Australia, possesses a venomous spur on its hind legs.
     {
         question: "Which mammal has a venomous spur?",
@@ -45,6 +47,7 @@ Heart Rate has Hummingbird Heart Rate
         totalTime: 0
     },
 
+    //Large mammals
     //snippet: The largest land mammal after the elephant is the white rhinoceros, a critically endangered species native to Africa.
     {
         question: "What is the second largest land mammal?",
@@ -53,6 +56,7 @@ Heart Rate has Hummingbird Heart Rate
         totalTime: 0
     },
 
+    //Dunning-Kruger effect
     //snippet: The Dunning-Kruger effect describes a cognitive bias wherein individuals with low ability at a task overestimate their competence.
     {
         question: "What cognitive bias involves overestimating one's abilities?",
@@ -60,6 +64,7 @@ Heart Rate has Hummingbird Heart Rate
         providedAnswer: null,
         totalTime: 0
     },
+    //What is quantum entanglement?
     //Quantum entanglement is a physical phenomenon where two particles become interconnected, regardless of distance, such that actions performed on one particle affect the other instantly.
     {
         question: "what is the phenomenon where particles are connected regardless of distance? ",
@@ -67,6 +72,7 @@ Heart Rate has Hummingbird Heart Rate
         providedAnswer: null,
         totalTime: 0
     },
+    //Language and perception
     //The Sapir-Whorf hypothesis suggests that the language we speak influences how we perceive and think about the world.
     {
         question: "Which hypothesis links language to perception?",
@@ -74,6 +80,7 @@ Heart Rate has Hummingbird Heart Rate
         providedAnswer: null,
         totalTime: 0
     },
+    //The placebo effect: what is it?
     //The placebo effect is a phenomenon where a person experiences benefits from a fake treatment due to their belief in its efficacy.
     {
         question: "What is the term for benefits from a fake treatment due to belief?",
