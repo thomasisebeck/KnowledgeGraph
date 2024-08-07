@@ -15,6 +15,7 @@ import {AddPhase, Phase} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
+import Tasks from "./components/Tasks/Tasks";
 
 
 function App() {
@@ -424,6 +425,8 @@ function App() {
                 selectedEdgeId != null &&
                 upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)
             }
+
+            <Tasks />
         </div>
     )
 }

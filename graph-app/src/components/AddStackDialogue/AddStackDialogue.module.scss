@@ -56,8 +56,11 @@
   position: relative;
 }
 
-.textDiv textarea {
+.textDiv textarea, .textDiv input {
   width: calc(100% - 12px);
+}
+.textDiv input {
+  margin-bottom: 6px;
 }
 
 .textDiv label {

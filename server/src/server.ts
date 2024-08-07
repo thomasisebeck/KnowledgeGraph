@@ -6,6 +6,7 @@ import sess from './session'
 import {CreateRelRequestBody, RequestBody, RequestBodyConnection, UpvoteResult} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
+import * as fs from "node:fs";
 
 const app = express();
 app.use(bodyParser.json())
@@ -137,6 +138,42 @@ app.post('/upvoteRel', async (req, res) => {
 
 app.post('/downvoteRel', async (req, res) => {
     await upOrDownVote(req, res, false);
+})
+
+app.post('/tasks', async (req, res) => {
+
+    const FILE_PATH = './tasks.json'
+
+
+    const taskData = req.body;
+
+    // Read existing data, handle potential errors
+    let existingData = '[]'; // Default to empty array if file doesn't exist
+    try {
+        existingData = fs.readFileSync(FILE_PATH, 'utf8');
+    } catch (err) {
+        console.error('Error reading file:', err);
+    }
+
+    const parsedData = JSON.parse(existingData);
+    parsedData.push(taskData); // Add new task to the array
+
+    const updatedData = JSON.stringify(parsedData, null, 2); // Stringify with indentation
+
+    fs.writeFile(FILE_PATH, updatedData, { encoding: 'utf8' }, (err) => {
+       if (err) {
+           console.error(err)
+           res.status(400).json({
+               success: false,
+               error: err
+           })
+       } else {
+           console.log("Task written successfully");
+           res.status(200).json({
+               success: true
+           })
+       }
+    })
 })
 
 app.get('/neighborhood/:id/:depth', async (req, res) => {

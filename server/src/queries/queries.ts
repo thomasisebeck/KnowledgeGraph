@@ -119,7 +119,7 @@ const createTopicNodes = async (driver: Driver) => {
     //8. Geography
 
     return await Promise.all([
-        createRootNode(driver, "Computer &\nInfo Science"),
+        createRootNode(driver, "Computer & Info Science"),
         createRootNode(driver, "Philosophy"),
         createRootNode(driver, "Psychology"),
         createRootNode(driver, "Science"),

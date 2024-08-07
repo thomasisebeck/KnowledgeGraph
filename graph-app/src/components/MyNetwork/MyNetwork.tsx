@@ -1,6 +1,7 @@
 import {Edge, Network, Node} from '@lifeomic/react-vis-network'
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import {GraphType, Direction, ROOT, INFO, CLASS} from "../../../../shared/interfaces";
+import s from './myNetwork.module.scss'
 
 const options = {
     width: '100%',
@@ -54,6 +55,8 @@ const options = {
 }
 
 const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}: GraphType) => {
+
+    const [displayLabels, setDisplayLabels] = useState(true);
 
     //get a reference to the network object
     const networkRef = useRef(null);
@@ -127,7 +130,7 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
     }
 
     //format the labels for information nodes, and remove underscores
-    const getLabel = (el: any) => {
+    const getNodeLabel = (el: any) => {
         if (!el.isSnippetNode)
             return el.label.replaceAll('_', ' ');
 
@@ -146,43 +149,62 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
         console.error("snipeet is null on snippet node")
     }
 
+    useEffect(() => {
+
+    }, [displayLabels]);
+
     return (
-        <Network
-            options={options}
-            ref={networkRef}
-        >
+        <React.Fragment>
+            <div className={s.hasLabelsContainer}>
+                <label htmlFor={"chk"}>Link labels:</label>
+                <input type={"checkbox"} id={"chk"} checked={displayLabels} onChange={(e) => {
+                    setDisplayLabels(e.target.checked)
+                }}/>
+            </div>
+            <Network
+                options={options}
+                ref={networkRef}
+            >
 
-            {
-                nodes && nodes.map(el => {
-                        return (
-                            <Node
-                                color={el.isSnippetNode ? getColor(el.nodeType, true) : getColor(el.nodeType)}
-                                value={getValueBaseOnType(el.nodeType)}
-                                shape={el.isSnippetNode ? "box" : "dot"}
-                                key={el.nodeId}
-                                id={el.nodeId}
-                                label={getLabel(el)}
-                                margin={el.isSnippetNode ? 10 : 0}
-                            />
-                        )
-                    }
-                )
-            }
+                {
+                    nodes && nodes.map(el => {
+                            return (
+                                <Node
+                                    color={el.isSnippetNode ? getColor(el.nodeType, true) : getColor(el.nodeType)}
+                                    value={getValueBaseOnType(el.nodeType)}
+                                    shape={el.isSnippetNode ? "box" : "dot"}
+                                    key={el.nodeId}
+                                    id={el.nodeId}
+                                    label={getNodeLabel(el)}
+                                    margin={el.isSnippetNode ? 10 : 0}
+                                />
+                            )
+                        }
+                    )
+                }
 
-            {
-                relationships && relationships.map(r => {
-                    const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
-                    const THICKNESS_MULTIPLIER = 15;
-                    const MINIMUM_THICKNESS = 0.4;
-                    const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
-                    const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
-                    return <Edge id={uniqueKey} from={r.from} to={r.to}
-                                 label={r.type != null ? r.type.replaceAll('_', ' ').toLowerCase() : "NULL TYPE"}
-                                 width={thickness} arrows={ARROWS} key={uniqueKey}/>
-                })
-            }
+                {
+                    relationships && relationships.map(r => {
+                        const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? '1' : '0'}`;
+                        const THICKNESS_MULTIPLIER = 15;
+                        const MINIMUM_THICKNESS = 0.4;
+                        const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
+                        const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
+                        const LABEL = displayLabels ? (r.type?.replaceAll('_', ' ').toLowerCase()) : '';
 
-        </Network>
+                        return <Edge id={uniqueKey}
+                                     from={r.from}
+                                     to={r.to}
+                                     label={LABEL}
+                                     width={thickness}
+                                     arrows={ARROWS}
+                                     key={uniqueKey}
+                        />
+                    })
+                }
+
+            </Network>
+        </React.Fragment>
     )
 }
 

@@ -22,6 +22,5 @@ export function upvoteDownvoteButtons(selectedEdgeId: string, upvoteEdge: (edgeI
                 await upvoteEdge(selectedEdgeId, false)
             }}
         />
-
     </div>;
 }
