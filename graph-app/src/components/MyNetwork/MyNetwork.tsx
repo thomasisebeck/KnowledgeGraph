@@ -1,6 +1,6 @@
 import {Edge, Network, Node} from '@lifeomic/react-vis-network'
 import React, {useEffect, useRef, useState} from 'react'
-import {GraphType, Direction, ROOT, INFO, CLASS} from "../../../../shared/interfaces";
+import {GraphType, Direction, ROOT, CLASS} from "../../../../shared/interfaces";
 import s from './myNetwork.module.scss'
 
 const options = {
@@ -13,16 +13,16 @@ const options = {
         maxVelocity: 20,
         barnesHut: {
             gravitationalConstant: -5000,
-            centralGravity: 0.5,
-            springLength: 95,
-            springConstant: 0.07,
+            centralGravity: 0.3,
+            springLength: 120,
+            springConstant: 0.03,
             damping: 0.3,
             avoidOverlap: 0
         },
 
     },
     nodes: {
-        borderWidth: 2,
+        borderWidth: 3,
         color: 'rgb(141,234,255)',
         shadow: {
             enabled: true,
@@ -113,11 +113,9 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
 
         switch (myNode) {
             case ROOT:
-                return '#87b66f'
-            case CLASS:
                 return '#a6e68a'
-            case INFO:
-                return '#ffffff'
+            case CLASS:
+                return '#87b66f'
         }
     }
 
@@ -127,9 +125,7 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
             case ROOT:
                 return 17
             case CLASS:
-                return 11
-            case INFO:
-                return 8
+                return 13
         }
     }
 
