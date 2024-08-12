@@ -108,26 +108,20 @@ const removeNode = async (nodeId: string, driver: Driver) => {
 
 const createTopicNodes = async (driver: Driver) => {
 
-    //create the topic nodes
-    //1. Computer science and info
-    //2. Philosophy and Psychology
-    //3. Science
-    //4. Language
-    //5. Technology
-    //6. Arts
-    //7. History
-    //8. Geography
-
     return await Promise.all([
-        createRootNode(driver, "Computer & Info Science"),
-        createRootNode(driver, "Philosophy"),
-        createRootNode(driver, "Psychology"),
-        createRootNode(driver, "Science"),
-        createRootNode(driver, "Language"),
+        createRootNode(driver, "Existence"),
+        createRootNode(driver, "Ethics"),
+        createRootNode(driver, "Society"),
+        createRootNode(driver, "Nature"),
         createRootNode(driver, "Technology"),
-        createRootNode(driver, "Arts"),
+        createRootNode(driver, "Language"),
         createRootNode(driver, "History"),
-        createRootNode(driver, "Geography"),
+        createRootNode(driver, "Physics"),
+        createRootNode(driver, "Metaphysics"),
+        createRootNode(driver, "Arts"),
+        createRootNode(driver, "Belief"),
+        createRootNode(driver, "Religion"),
+        createRootNode(driver, "Mathematics"),
     ]);
 
 }

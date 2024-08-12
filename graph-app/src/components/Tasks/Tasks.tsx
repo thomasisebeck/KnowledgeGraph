@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import {taskList, Task} from "./taskList";
 import s from './tasks.module.scss'
 import {HOST} from '../../../../shared/variables'
@@ -16,6 +16,7 @@ function Tasks() {
     const [startTime, setStartTime] = useState<number | null>(null);
     const [taskNumber, setTaskNumber] = useState<number | null>(null);
     const [currentAnswer, setCurrentAnswer] = useState<string | null>(null);
+    const [text, setText] =  useState("")
 
     const postTaskToServer = async (time: number) => {
 
@@ -64,6 +65,7 @@ function Tasks() {
             setTaskNumber((taskNumber) => {
                 if (taskNumber != null) {
                     setCurrentTask(taskList[++taskNumber])
+                    setText("")
                     return taskNumber + 1;
                 }
                 return 0;
@@ -85,7 +87,9 @@ function Tasks() {
                                    onChange={(e) => {
                                        setCurrentTask({...currentTask, providedAnswer: e.target.value})
                                        setCurrentAnswer(e.target.value)
+                                       setText(e.target.value)
                                    }}
+                                   value={text}
                             />
                         </div>
                         <button onClick={nextTask}>Submit</button>

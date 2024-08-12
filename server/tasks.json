@@ -1,37 +1,7 @@
-[
-  {
-    "question": "What is the approximate length of the Great Barrier Reef in kilometers?",
-    "answer": "2300",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 81566
-  },
-  {
-    "question": "What is the approximate length of the Great Barrier Reef in kilometers?",
-    "answer": "2300",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 12204
-  },
-  {
-    "question": "What is the approximate length of the Great Barrier Reef in kilometers?",
-    "answer": "2300",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 136200
-  },
-  {
-    "question": "How many times can a hummingbird's heart beat in one minute?",
-    "answer": "1200",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 4995
-  },
-  {
-    "question": "What is the second largest land mammal?",
-    "answer": "Rhinoceros",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 14490
-  }
-]
+{
+  "question": "What does essence define?",
+  "answer": "Essence defines the irreducible core nature of a thing.",
+  "providedAnswer": "Essence is the fundamental nature of a thing, its irreducible core that defines its identity",
+  "totalTime": 64873,
+  "clicks" : 5
+}

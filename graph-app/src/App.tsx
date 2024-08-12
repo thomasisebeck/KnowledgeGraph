@@ -32,6 +32,7 @@ function App() {
         secondNodeId: "",
         firstNodeId: ""
     })
+    const [hasNewRel, setHasNewRel] = useState<boolean>(false)
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -336,6 +337,8 @@ function App() {
                         return rel;
                     })
                 );
+
+                setHasNewRel(!hasNewRel);
 
                 //nothing more to do after adding back
                 return;

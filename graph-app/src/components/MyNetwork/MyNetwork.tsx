@@ -135,7 +135,7 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
             return el.label.replaceAll('_', ' ');
 
         function getUnderline(label: string) {
-            let str = "‾‾‾‾‾‾‾";
+            let str = "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾";
             for (let i = 0; i < label.length; i++) {
                 str += '‾'
             }
@@ -143,7 +143,7 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
         }
 
         if (el.snippet != null) {
-            return `${el.label}\n${getUnderline(el.label)}\n${el.snippet}`
+            return `${el.label.replaceAll('_', ' ')}\n${getUnderline(el.label)}\n${el.snippet}`
         }
 
         console.error("snipeet is null on snippet node")
