@@ -362,6 +362,13 @@ function App() {
 
     }
 
+    //reset the nodes and edges for the next task
+    const resetGraph = () => {
+        console.log(nodes[0].nodeType)
+        setNodes(prevState => prevState.filter(n => n.nodeType === "ROOT"));
+        setRelationships([])
+    }
+
     return (
         <div className={s.Container}>
             {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
@@ -429,7 +436,7 @@ function App() {
                 upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)
             }
 
-            <Tasks />
+            <Tasks resetGraph={resetGraph} />
         </div>
     )
 }
