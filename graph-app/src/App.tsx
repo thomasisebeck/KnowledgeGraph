@@ -16,6 +16,7 @@ import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
 import Tasks from "./components/Tasks/Tasks";
+import AddCategoryDialogue from "./components/AddCategoryDialogue";
 
 
 function App() {
@@ -28,6 +29,11 @@ function App() {
     const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [addPhase, setAddPhase] = useState<AddPhase>({
+        phase: Phase.NONE,
+        secondNodeId: "",
+        firstNodeId: ""
+    })
+    const [addCategoryPhase, setAddCategoryPhase] = useState<AddPhase>({
         phase: Phase.NONE,
         secondNodeId: "",
         firstNodeId: ""
@@ -199,7 +205,10 @@ function App() {
     //handle selecting nodes
     useEffect(() => {
         if (selectedNodeId != null) {
-            //click first node
+
+            // -------------------------- add connection --------------------------- //
+
+            //click first node for adding connection
             if (addPhase.phase == Phase.FIRST) {
                 console.log("clicked first node, id: " + selectedNodeId)
                 setAddPhase({
@@ -220,7 +229,31 @@ function App() {
                 return;
             }
 
-            //handle expanding nodes
+            // -------------------------- add category ----------------------------- //
+
+            //click first node for adding category
+            if (addCategoryPhase.phase == Phase.FIRST) {
+                console.log("clicked first node to add category between")
+                setAddCategoryPhase({
+                    ...addCategoryPhase,
+                    phase: Phase.SECOND,
+                    firstNodeId: selectedNodeId
+                })
+                return ;
+            }
+
+            if (addCategoryPhase.phase == Phase.SECOND) {
+                console.log("clicked second node to add category between")
+                setAddCategoryPhase({
+                    ...addCategoryPhase,
+                    phase: Phase.ADD_BOX,
+                    secondNodeId: selectedNodeId
+                })
+                 return ;
+            }
+
+            // -------------------- handle expanding nodes ------------------------------//
+
             if (nodes) {
                 for (const node of nodes)
                     if (node.nodeId == selectedNodeId && node.nodeType != "INFO") {
@@ -372,6 +405,11 @@ function App() {
 
     }
 
+    const addCategory = () => {
+       console.log("ADD Category, setting to first")
+        setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
+    }
+
     //reset the nodes and edges for the next task
     const resetGraph = () => {
         setShowGraph(false)
@@ -394,9 +432,10 @@ function App() {
             }
 
             {/*dialogue when creating a connection*/}
+            {/*or when the user wants to add a category between two nodes*/}
             <div className={s.CreateConnectionContainer}>
-                {addPhase.phase == Phase.FIRST && <p>Click on first node</p>}
-                {addPhase.phase == Phase.SECOND && <p>Click on second node</p>}
+                {(addPhase.phase == Phase.FIRST || addCategoryPhase.phase == Phase.FIRST)  && <p>Click on first node</p>}
+                {(addPhase.phase == Phase.SECOND  || addCategoryPhase.phase == Phase.SECOND) && <p>Click on second node</p>}
             </div>
 
             {/*buttons to add relationships and nodes*/}
@@ -407,6 +446,7 @@ function App() {
                         phase: Phase.FIRST
                     })}
                     showAddStack={() => setShowAddStackDialogue(true)}
+                    addCategory={addCategory}
                 />
             </div>
 
@@ -428,6 +468,14 @@ function App() {
                     updateRelationship={updateRelationship}
                 />
             }
+
+            {/* dialogue for adding categories */}
+            {
+                //todo: remove
+                addCategoryPhase.phase == Phase.ADD_BOX &&
+                <AddCategoryDialogue hideDialogue={() => setAddCategoryPhase({...addCategoryPhase, phase: Phase.NONE})}/>
+            }
+
 
             {/*dialogue to add a new connection stack*/}
             {
