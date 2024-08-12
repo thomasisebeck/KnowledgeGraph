@@ -33,6 +33,10 @@ function App() {
         firstNodeId: ""
     })
     const [hasNewRel, setHasNewRel] = useState<boolean>(false)
+    const [expandedNodesPerClick, setExpandedNodesPerClick] = useState<number[]>([])
+    const [precisionPerClick, sePrecisionPerClick] = useState<number[]>([])
+    const [recallPerClick, setRecallPerClick] = useState<number[]>([])
+    const [showGraph, setShowGraph] = useState(true)
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -92,10 +96,14 @@ function App() {
             console.log("adding nodes...")
             const newNodes = nodes;
 
+            let currExpandedNodes = 0;
+
             for (const node of neighborhood.nodes) {
                 const index = newNodes.findIndex((n) => n.nodeId == node.nodeId);
-                if (index == -1)
+                if (index == -1) {
                     newNodes.push(node);
+                    currExpandedNodes++;
+                }
             }
 
             const newRels = relationships;
@@ -108,7 +116,9 @@ function App() {
             console.log("setting...")
             setNodes([...newNodes])
             setRelationships([...newRels])
+            setExpandedNodesPerClick([...expandedNodesPerClick, currExpandedNodes])
         }
+
     }
 
     //initial data from database
@@ -364,16 +374,17 @@ function App() {
 
     //reset the nodes and edges for the next task
     const resetGraph = () => {
-        console.log(nodes[0].nodeType)
+        setShowGraph(false)
         setNodes(prevState => prevState.filter(n => n.nodeType === "ROOT"));
         setRelationships([])
+        setShowGraph(true)
     }
 
     return (
         <div className={s.Container}>
             {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
             {
-                nodes.length > 0 &&
+                nodes.length > 0 && showGraph &&
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
@@ -436,7 +447,7 @@ function App() {
                 upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)
             }
 
-            <Tasks resetGraph={resetGraph} />
+            <Tasks resetGraph={resetGraph}   expandedNodesPerClick={expandedNodesPerClick} precisionsPerClick={precisionPerClick} recallPerClick={recallPerClick}/>
         </div>
     )
 }

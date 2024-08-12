@@ -3,7 +3,7 @@ export interface Task {
     answer: string,
     providedAnswer: string | null
     totalTime: number,
-    clicks: number
+    expandedNodesPerClick: number[],
 }
 
 export const taskList: Task[] = [
@@ -16,7 +16,7 @@ export const taskList: Task[] = [
         answer: "Essence defines the irreducible core nature of a thing.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     // Info: Morality pertains to principles concerning the distinction between right and wrong or good and bad behavior.
@@ -27,7 +27,7 @@ export const taskList: Task[] = [
         answer: "Morality pertains to principles concerning the distinction between right and wrong behavior.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     // Info: Consciousness is the state of being aware of and responsive to one's surroundings.
@@ -38,7 +38,7 @@ export const taskList: Task[] = [
         answer: "Consciousness is the state of being aware of and responsive to one's surroundings.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     // Info: Collectivity refers to a group of individuals considered as a whole.
@@ -49,7 +49,7 @@ export const taskList: Task[] = [
         answer: "A collectivity is a group of individuals considered as a whole.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     // Info: Communication is the imparting or exchanging of information by speaking, writing, or signaling.
@@ -60,7 +60,7 @@ export const taskList: Task[] = [
         answer: "Communication is the imparting or exchanging of information by speaking, writing, or signaling.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     //Info: Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.
@@ -71,7 +71,7 @@ export const taskList: Task[] = [
         answer: "Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     // Info: An economy is a system of production and exchange of goods and services.
@@ -82,7 +82,7 @@ export const taskList: Task[] = [
         answer: "An economy is a system of production and exchange of goods and services.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     },
 
     // Info: A pattern is a recurring characteristic or event.
@@ -93,12 +93,6 @@ export const taskList: Task[] = [
         answer: "A pattern is a recurring characteristic or event.",
         providedAnswer: null,
         totalTime: 0,
-        clicks: 0
+        expandedNodesPerClick: [],
     }
-
-    //Info:  Time is the indefinite continued progress of existence and events in the past, present, and future regarded as a whole.
-    //Categorization: Nature - ensures -> change - involves -> decay <- governed by - the passing of time
-    //Title: What is the nature of time?
-
-
 ]

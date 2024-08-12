@@ -54,7 +54,7 @@ const options = {
     }
 }
 
-const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}: GraphType) => {
+const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} : GraphType) => {
 
     const [displayLabels, setDisplayLabels] = useState(true);
 
@@ -150,7 +150,8 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
     }
 
     //force rerender when label changes to update
-    useEffect(() => {}, [displayLabels]);
+    useEffect(() => {
+    }, [displayLabels]);
 
     return (
         <React.Fragment>

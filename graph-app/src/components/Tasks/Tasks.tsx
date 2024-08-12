@@ -5,17 +5,20 @@ import {HOST} from '../../../../shared/variables'
 
 
 interface TasksProps {
-    resetGraph?: () => void
+    resetGraph: () => void,
+    expandedNodesPerClick: number[],
+    precisionsPerClick: number[],
+    recallPerClick: number[],
 }
 
-function Tasks({resetGraph}: TasksProps) {
+function Tasks({resetGraph, expandedNodesPerClick, recallPerClick, precisionsPerClick}: TasksProps) {
 
     const [currentTask, setCurrentTask] = useState<Task>({
         totalTime: 0,
         providedAnswer: "",
         answer: "",
         question: "",
-        clicks: 0
+        expandedNodesPerClick: []
     });
 
     const [startTime, setStartTime] = useState<number | null>(null);
@@ -25,7 +28,14 @@ function Tasks({resetGraph}: TasksProps) {
 
     const postTaskToServer = async (time: number) => {
 
-        let toSet = JSON.stringify({...currentTask, totalTime: time, providedAnswer: currentAnswer});
+        let toSet = JSON.stringify({
+            ...currentTask,
+            totalTime: time,
+            providedAnswer: currentAnswer,
+            expandedNodesPerClick: expandedNodesPerClick,
+        });
+
+        console.log("Posting to server....")
         console.log(toSet);
 
         await fetch(`${HOST}/tasks`, {
@@ -37,7 +47,7 @@ function Tasks({resetGraph}: TasksProps) {
         }).then(res => {
             const result = res.json()
             console.log(result)
-            resetGraph && resetGraph();
+            resetGraph();
         })
 
     }
@@ -98,11 +108,17 @@ function Tasks({resetGraph}: TasksProps) {
                                    value={text}
                             />
                         </div>
-                        <button onClick={nextTask}>Submit</button>
-                    </React.Fragment>
+                        {
+                            text == "" ?
+                                <button disabled>Submit</button>
+                                :
+
+                                <button onClick={nextTask}>Submit</button>
+                        }
+                            </React.Fragment>
+                        }
+                    </div>
+                )
             }
-        </div>
-    )
-}
 
 export default Tasks;
