@@ -269,7 +269,6 @@ const willNodeGetStranded = async (driver: Driver, nodeIdFrom: string, relId: st
 
 const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boolean): Promise<UpvoteResult> => {
 
-
     const query = `MATCH (from)-[r {relId: $relId}]->(to) SET r.votes = r.votes ${mustUpvote ? '+' : '-'} 1 RETURN r, from, to`;
     const result = await executeGenericQuery(driver, query, {
         relId: relId
@@ -377,58 +376,6 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         votes: newVotes,
     };
 
-    //
-    //     console.log("VOTES = 0 or negative...")
-    //
-    //     //assume nodes will be stranded
-    //     let fromWillBeStranded = false;
-    //     let toWillBeStranded = false;
-    //
-    //     //won't be stranded if root
-    //     //double check if not a root
-    //     if (from.labels[0] != ROOT) {
-    //         console.log("trying stranded from...")
-    //         fromWillBeStranded = await willNodeGetStranded(driver, from.properties.nodeId, r.properties.relId);
-    //         console.log("done")
-    //
-    //     }
-    //     if (to.labels[0] != ROOT) {
-    //         console.log("trying stranded to...")
-    //         toWillBeStranded = await willNodeGetStranded(driver, to.properties.nodeId, r.properties.relId);
-    //         console.log("done")
-    //     }
-    //
-    //     console.log("stranded from:")
-    //     console.log(fromWillBeStranded)
-    //     console.log("stranded to:")
-    //     console.log(toWillBeStranded)
-    //
-    //     //both won't get stranded, continue with deletion
-    //     if (!fromWillBeStranded && !toWillBeStranded) {
-    //         console.log("trying to delete")
-    //         //remove the relationship
-    //         const query = `MATCH ()-[r {relId: '${relId}'}]-() DELETE r`
-    //         const result = await executeGenericQuery(driver, query, {})
-    //         console.log("Setting votes to 0 to delete")
-    //
-    //         return {
-    //             relId: r.properties.relId,
-    //             votes: 0,
-    //         }
-    //
-    //     } else {
-    //         console.log("Node will get stranded, not deleting...")
-    //     }
-    //
-    // }
-    //
-    // //prevent deletion if there isn't a path
-    // const newVotes = r.properties.votes.toNumber() > 0 ? r.properties.votes.toNumber() : 1;
-    //
-    // return {
-    //     relId: r.properties.relId,
-    //     votes: newVotes,
-    // };
 }
 
 const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction): Promise<NodeRelationship> => {
