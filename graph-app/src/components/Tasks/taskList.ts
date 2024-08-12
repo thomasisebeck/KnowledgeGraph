@@ -2,90 +2,103 @@ export interface Task {
     question: string,
     answer: string,
     providedAnswer: string | null
-    totalTime: number
+    totalTime: number,
+    clicks: number
 }
 
 export const taskList: Task[] = [
 
-    //The Great Barrier Reef is the world's largest coral reef system, composed of over 2900 individual reefs and 900 islands stretching for over 2300 kilometers.
+    //Essence is the fundamental nature of a thing, its irreducible core that defines its identity.
+    //Classification: Existence - relates to -> identity - defines -> core nature - associated with -
+    //Title: What is the essence of being
     {
-        question: "What is the approximate length of the Great Barrier Reef in kilometers?",
-        answer: "2300",
+        question: "What does essence define?",
+        answer: "Essence defines the irreducible core nature of a thing.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
 
-    /*
-Classification:
-
-Science -> Biology -> Physiology -> Cardiovascular System -> Heart Rate -> Hummingbird Heart Rate
-
-Connections:
-
-Science relates to Biology
-Biology relates to Physiology
-Physiology relates to Cardiovascular System
-Cardiovascular System contains Heart Rate
-Heart Rate has Hummingbird Heart Rate
-     */
-
-    //The heart of a hummingbird
-    //A hummingbird's heart can beat up to 1,200 times per minute.
+    // Info: Morality pertains to principles concerning the distinction between right and wrong or good and bad behavior.
+    // Categorization: Ethics - relates to -> behavior - evaluates -> right or wrong - associated with -
+    // Title: What is the foundation of morality?
     {
-        question: "How many times can a hummingbird's heart beat in one minute?",
-        answer: "1200",
+        question: "How does morality relate to behavior?",
+        answer: "Morality pertains to principles concerning the distinction between right and wrong behavior.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
 
-    //Is the platypus deadly?
-    //The platypus, a unique egg-laying mammal native to Australia, possesses a venomous spur on its hind legs.
+    // Info: Consciousness is the state of being aware of and responsive to one's surroundings.
+    // Categorization: Mind - is a component of -> being - involves -> awareness -> encompasses -> surroundings -> produces -> subjective experience
+    // Title: What is consciousness?
     {
-        question: "Which mammal has a venomous spur?",
-        answer: "Platypus",
+        question: "What is the definition of consciousness?",
+        answer: "Consciousness is the state of being aware of and responsive to one's surroundings.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
 
-    //Large mammals
-    //snippet: The largest land mammal after the elephant is the white rhinoceros, a critically endangered species native to Africa.
+    // Info: Collectivity refers to a group of individuals considered as a whole.
+// Categorization: Society -> is comprised of -> groups - relates to - shared characteristics - exhibit
+// Title: What is a collectivity?
     {
-        question: "What is the second largest land mammal?",
-        answer: "Rhinoceros",
+        question: "How is a collectivity formed?",
+        answer: "A collectivity is a group of individuals considered as a whole.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
 
-    //Dunning-Kruger effect
-    //snippet: The Dunning-Kruger effect describes a cognitive bias wherein individuals with low ability at a task overestimate their competence.
+    // Info: Communication is the imparting or exchanging of information by speaking, writing, or signaling.
+// Categorization: Language -> is a tool for -> information - enables -> exchange -> fosters -> connection - relies on -> mind
+// Title: What is communication?
     {
-        question: "What cognitive bias involves overestimating one's abilities?",
-        answer: "Dunning-Kruger",
+        question: "How is information exchanged?",
+        answer: "Communication is the imparting or exchanging of information by speaking, writing, or signaling.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
-    //What is quantum entanglement?
-    //Quantum entanglement is a physical phenomenon where two particles become interconnected, regardless of distance, such that actions performed on one particle affect the other instantly.
+
+    //Info: Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.
+    //Categorization: Mind -> engages in -> thought -> leads to -> cognition
+    //Title: What is cognition?
     {
-        question: "what is the phenomenon where particles are connected regardless of distance? ",
-        answer: "Quantum entanglement",
+        question: "How is knowledge acquired according to cognition?",
+        answer: "Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
-    //Language and perception
-    //The Sapir-Whorf hypothesis suggests that the language we speak influences how we perceive and think about the world.
+
+    // Info: An economy is a system of production and exchange of goods and services.
+// Categorization: Society -> requires -> system -> based on -> production/exchange -> supports -> needs
+// Title: What is an economy?
     {
-        question: "Which hypothesis links language to perception?",
-        answer: "Sapir-Whorf",
+        question: "How are goods and services exchanged in an economy?",
+        answer: "An economy is a system of production and exchange of goods and services.",
         providedAnswer: null,
-        totalTime: 0
+        totalTime: 0,
+        clicks: 0
     },
-    //The placebo effect: what is it?
-    //The placebo effect is a phenomenon where a person experiences benefits from a fake treatment due to their belief in its efficacy.
+
+    // Info: A pattern is a recurring characteristic or event.
+// Categorization: Observation -> reveals -> demonstrates -> recurrence -> aids -> prediction
+// Title: What is a pattern?
     {
-        question: "What is the term for benefits from a fake treatment due to belief?",
-        answer: "Placebo effect",
+        question: "How is a pattern defined in terms of characteristics or events?",
+        answer: "A pattern is a recurring characteristic or event.",
         providedAnswer: null,
-        totalTime: 0
-    },
+        totalTime: 0,
+        clicks: 0
+    }
+
+    //Info:  Time is the indefinite continued progress of existence and events in the past, present, and future regarded as a whole.
+    //Categorization: Nature - ensures -> change - involves -> decay <- governed by - the passing of time
+    //Title: What is the nature of time?
+
+
 ]

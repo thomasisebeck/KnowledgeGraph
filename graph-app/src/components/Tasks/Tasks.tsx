@@ -3,6 +3,7 @@ import {taskList, Task} from "./taskList";
 import s from './tasks.module.scss'
 import {HOST} from '../../../../shared/variables'
 
+
 interface TasksProps {
     resetGraph?: () => void
 }
@@ -13,23 +14,19 @@ function Tasks({resetGraph}: TasksProps) {
         totalTime: 0,
         providedAnswer: "",
         answer: "",
-        question: ""
+        question: "",
+        clicks: 0
     });
 
     const [startTime, setStartTime] = useState<number | null>(null);
     const [taskNumber, setTaskNumber] = useState<number | null>(null);
     const [currentAnswer, setCurrentAnswer] = useState<string | null>(null);
-
-    const text = useRef<HTMLInputElement | null>(null);
+    const [text, setText] = useState("")
 
     const postTaskToServer = async (time: number) => {
 
-        //reset to root nodes
-
         let toSet = JSON.stringify({...currentTask, totalTime: time, providedAnswer: currentAnswer});
         console.log(toSet);
-
-        resetGraph && resetGraph();
 
         await fetch(`${HOST}/tasks`, {
             method: "POST",
@@ -40,6 +37,7 @@ function Tasks({resetGraph}: TasksProps) {
         }).then(res => {
             const result = res.json()
             console.log(result)
+            resetGraph && resetGraph();
         })
 
     }
@@ -73,11 +71,7 @@ function Tasks({resetGraph}: TasksProps) {
             setTaskNumber((taskNumber) => {
                 if (taskNumber != null) {
                     setCurrentTask(taskList[++taskNumber])
-
-                    if (text.current){
-                        text.current.value = "";
-                    }
-
+                    setText("")
                     return taskNumber + 1;
                 }
                 return 0;
@@ -99,8 +93,9 @@ function Tasks({resetGraph}: TasksProps) {
                                    onChange={(e) => {
                                        setCurrentTask({...currentTask, providedAnswer: e.target.value})
                                        setCurrentAnswer(e.target.value)
+                                       setText(e.target.value)
                                    }}
-                                   ref={text}
+                                   value={text}
                             />
                         </div>
                         <button onClick={nextTask}>Submit</button>
