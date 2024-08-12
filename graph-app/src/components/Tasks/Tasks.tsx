@@ -68,6 +68,8 @@ function Tasks({resetGraph, expandedNodesPerClick, recallPerClick, precisionsPer
             //calculate the end time
             const totalTime = Date.now() - startTime;
             console.log("TOTAL: " + totalTime)
+
+            //don't await posting, just move on
             await postTaskToServer(totalTime);
         } else {
             console.error("start time is null")

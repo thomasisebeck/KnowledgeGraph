@@ -155,5 +155,49 @@
     "expandedNodesPerClick": [],
     "precisionPerClick": [],
     "recallPerClick": []
+  },
+  {
+    "question": "How is knowledge acquired according to cognition?",
+    "answer": "Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.",
+    "providedAnswer": "through though, experience and the senses",
+    "totalTime": 4537347,
+    "expandedNodesPerClick": [
+      5,
+      2
+    ]
+  },
+  {
+    "question": "How is a pattern defined in terms of characteristics or events?",
+    "answer": "A pattern is a recurring characteristic or event.",
+    "providedAnswer": "A recurring characteristic or event. ",
+    "totalTime": 140434,
+    "expandedNodesPerClick": [
+      5,
+      2,
+      2,
+      1
+    ]
+  },
+  {
+    "question": "What does essence define?",
+    "answer": "Essence defines the irreducible core nature of a thing.",
+    "providedAnswer": "The fundamental nature of a thing",
+    "totalTime": 23341,
+    "expandedNodesPerClick": [
+      5,
+      1
+    ]
+  },
+  {
+    "question": "How does morality relate to behavior?",
+    "answer": "Morality pertains to principles concerning the distinction between right and wrong behavior.",
+    "providedAnswer": "Morality is good or bad behaviour",
+    "totalTime": 48929,
+    "expandedNodesPerClick": [
+      5,
+      1,
+      2,
+      1
+    ]
   }
 ]

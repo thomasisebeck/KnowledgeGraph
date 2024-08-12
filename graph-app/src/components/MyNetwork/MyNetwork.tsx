@@ -32,7 +32,7 @@ const options = {
             y: 5
         },
         font: {
-            color: 'white'
+            color: 'white',
         },
         shape: 'dot',
         scaling: {
@@ -53,6 +53,10 @@ const options = {
         }
     }
 }
+
+//for edge thickness
+const THICKNESS_MULTIPLIER = 15;
+const MINIMUM_THICKNESS = 0.4;
 
 const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} : GraphType) => {
 
@@ -94,9 +98,9 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
 
     //used for scaling the edge widths to that they reach a max size
     const sigmoid = (x: number) => {
-        const NUMERATOR = 1.3;
-        const X_SCALE_FACTOR = 0.1;
-        const Y_SHIFT = -0.05;
+        const NUMERATOR = 1.4;
+        const X_SCALE_FACTOR = 0.3;
+        const Y_SHIFT = -0.4;
 
         const sig = NUMERATOR / (1 + Math.exp(-x * X_SCALE_FACTOR));
         return sig + Y_SHIFT;
@@ -129,6 +133,21 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
         }
     }
 
+    //separate the string into a multiline block
+    function breakUpString(s: string) {
+        const MIN_CHARS = 30;
+
+        const broken = [];
+        let pos = 0;
+        while (s.length > MIN_CHARS && pos != -1) {
+            pos = s.indexOf(' ', MIN_CHARS)
+            if (pos !== -1)
+                broken.push(s.substring(0, pos))
+            s = s.substring(pos + 1, s.length);
+        }
+        broken.push(s);
+        return broken;
+    }
     //format the labels for information nodes, and remove underscores
     const getNodeLabel = (el: any) => {
         if (!el.isSnippetNode)
@@ -143,7 +162,8 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
         }
 
         if (el.snippet != null) {
-            return `${el.label.replaceAll('_', ' ')}\n${getUnderline(el.label)}\n${el.snippet}`
+            console.log(breakUpString(el.snippet));
+            return `${el.label.replaceAll('_', ' ')}\n${getUnderline(el.label)}\n${breakUpString(el.snippet).join('\n')}`
         }
 
         console.error("snipeet is null on snippet node")
@@ -155,6 +175,7 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
 
     return (
         <React.Fragment>
+            {/*checkbox for adding link labels or not*/}
             <div className={s.hasLabelsContainer}>
                 <label htmlFor={"chk"}>Link labels:</label>
                 <input type={"checkbox"} id={"chk"} checked={displayLabels} onChange={(e) => {
@@ -166,6 +187,7 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
                 ref={networkRef}
             >
 
+                {/*render the nodes*/}
                 {
                     nodes && nodes.map(el => {
                             return (
@@ -183,11 +205,10 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
                     )
                 }
 
+                {/*render the relationships*/}
                 {
                     relationships && relationships.map(r => {
                         const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? '1' : '0'}`;
-                        const THICKNESS_MULTIPLIER = 15;
-                        const MINIMUM_THICKNESS = 0.4;
                         const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
                         const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
                         const LABEL = displayLabels ? (r.type?.replaceAll('_', ' ').toLowerCase()) : '';
