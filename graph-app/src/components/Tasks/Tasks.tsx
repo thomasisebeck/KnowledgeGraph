@@ -1,10 +1,13 @@
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import {taskList, Task} from "./taskList";
 import s from './tasks.module.scss'
 import {HOST} from '../../../../shared/variables'
 
+interface TasksProps {
+    resetGraph?: () => void
+}
 
-function Tasks() {
+function Tasks({resetGraph}: TasksProps) {
 
     const [currentTask, setCurrentTask] = useState<Task>({
         totalTime: 0,
@@ -17,10 +20,16 @@ function Tasks() {
     const [taskNumber, setTaskNumber] = useState<number | null>(null);
     const [currentAnswer, setCurrentAnswer] = useState<string | null>(null);
 
+    const text = useRef<HTMLInputElement | null>(null);
+
     const postTaskToServer = async (time: number) => {
+
+        //reset to root nodes
 
         let toSet = JSON.stringify({...currentTask, totalTime: time, providedAnswer: currentAnswer});
         console.log(toSet);
+
+        resetGraph && resetGraph();
 
         await fetch(`${HOST}/tasks`, {
             method: "POST",
@@ -64,6 +73,11 @@ function Tasks() {
             setTaskNumber((taskNumber) => {
                 if (taskNumber != null) {
                     setCurrentTask(taskList[++taskNumber])
+
+                    if (text.current){
+                        text.current.value = "";
+                    }
+
                     return taskNumber + 1;
                 }
                 return 0;
@@ -86,6 +100,7 @@ function Tasks() {
                                        setCurrentTask({...currentTask, providedAnswer: e.target.value})
                                        setCurrentAnswer(e.target.value)
                                    }}
+                                   ref={text}
                             />
                         </div>
                         <button onClick={nextTask}>Submit</button>
