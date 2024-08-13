@@ -1,19 +1,18 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
 
 import s from "./AddStackDialogue.module.scss"
-import g from "../../index.scss"
 import {HOST} from "../../../../shared/variables";
-import {RequestBody, Direction, RequestBodyConnection, CreateStackReturnBody, FrontendBaseCateogries} from "../../../../shared/interfaces"
-import * as zlib from "node:zlib";
+import {
+    CreateStackReturnBody,
+    Direction,
+    FrontendBaseCateogries,
+    RequestBody,
+    RequestBodyConnection
+} from "../../../../shared/interfaces"
+import {UpdateType} from "./DialogueUtils";
 
 const BASE_CATEGORY_INDEX = -1;
-
-enum UpdateType {
-    NODE_NAME,
-    CONNECTION_NAME,
-    CONNECTION_DIRECTION
-}
 
 function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading, baseCategories}: {
     hideAddStackDialogue: () => void,

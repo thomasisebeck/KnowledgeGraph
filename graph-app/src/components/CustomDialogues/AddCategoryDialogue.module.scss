@@ -1,0 +1,22 @@
+@import "../../variables";
+
+.node {
+  width: 80px;
+  height: 80px;
+  background-color: $primary;
+  border-radius: 100%;
+  position: relative;
+}
+
+.nodeContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.nodeName {
+  position: absolute;
+  width: 200px;
+  text-align: center;
+  top: 24px;
+  left: -60px;
+}

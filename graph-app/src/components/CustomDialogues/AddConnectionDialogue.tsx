@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import { CreateRelRequestBody, NodeRelationship, Direction } from '../../../shared/interfaces';
-import Dialogue from "./Dialogue/Dialogue";
-import {HOST} from "../../../shared/variables"
+import { CreateRelRequestBody, NodeRelationship, Direction } from '../../../../shared/interfaces';
+import Dialogue from "../Dialogue/Dialogue";
+import {HOST} from "../../../../shared/variables"
 
 //dialogue to add a connection between two nodes
 function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, updateRelationship}: {

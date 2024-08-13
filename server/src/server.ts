@@ -160,19 +160,19 @@ app.post('/tasks', async (req, res) => {
 
     const updatedData = JSON.stringify(parsedData, null, 2); // Stringify with indentation
 
-    fs.writeFile(FILE_PATH, updatedData, { encoding: 'utf8' }, (err) => {
-       if (err) {
-           console.error(err)
-           res.status(400).json({
-               success: false,
-               error: err
-           })
-       } else {
-           console.log("Task written successfully");
-           res.status(200).json({
-               success: true
-           })
-       }
+    fs.writeFile(FILE_PATH, updatedData, {encoding: 'utf8'}, (err) => {
+        if (err) {
+            console.error(err)
+            res.status(400).json({
+                success: false,
+                error: err
+            })
+        } else {
+            console.log("Task written successfully");
+            res.status(200).json({
+                success: true
+            })
+        }
     })
 })
 
@@ -192,6 +192,23 @@ app.get('/neighborhood/:id/:depth', async (req, res) => {
     } catch (e) {
         console.error(e)
         res.status(400).json(e as string);
+    }
+})
+
+app.get('/nodeName/:id', async (req, res) => {
+    try {
+        if (req.params.id == null)
+            return res.status(400).json("cannot find node because id is null");
+
+        const result = await q.getNodeById(driver, req.params.id);
+
+        console.log("node by id")
+        console.log(result)
+        res.status(200).json(result);
+
+    } catch (e) {
+        console.error(e)
+
     }
 })
 

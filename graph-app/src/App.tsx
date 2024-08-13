@@ -8,7 +8,7 @@ import {
     NodeRelationship,
     UpvoteResult
 } from "../../shared/interfaces";
-import AddConnectionDialogue from "./components/AddConnectionDialogue";
+import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
 import {AddPhase, Phase} from "./interfaces";
@@ -16,7 +16,7 @@ import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
 import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
 import Tasks from "./components/Tasks/Tasks";
-import AddCategoryDialogue from "./components/AddCategoryDialogue";
+import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
 
 
 function App() {
@@ -471,9 +471,14 @@ function App() {
 
             {/* dialogue for adding categories */}
             {
-                //todo: remove
                 addCategoryPhase.phase == Phase.ADD_BOX &&
-                <AddCategoryDialogue hideDialogue={() => setAddCategoryPhase({...addCategoryPhase, phase: Phase.NONE})}/>
+                <AddCategoryDialogue
+                    hideDialogue={() =>
+                        setAddCategoryPhase({...addCategoryPhase, phase: Phase.NONE})
+                    }
+                    firstNodeId={addCategoryPhase.firstNodeId}
+                    secondNodeId={addCategoryPhase.secondNodeId}
+                />
             }
 
 
@@ -495,7 +500,12 @@ function App() {
                 upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)
             }
 
-            <Tasks resetGraph={resetGraph}   expandedNodesPerClick={expandedNodesPerClick} precisionsPerClick={precisionPerClick} recallPerClick={recallPerClick}/>
+            <Tasks
+                resetGraph={resetGraph}
+                expandedNodesPerClick={expandedNodesPerClick}
+                precisionsPerClick={precisionPerClick}
+                recallPerClick={recallPerClick}
+            />
         </div>
     )
 }
