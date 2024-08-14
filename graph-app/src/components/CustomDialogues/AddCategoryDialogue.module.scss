@@ -13,6 +13,20 @@
   justify-content: center;
 }
 
+.connectionContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.connectionContainer img {
+  width: 40px;
+  margin-right: 5px;
+}
+
+.connectionContainer input {
+  margin-right: 38px;
+}
+
 .nodeName {
   position: absolute;
   width: 200px;

@@ -1,19 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import Dialogue from "../Dialogue/Dialogue";
-import {Direction, Neo4jNode} from "../../../../shared/interfaces"
+import {Direction, Neo4jNode, Category} from "../../../../shared/interfaces"
 import {HOST} from "../../../../shared/variables"
 import s from './AddCategoryDialogue.module.scss'
+import Node from '../Node/Node'
 
 interface AddCategoryDialogueProps {
     hideDialogue: () => void,
     firstNodeId: string,
     secondNodeId: string,
-}
-
-interface Category {
-    categoryName: string,
-    connectionName: string,
-    connectionDirection: Direction
 }
 
 const getImageBasedOnDirection = (dir: Direction) => {
@@ -26,14 +21,6 @@ const getImageBasedOnDirection = (dir: Direction) => {
             return 'buttons/down-arrow.svg'
     }
 
-}
-
-function Node(startNodeName: string) {
-    return <div className={s.nodeContainer}>
-        <div className={s.node}>
-            <div className={s.nodeName}>{startNodeName}</div>
-        </div>
-    </div>;
 }
 
 const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
@@ -88,15 +75,35 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
         setCategories([...categories])
     }
 
+    const addBlankCategory = () => {
+        setCategories([...categories, {
+            categoryName: "new category",
+            connectionName: "new connection",
+            connectionDirection: Direction.AWAY
+        }])
+    }
+
     return (
         <Dialogue hideDialogue={hideDialogue} title={"Add connection path between two nodes"}>
 
-            {Node(startNodeName)}
+            <Node>
+                <div>
+                    {startNodeName.replaceAll('_', ' ')}
+                </div>
+            </Node>
 
             {
                 categories.map((c, index) => {
                     return (
-                        <div>
+                        <div className={s.connectionContainer}>
+                            <Node>
+                                <input type={"text"}
+                                       onChange={(e) => {
+                                           categories[index].connectionName = e.target.value;
+                                           setCategories([...categories])
+                                       }}
+                                />
+                            </Node>
                             <img
                                 src={getImageBasedOnDirection(c.connectionDirection)}
                                 onClick={() => toggleDirection(index)}
@@ -114,8 +121,12 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
                 })
             }
 
-            {Node(endNodeName)}
-            <button>Add Category</button>
+            <Node>
+                <div>
+                    {endNodeName.replaceAll('_', ' ')}
+                </div>
+            </Node>
+            <button onClick={addBlankCategory}>Add Category</button>
         </Dialogue>
     )
 }

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {ReactNode, useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
 
 import s from "./AddStackDialogue.module.scss"
@@ -8,11 +8,40 @@ import {
     Direction,
     FrontendBaseCateogries,
     RequestBody,
-    RequestBodyConnection
+    RequestBodyConnection,
 } from "../../../../shared/interfaces"
 import {UpdateType} from "./DialogueUtils";
+import Node from "../Node/Node"
+import Category from "../Category/Category";
+
+interface CategoryProps {
+    index: number;
+    onCancelClick: () => void; // Assuming cancelClick doesn't require any arguments
+    onUpdateCategory: (index: number, value: string, updateType: UpdateType) => void;
+    c: RequestBodyConnection; // Replace with appropriate type if known
+    children: ReactNode
+}
 
 const BASE_CATEGORY_INDEX = -1;
+//
+// export function Category({index, onCancelClick, onUpdateCategory, children}: CategoryProps) {
+//     return <div className={s.category} key={index}>
+//
+//         <img src={"buttons/cancel.svg"} className={s.cancel} onClick={onCancelClick}/>
+//
+//         {/*node*/}
+//         <Node>
+//             <input
+//                 type={"text"}
+//                 onBlur={(e) => onUpdateCategory(index, e.target.value, UpdateType.NODE_NAME)}
+//                 placeholder={"new category name"}
+//             />
+//         </Node>
+//
+//         {children}
+//
+//     </div>
+// }
 
 function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading, baseCategories}: {
     hideAddStackDialogue: () => void,
@@ -63,7 +92,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         })()
 
         //get the connections from the state
-        const addedConnections:RequestBodyConnection[] = categories.map(c => {
+        const addedConnections: RequestBodyConnection[] = categories.map(c => {
             return {
                 nodeName: c.nodeName,
                 direction: c.direction,
@@ -113,12 +142,12 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
     }
 
     //component to set the direction of the connection
-    function toggleButton(index: number, category: RequestBodyConnection) {
+    function toggleButton(index: number, category: RequestBodyConnection, toggleCategory: (index: number) => void) {
         return <div className={s.innerDiv}>
             {
                 category.direction === Direction.TOWARDS &&
                 <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleCategoryDirection(index)} src={"buttons/up-arrow.svg"}
+                    <img onClick={() => toggleCategory(index)} src={"buttons/up-arrow.svg"}
                          alt={"toggle direction up"}/>
                 </div>
             }
@@ -275,6 +304,22 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
         createStack();
     }
 
+    const onChangeBaseCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const index = baseCategories.findIndex(el => el.nodeId == e.target.value)
+
+        //selected the empty category, so it won't be found
+        if (index == -1) {
+            //clear the base category if no option is selected
+            setBaseCategory({...baseCategory, nodeId: "", nodeName: ""})
+        } else
+            //just set the name and nodeId when selecting the base category
+            setBaseCategory({
+                ...baseCategory,
+                nodeId: baseCategories[index].nodeId,
+                nodeName: baseCategories[index].label
+            })
+    }
+
     return (
         <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
 
@@ -287,73 +332,68 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 </div>
             }
 
-            <div className={s.category}>
+            {/* base category with dropdown */}
+            <Category
+                index={BASE_CATEGORY_INDEX}
+                onUpdateCategory={updateCategory}
+                c={baseCategory}
+                isBaseCategory={true}
+                baseCategory={baseCategory}
+                baseCategories={baseCategories}
+                setBaseCategory={setBaseCategory}
+                categories={categories}
+                setCategories={setCategories}
+                onChangeBaseCategory={onChangeBaseCategory}
+            />
 
-                {/*select*/}
-                <div className={s.nodeDivOuter}>
-                    <div className={s.nodeDiv}></div>
-                    <div className={[s.content, s.customSelect].join(' ')}>
-                        <select name={"base-category"} onChange={(e) => {
-                            const index = baseCategories.findIndex(el => el.nodeId == e.target.value)
+            {/*<div className={s.category}>*/}
 
-                            //selected the empty category, so it won't be found
-                            if (index == -1) {
-                                //clear the base category if no option is selected
-                                setBaseCategory({...baseCategory, nodeId: "", nodeName: ""})
-                            } else
-                            //just set the name and nodeId when selecting the base category
-                            setBaseCategory({
-                                ...baseCategory,
-                                nodeId: baseCategories[index].nodeId,
-                                nodeName: baseCategories[index].label
-                            })
+            {/*    <div className={[s.content, s.customSelect].join(' ')}>*/}
 
-                        }}>
-                            <option value={""} key={""}></option>
-                            {
-                                //the id's are the root node id's
-                                baseCategories.map(c => {
-                                    return <option value={c.nodeId} key={c.nodeId}>{c.label}</option>
-                                })
-                            }
-                        </select>
-                    </div>
-                </div>
+            {/*        <Node>*/}
+            {/*            <select name={"base-category"} onChange={onChangeBaseCategory}>*/}
+            {/*                <option value={""} key={""}></option>*/}
+            {/*                {*/}
+            {/*                    //the id's are the root node id's*/}
+            {/*                    baseCategories.map(c => {*/}
+            {/*                        return <option value={c.nodeId} key={c.nodeId}>{c.label}</option>*/}
+            {/*                    })*/}
+            {/*                }*/}
+            {/*            </select>*/}
+            {/*        </Node>*/}
+            {/*    </div>*/}
 
-                {/*arrow*/}
-                {toggleButton(BASE_CATEGORY_INDEX, baseCategory)}
-            </div>
+            {/*    /!*arrow*!/*/}
+            {/*    {toggleButton(BASE_CATEGORY_INDEX, baseCategory, toggleCategoryDirection)}*/}
+            {/*</div>*/}
 
             <div className={s.categoriesContainer}>
 
                 {
-                    categories.map((c, index) => (
-                        <div className={s.category} key={index}>
+                    categories.map((c, index) =>
+                        // <Category
+                        //     key={index}
+                        //     index={index}
+                        //     onCancelClick={() => setCategories(old => old.filter((c, ind) => ind != index))}
+                        //     onUpdateCategory={updateCategory}
+                        //     c={c}>
+                        //
+                        //     {/*Add the toggle button*/}
+                        //     {toggleButton(index, c, toggleCategoryDirection)}
+                        // </Category>
+                        <Category
+                            key={index}
+                            index={index}
+                            onUpdateCategory={updateCategory}
+                            c={c}
+                            isBaseCategory={false}
+                            categories={categories}
+                            setCategories={setCategories}
 
-                            <img src={"buttons/cancel.svg"} className={s.cancel} onClick={() => {
-                                console.log("HI")
-                                setCategories(old =>
-                                    old.filter(((c, ind) => ind !== index))
-                                );
-                            }}/>
-
-
-                            {/*node*/}
-                            <div className={s.nodeDivOuter}>
-                                <div className={s.nodeDiv}></div>
-                                <div className={s.content}>
-                                    <input
-                                        type={"text"}
-                                        onBlur={(e) => updateCategory(index, e.target.value, UpdateType.NODE_NAME)}
-                                        placeholder={"new category name"}
-                                    />
-                                </div>
-                            </div>
-
-                            {/*arrow*/}
-                            {toggleButton(index, c)}
-                        </div>
-                    ))
+                            //filter out the current category
+                            onCancelClick={() => setCategories(old => old.filter((c, ind) => ind != index))}
+                        />
+                    )
                 }
 
             </div>
@@ -386,7 +426,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                     </button>
                     :
                     <button onClick={tryCreateStack}>
-                            Create Stack
+                        Create Stack
                     </button>
 
             }

@@ -27,17 +27,8 @@
   top: 0;
 }
 
-.nodeDiv {
-  background-color: #fea400;
-  border-radius: 100%;
-  width: 70px;
-  height: 70px;
-}
 
-.content {
-  position: absolute;
-  top: 19px;
-}
+
 
 .categoriesContainer {
   height: 152px;
@@ -71,11 +62,7 @@
   outline: 3px solid grey;
 }
 
-.nodeDivOuter {
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
+
 
 .innerDiv {
   display: flex;
