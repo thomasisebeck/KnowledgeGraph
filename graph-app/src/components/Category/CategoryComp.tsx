@@ -1,27 +1,27 @@
-import React, {useState} from 'react'
+import React, {Dispatch, SetStateAction} from 'react'
 import {UpdateType} from "../AddStackDialogue/DialogueUtils";
-import {RequestBodyConnection, Direction, FrontendBaseCateogries} from "../../../../shared/interfaces";
+import {Category, Direction, FrontendBaseCateogries, RequestBodyConnection} from "../../../../shared/interfaces";
 import s from '../AddStackDialogue/AddStackDialogue.module.scss'
 import Node from "../Node/Node";
-import ReactDOM from "react-dom";
 
 interface Props {
     index: number,
     onCancelClick?: () => void,
-    onUpdateCategory: (index: number, value: string, updateType: UpdateType) => void,
+
+    onUpdateCategory:any,
     c: RequestBodyConnection,
     isBaseCategory: boolean,
     baseCategory?: RequestBodyConnection,
     baseCategories?: FrontendBaseCateogries[],
-    setBaseCategory?: (value: React.SetStateAction<RequestBodyConnection>) => void
+    setBaseCategory?: (value: SetStateAction<RequestBodyConnection>) => void,
     categories: RequestBodyConnection[],
-    setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>
+    setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
     onChangeBaseCategory?: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }
 
 const BASE_CATEGORY_INDEX = -1;
 
-export default function Category(
+export default function CategoryComp(
     {
         c,
         onChangeBaseCategory, baseCategories, categories,
@@ -168,10 +168,22 @@ export default function Category(
                         <img src={"buttons/cancel.svg"} className={s.cancel} onClick={onCancelClick}/>
 
                         {/*Node showing other categories*/}
+                        {/*
+                         onUpdateCategory: (
+        index: number,
+        setBaseCategory: (value: React.SetStateAction<RequestBodyConnection>) => void,
+        baseCategory: any,
+        value: string | Direction,
+        updateType: UpdateType,
+        setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
+        categories: RequestBodyConnection[])
+            => React.JSX.Element | undefined,
+                        */}
                         <Node>
                             <input
                                 type={"text"}
-                                onBlur={(e) => onUpdateCategory(index, e.target.value, UpdateType.NODE_NAME)}
+                                onBlur={(e) => onUpdateCategory(index, setBaseCategory, baseCategory, e.target.value, UpdateType.NODE_NAME, setCategories, categories)}
+                                // onBlur={(e) => onUpdateCategory(index,BASE_CATEGORY_INDEX, setBaseCategory, baseCategory, e.target.value, UpdateType.NODE_NAME, setCategories, categories)}
                                 placeholder={"new category name"}
                             />
                         </Node>

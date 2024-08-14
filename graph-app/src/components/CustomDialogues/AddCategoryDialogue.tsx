@@ -1,15 +1,18 @@
 import React, {useEffect, useState} from 'react'
 import Dialogue from "../Dialogue/Dialogue";
-import {Direction, Neo4jNode, Category} from "../../../../shared/interfaces"
+import {Direction, Neo4jNode, Category, RequestBodyConnection} from "../../../../shared/interfaces"
 import {HOST} from "../../../../shared/variables"
-import s from './AddCategoryDialogue.module.scss'
 import Node from '../Node/Node'
+import CategoryComp from '../Category/CategoryComp'
+import {UpdateType} from '../AddStackDialogue/DialogueUtils';
+import {updateCategoryUtil} from "../Categories.util";
 
 interface AddCategoryDialogueProps {
     hideDialogue: () => void,
     firstNodeId: string,
     secondNodeId: string,
 }
+
 
 const getImageBasedOnDirection = (dir: Direction) => {
     switch (dir) {
@@ -25,16 +28,21 @@ const getImageBasedOnDirection = (dir: Direction) => {
 
 const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
 
-    const [categories, setCategories] = useState<Category[]>([{
-        categoryName: "new category",
-        connectionDirection: Direction.NEUTRAL,
+    const [categories, setCategories] = useState<RequestBodyConnection[]>([{
+        nodeName: "new category",
+        direction: Direction.NEUTRAL,
         connectionName: "connection name"
     }]);
 
     const [startNodeName, setStartNodeName] = useState<string>("");
     const [endNodeName, setEndNodeName] = useState<string>("");
 
-
+    const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
+        direction: Direction.AWAY,
+        nodeName: "",
+        connectionName: "",
+        nodeId: ""
+    })
     const getNodes = async () => {
 
         const calls = [
@@ -59,27 +67,12 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
         })
     }, []);
 
-    function toggleDirection(index: number) {
-        switch (categories[index]?.connectionDirection) {
-            case Direction.NEUTRAL:
-                categories[index].connectionDirection = Direction.AWAY;
-                break;
-            case Direction.AWAY:
-                categories[index].connectionDirection = Direction.TOWARDS;
-                break;
-            case Direction.TOWARDS:
-                categories[index].connectionDirection = Direction.NEUTRAL;
-                break;
-        }
-
-        setCategories([...categories])
-    }
 
     const addBlankCategory = () => {
         setCategories([...categories, {
-            categoryName: "new category",
+            nodeName: "new category",
             connectionName: "new connection",
-            connectionDirection: Direction.AWAY
+            direction: Direction.AWAY
         }])
     }
 
@@ -93,32 +86,16 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
             </Node>
 
             {
-                categories.map((c, index) => {
-                    return (
-                        <div className={s.connectionContainer}>
-                            <Node>
-                                <input type={"text"}
-                                       onChange={(e) => {
-                                           categories[index].connectionName = e.target.value;
-                                           setCategories([...categories])
-                                       }}
-                                />
-                            </Node>
-                            <img
-                                src={getImageBasedOnDirection(c.connectionDirection)}
-                                onClick={() => toggleDirection(index)}
-                            />
-                            <div>
-                                <input type={"text"}
-                                       onChange={(e) => {
-                                           categories[index].categoryName = e.target.value;
-                                           setCategories([...categories])
-                                       }}
-                                />
-                            </div>
-                        </div>
-                    )
-                })
+                categories.map((c, index) =>
+                    <CategoryComp
+                        key={index}
+                        c={c}
+                        categories={categories}
+                        index={index}
+                        onUpdateCategory={updateCategoryUtil}
+                        isBaseCategory={false}
+                        setCategories={setCategories}
+                    />)
             }
 
             <Node>

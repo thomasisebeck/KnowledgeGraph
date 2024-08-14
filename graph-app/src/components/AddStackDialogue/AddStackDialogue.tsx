@@ -12,7 +12,8 @@ import {
 } from "../../../../shared/interfaces"
 import {UpdateType} from "./DialogueUtils";
 import Node from "../Node/Node"
-import Category from "../Category/Category";
+import CategoryComp from "../Category/CategoryComp";
+import {updateCategoryUtil} from "../Categories.util"
 
 interface CategoryProps {
     index: number;
@@ -141,86 +142,6 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
 
     }
 
-    //component to set the direction of the connection
-    function toggleButton(index: number, category: RequestBodyConnection, toggleCategory: (index: number) => void) {
-        return <div className={s.innerDiv}>
-            {
-                category.direction === Direction.TOWARDS &&
-                <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleCategory(index)} src={"buttons/up-arrow.svg"}
-                         alt={"toggle direction up"}/>
-                </div>
-            }
-            {
-                category.direction === Direction.AWAY &&
-                <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleCategoryDirection(index)} src={"buttons/down-arrow.svg"}
-                         alt={"toggle direction down"}/>
-                </div>
-            }
-            {
-                category.direction === Direction.NEUTRAL &&
-                <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleCategoryDirection(index)} src={"buttons/neutral.svg"}
-                         alt={"toggle direction neutral"}/>
-                </div>
-            }
-            <input type={"text"} placeholder={"connection label"}
-                   onClick={() => {
-                       updateCategory(index, "", UpdateType.CONNECTION_NAME);
-                   }}
-                   onBlur={(e) => {
-                       updateCategory(index, e.target.value, UpdateType.CONNECTION_NAME);
-                   }}
-            />
-        </div>;
-    }
-
-    //update different parts of the category
-    function updateCategory(index: number, value: string | Direction, updateType: UpdateType) {
-        if (index == BASE_CATEGORY_INDEX) { //update base category
-            switch (updateType) {
-                case UpdateType.CONNECTION_DIRECTION:
-                    setBaseCategory({...baseCategory, direction: value as Direction})
-                    break;
-                case UpdateType.CONNECTION_NAME:
-                    setBaseCategory({...baseCategory, connectionName: value as string})
-                    break;
-                case UpdateType.NODE_NAME:
-                    setBaseCategory({...baseCategory, nodeName: value as string});
-                    break;
-            }
-
-            return;
-        }
-
-        switch (updateType) {
-            case UpdateType.CONNECTION_DIRECTION:
-                setCategories(categories.map(((e, ind) => {
-                    if (ind == index)
-                        return {...e, direction: value as Direction}
-                    return e;
-                })));
-                break;
-            case UpdateType.CONNECTION_NAME:
-                setCategories(categories.map(((e, ind) => {
-                    if (ind == index)
-                        return {...e, connectionName: value as string}
-                    return e;
-                })));
-
-                break;
-            case UpdateType.NODE_NAME:
-                setCategories(categories.map(((e, ind) => {
-                    if (ind == index)
-                        return {...e, nodeName: value as string}
-                    return e;
-                })));
-
-                break;
-        }
-    }
-
     //when you click on add category
     function addBlankCategory() {
         setCategories([...categories, {
@@ -333,9 +254,9 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
             }
 
             {/* base category with dropdown */}
-            <Category
+            <CategoryComp
                 index={BASE_CATEGORY_INDEX}
-                onUpdateCategory={updateCategory}
+                onUpdateCategory={updateCategoryUtil}
                 c={baseCategory}
                 isBaseCategory={true}
                 baseCategory={baseCategory}
@@ -381,10 +302,10 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                         //     {/*Add the toggle button*/}
                         //     {toggleButton(index, c, toggleCategoryDirection)}
                         // </Category>
-                        <Category
+                        <CategoryComp
                             key={index}
                             index={index}
-                            onUpdateCategory={updateCategory}
+                            onUpdateCategory={updateCategoryUtil}
                             c={c}
                             isBaseCategory={false}
                             categories={categories}
