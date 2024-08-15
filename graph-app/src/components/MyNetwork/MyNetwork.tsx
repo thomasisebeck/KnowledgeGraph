@@ -1,9 +1,7 @@
 import {Edge, Network, Node} from '@lifeomic/react-vis-network'
 import React, {useEffect, useRef, useState} from 'react'
-import {GraphType, Direction, ROOT, INFO, CLASS} from "../../../../shared/interfaces";
-import s from "./myNetwork.module.scss"
-import ReactDOM from "react-dom";
-import {node} from "prop-types";
+import {GraphType, Direction, ROOT, CLASS} from "../../../../shared/interfaces";
+import s from './myNetwork.module.scss'
 
 const options = {
     width: '100%',
@@ -15,17 +13,16 @@ const options = {
         maxVelocity: 20,
         barnesHut: {
             gravitationalConstant: -5000,
-            centralGravity: 0.5,
-            springLength: 95,
-            springConstant: 0.07,
+            centralGravity: 0.3,
+            springLength: 120,
+            springConstant: 0.03,
             damping: 0.3,
             avoidOverlap: 0
         },
 
     },
-
     nodes: {
-        borderWidth: 2,
+        borderWidth: 3,
         color: 'rgb(141,234,255)',
         shadow: {
             enabled: true,
@@ -35,7 +32,7 @@ const options = {
             y: 5
         },
         font: {
-            color: 'white'
+            color: 'white',
         },
         shape: 'dot',
         scaling: {
@@ -57,46 +54,27 @@ const options = {
     }
 }
 
-interface snippet {
-    snippet: string,
-    heading: string
-}
+//for edge thickness
+const THICKNESS_MULTIPLIER = 15;
+const MINIMUM_THICKNESS = 0.4;
 
+const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} : GraphType) => {
 
-const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}: GraphType) => {
+    const [displayLabels, setDisplayLabels] = useState(true);
 
+    //get a reference to the network object
     const networkRef = useRef(null);
-    const [snippet, setSnippet] = useState<snippet | null>(null)
-    const [xPos, setXPos] = useState(0);
-    const [yPos, setYPos] = useState(0);
 
-    let counter = 0;
-
-    /* const tryExpand = async (id: string) => {
-
-        if (nodes) {
-            for (const node of nodes) {
-                if (node.nodeId == id && node.nodeType != INFO) {
-                    //add the snippet to the graph
-                    const res = await expandNode(node);
-                    return;
-                }
-            }
-        }
-
-        console.error("could not find node, is it an INFO node?");
-    } */
-
+    //handle selecting nodes and edges using the network ref
     useEffect(() => {
         if (networkRef.current) {
 
-            //set the state in the parent component, hooks listening
+            //---------- set the state in the parent component, hooks listening -----------//
 
             // @ts-ignore
             networkRef.current.network.on('selectNode', async (event) => {
                 if (event.nodes[0] != null) {
-
-                    //select a node, remove a node
+                    //select a node, remove an edge
                     console.log("select node")
                     setSelectedNodeId(event.nodes[0])
                     setSelectedEdgeId(null)
@@ -106,10 +84,10 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
 
             // @ts-ignore
             networkRef.current.network.on('selectEdge', async (event) => {
-                if (event.nodes[0] == null) //no nodes selected
+                //no nodes selected
+                if (event.nodes[0] == null)
                     if (event.edges[0] != null) {
                         //select and edge, remove a node
-
                         console.log("select edge")
                         setSelectedEdgeId(event.edges[0])
                         setSelectedNodeId(null)
@@ -118,84 +96,94 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
         }
     }, [networkRef])
 
-
+    //used for scaling the edge widths to that they reach a max size
     const sigmoid = (x: number) => {
-        const NUMERATOR = 1.3;
-        const X_SCALE_FACTOR = 0.1;
-        const Y_SHIFT = -0.05;
+        const NUMERATOR = 1.4;
+        const X_SCALE_FACTOR = 0.3;
+        const Y_SHIFT = -0.4;
 
         const sig = NUMERATOR / (1 + Math.exp(-x * X_SCALE_FACTOR));
         return sig + Y_SHIFT;
     }
 
+    //get the color of the node based on it's type
     const getColor = (myNode: string, isSnippet?: boolean) => {
         if (isSnippet)
             return '#4f1350'
 
         switch (myNode) {
             case ROOT:
-                return '#87b66f'
-            case CLASS:
                 return '#a6e68a'
-            case INFO:
-                return '#ffffff'
+            case CLASS:
+                return '#87b66f'
         }
     }
 
+    //get the size of the node based on it's type
     function getValueBaseOnType(n: string) {
         switch (n) {
             case ROOT:
                 return 17
             case CLASS:
-                return 11
-            case INFO:
-                return 8
+                return 13
         }
     }
 
-    const getLabel = (el: any) => {
+    //separate the string into a multiline block
+    function breakUpString(s: string) {
+        const MIN_CHARS = 30;
+
+        const broken = [];
+        let pos = 0;
+        while (s.length > MIN_CHARS && pos != -1) {
+            pos = s.indexOf(' ', MIN_CHARS)
+            if (pos !== -1)
+                broken.push(s.substring(0, pos))
+            s = s.substring(pos + 1, s.length);
+        }
+        broken.push(s);
+        return broken;
+    }
+    //format the labels for information nodes, and remove underscores
+    const getNodeLabel = (el: any) => {
         if (!el.isSnippetNode)
             return el.label.replaceAll('_', ' ');
 
         function getUnderline(label: string) {
-            let str = "‾‾‾‾‾‾‾";
+            let str = "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾";
             for (let i = 0; i < label.length; i++) {
                 str += '‾'
             }
-        return str;
+            return str;
         }
 
         if (el.snippet != null) {
-            return `${el.label}\n${getUnderline(el.label)}\n${el.snippet}`
+            console.log(breakUpString(el.snippet));
+            return `${el.label.replaceAll('_', ' ')}\n${getUnderline(el.label)}\n${breakUpString(el.snippet).join('\n')}`
         }
 
         console.error("snipeet is null on snippet node")
     }
 
+    //force rerender when label changes to update
+    useEffect(() => {
+    }, [displayLabels]);
+
     return (
         <React.Fragment>
-            {
-                snippet?.snippet &&
-                <div
-                    className={s.snippetDialogue} style={{
-                    left: xPos - 10,
-                    top: yPos - 10
-                }}
-                >
-                    <div className={s.snippetHeading}>
-                        heading:{snippet.heading}
-                    </div>
-                    <div>
-                        snippet:{snippet.snippet}
-                    </div>
-                </div>
-            }
-
+            {/*checkbox for adding link labels or not*/}
+            <div className={s.hasLabelsContainer}>
+                <label htmlFor={"chk"}>Link labels:</label>
+                <input type={"checkbox"} id={"chk"} checked={displayLabels} onChange={(e) => {
+                    setDisplayLabels(e.target.checked)
+                }}/>
+            </div>
             <Network
                 options={options}
                 ref={networkRef}
             >
 
+                {/*render the nodes*/}
                 {
                     nodes && nodes.map(el => {
                             return (
@@ -205,24 +193,30 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId}:
                                     shape={el.isSnippetNode ? "box" : "dot"}
                                     key={el.nodeId}
                                     id={el.nodeId}
-                                    label={getLabel(el)}
-                                    margin={el.isSnippetNode ? 10: 0}
+                                    label={getNodeLabel(el)}
+                                    margin={el.isSnippetNode ? 10 : 0}
                                 />
                             )
                         }
                     )
                 }
 
+                {/*render the relationships*/}
                 {
                     relationships && relationships.map(r => {
-                        const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]`;
-                        const THICKNESS_MULTIPLIER = 15;
-                        const MINIMUM_THICKNESS = 0.4;
-                        const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
+                        const UNIQUE_KEY = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? '1' : '0'}`;
+                        const THICKNESS = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
                         const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
-                        return <Edge id={uniqueKey} from={r.from} to={r.to}
-                                     label={r.type != null ? r.type.replaceAll('_', ' ').toLowerCase() : "NULL TYPE"}
-                                     width={thickness} arrows={ARROWS} key={uniqueKey}/>
+                        const LABEL = displayLabels ? (r.type?.replaceAll('_', ' ').toLowerCase()) : '';
+
+                        return <Edge id={UNIQUE_KEY}
+                                     from={r.from}
+                                     to={r.to}
+                                     label={LABEL}
+                                     width={THICKNESS}
+                                     arrows={ARROWS}
+                                     key={UNIQUE_KEY}
+                        />
                     })
                 }
 

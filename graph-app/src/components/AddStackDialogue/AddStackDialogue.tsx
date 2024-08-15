@@ -1,378 +1,211 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
-
 import s from "./AddStackDialogue.module.scss"
-import g from "../../index.scss"
-import {HOST} from "../../../../shared/variables";
-import {RequestBody, Direction, RequestBodyConnection, CreateStackReturnBody, FrontendBaseCateogries} from "../../../../shared/interfaces"
-import * as zlib from "node:zlib";
+import {BASE_CATEGORY_INDEX, HOST} from "../../../../shared/variables";
+import {
+    CreateStackReturnBody,
+    Direction,
+    FrontendBaseCateogries,
+    RequestBody,
+    RequestBodyConnection,
+} from "../../../../shared/interfaces"
+import CategoryComp from "../Category/CategoryComp";
+import {updateCategoryUtil} from "../Categories.util"
+import Error from "../Error/Error"
+import {toggleCategory} from "../Category/CategoryUtils";
 
-const BASE_CATEGORY_INDEX = -1;
-
-enum UpdateType {
-    NODE_NAME,
-    CONNECTION_NAME,
-    CONNECTION_DIRECTION
-}
-
-
-function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading, baseCategories}: {
+function AddStackDialogue({
+    hideAddStackDialogue,
+    isLoading,
+    baseCategories,
+    errorMessage,
+    addBlankCategory,
+    tryCreateStack,
+    baseCategory,
+    setBaseCategory,
+    categories,
+    setCategories,
+    setHeading,
+    setInfo
+}: {
     hideAddStackDialogue: () => void,
-    addStackToFrontend: (body: CreateStackReturnBody) => void,
     isLoading: boolean,
-    setStackLoading: (value: (((prevState: boolean) => boolean) | boolean)) => void,
-    baseCategories: FrontendBaseCateogries[]
+    baseCategories: FrontendBaseCateogries[],
+    errorMessage: string,
+    baseCategory: RequestBodyConnection,
+    categories: RequestBodyConnection[],
+    setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
+    setBaseCategory: React.Dispatch<React.SetStateAction<RequestBodyConnection>>,
+    addBlankCategory: () => void,
+    tryCreateStack: () => void,
+    setHeading: React.Dispatch<React.SetStateAction<string>>,
+    setInfo: React.Dispatch<React.SetStateAction<string>>,
+
 }) {
 
-    const [categories, setCategories] = React.useState<RequestBodyConnection[]>([])
-    const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
-        direction: Direction.AWAY,
-        nodeName: "",
-        connectionName: "",
-        nodeId: ""
-    })
-    const [errorMessage, setErrorMessage] = useState("")
-    const [showErr, setShowErr] = useState(false);
-    const [info, setInfo] = useState("")
-    const [heading, setHeading] = useState("")
+    // const [categories, setCategories] = React.useState<RequestBodyConnection[]>([])
+    // const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
+    //     direction: Direction.AWAY, nodeName: "", connectionName: "", nodeId: ""
+    // })
+    // const [errorMessage, setErrorMessage] = useState("")
 
-    const createStack = () => {
-        console.log("CREATING...")
+    // const [info, setInfo] = useState("")
+    // const [heading, setHeading] = useState("")
 
-        function printDetails() {
-            console.log(" ----------------------- ")
-            console.log(" > Creating stack with the following items: < ")
-            console.log("base")
+    //send the request to the api to add the stack
+    //then update the UI
+    // const createStack = () => {
+    //
+    //     //print details
+    //     (() => {
+    //         console.log(" ----------------------- ")
+    //         console.log(" > Creating stack with the following items: < ")
+    //         console.log("base")
+    //
+    //         console.log("nodeName: ", baseCategory.nodeName)
+    //         console.log("dir: ", baseCategory.direction)
+    //         console.log("conn name: ", baseCategory.connectionName)
+    //         console.log("node id: ", baseCategory.nodeId)
+    //         console.log(" > sub categories < ")
+    //
+    //         for (const c of categories) {
+    //             console.log("name: ", c.nodeName);
+    //             console.log("dir: ", c.direction);
+    //             console.log("conn name: ", c.connectionName)
+    //         }
+    //
+    //         console.log(" > info < ")
+    //         console.log(heading)
+    //         console.log(info);
+    //         console.log(" ----------------------- ")
+    //     })()
+    //
+    //     //get the connections from the state
+    //     const addedConnections: RequestBodyConnection[] = categories.map(c => {
+    //         return {
+    //             nodeName: c.nodeName, direction: c.direction, connectionName: c.connectionName
+    //         }
+    //     })
+    //
+    //     //construct the request
+    //     const body: RequestBody = {
+    //         rootNodeId: baseCategory.nodeId!, connections: [{
+    //             connectionName: baseCategory.connectionName,
+    //             nodeName: baseCategory.nodeName,
+    //             direction: baseCategory.direction
+    //         }, ...addedConnections], infoNode: {
+    //             label: heading, snippet: info,
+    //         }
+    //     }
+    //
+    //     //button loading
+    //     setStackLoading(true);
+    //
+    //     fetch(`${HOST}/createStack`, {
+    //         method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+    //     }).then(async result => {
+    //         console.log("App.ts AFTER CREATING STACK")
+    //
+    //         if (result.status === 200) {
+    //             const body = await result.json() as CreateStackReturnBody;
+    //             addStackToFrontend(body);
+    //         } else {
+    //             console.error("Cannot add stack to frontend");
+    //             console.error(result.status)
+    //             console.error(result)
+    //         }
+    //
+    //         setStackLoading(false);
+    //     })
+    //
+    // }
 
-            console.log("nodeName: ", baseCategory.nodeName)
-            console.log("dir: ", baseCategory.direction)
-            console.log("conn name: ", baseCategory.connectionName)
-            console.log("node id: ", baseCategory.nodeId)
-            console.log(" > sub categories < ")
-
-            for (const c of categories) {
-                console.log("name: ", c.nodeName);
-                console.log("dir: ", c.direction);
-                console.log("conn name: ", c.connectionName)
-            }
-
-            console.log(" > info < ")
-            console.log(heading)
-            console.log(info);
-            console.log(" ----------------------- ")
-        }
-
-        printDetails();
-
-        const addedConnections:RequestBodyConnection[] = categories.map(c => {
-            return {
-                nodeName: c.nodeName,
-                direction: c.direction,
-                connectionName: c.connectionName
-            }
-        })
-
-        const body: RequestBody = {
-            rootNodeId: baseCategory.nodeId!,
-            connections: [
-                {
-                    connectionName: baseCategory.connectionName,
-                    nodeName: baseCategory.nodeName,
-                    direction: baseCategory.direction
-                },
-                ...addedConnections
-            ],
-            infoNode: {
-                label: heading,
-                snippet: info,
-            }
-        }
-
-        setStackLoading(true);
-
-        fetch(`${HOST}/createStack`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
-        }).then(async result => {
-            console.log("App.ts AFTER CREATING STACK")
-
-            if (result.status === 200) {
-                const body = await result.json() as CreateStackReturnBody;
-                addStackToFrontend(body);
-            } else {
-                console.error("Cannot add stack to frontend");
-                console.error(result.status)
-                console.error(result)
-                setStackLoading(false);
-            }
-
-        })
-
-
-    }
-
-    function toggleButton(index: number, category: RequestBodyConnection) {
-        return <div className={s.innerDiv}>
-            {
-                category.direction === Direction.TOWARDS &&
-                <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/up-arrow.svg"}
-                         alt={"toggle direction up"}/>
-                </div>
-            }
-            {
-                category.direction === Direction.AWAY &&
-                <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/down-arrow.svg"}
-                         alt={"toggle direction down"}/>
-                </div>
-            }
-            {
-                category.direction === Direction.NEUTRAL &&
-                <div className={s.toggleButtonContainer}>
-                    <img onClick={() => toggleDoubleSided(index)} src={"buttons/neutral.svg"}
-                         alt={"toggle direction neutral"}/>
-                </div>
-            }
-            <input type={"text"} placeholder={"connection label"}
-                   onClick={() => {
-                       updateCategory(index, "", UpdateType.CONNECTION_NAME);
-                   }}
-                   onBlur={(e) => {
-                       updateCategory(index, e.target.value, UpdateType.CONNECTION_NAME);
-                   }}
-            />
-        </div>;
-    }
-
-    useEffect(() => {
-        console.log("CURRENT CATEGORIES:")
-        console.log("BASE:")
-        console.log("name: ", baseCategory.nodeName)
-        console.log("direction: ", baseCategory.direction)
-        console.log("conn: ", baseCategory.connectionName)
-        console.log("-------------------")
-        console.log("OTHERS:")
-        categories.map(c => {
-            console.log("name: ", c.nodeName)
-            console.log("direction: ", c.direction)
-            console.log("conn: ", c.connectionName)
-        })
-        console.log("-------------------")
-    }, [categories, baseCategory]);
-
-    function updateCategory(index: number, value: string | Direction, updateType: UpdateType) {
-        if (index == BASE_CATEGORY_INDEX) { //update base category
-            switch (updateType) {
-                case UpdateType.CONNECTION_DIRECTION:
-                    setBaseCategory({...baseCategory, direction: value as Direction})
-                    break;
-                case UpdateType.CONNECTION_NAME:
-                    setBaseCategory({...baseCategory, connectionName: value as string})
-                    break;
-                case UpdateType.NODE_NAME:
-                    setBaseCategory({...baseCategory, nodeName: value as string});
-                    break;
-            }
-
-            return;
-        }
-
-        switch (updateType) {
-            case UpdateType.CONNECTION_DIRECTION:
-                setCategories(categories.map(((e, ind) => {
-                    if (ind == index)
-                        return {...e, direction: value as Direction}
-                    return e;
-                })));
-                break;
-            case UpdateType.CONNECTION_NAME:
-                setCategories(categories.map(((e, ind) => {
-                    if (ind == index)
-                        return {...e, connectionName: value as string}
-                    return e;
-                })));
-
-                break;
-            case UpdateType.NODE_NAME:
-                setCategories(categories.map(((e, ind) => {
-                    if (ind == index)
-                        return {...e, nodeName: value as string}
-                    return e;
-                })));
-
-                break;
-        }
-    }
-
-    function addBlankCategory() {
-        setCategories([...categories, {
-            direction: Direction.NEUTRAL,
-            nodeName: "",
-            connectionName: ""
-        }])
-    }
-
-    function getNewCategory(dir: Direction) {
-        switch (dir) {
-            case Direction.NEUTRAL:
-                return Direction.TOWARDS;
-            case Direction.TOWARDS:
-                return Direction.AWAY;
-            default:
-                return Direction.NEUTRAL;
-        }
-    }
-
-    function toggleDoubleSided(index: number) {
-        if (index == BASE_CATEGORY_INDEX) {
-            //handle base category separately
-            let copyBase = baseCategory;
-            if (copyBase) {
-                copyBase.direction = getNewCategory(copyBase?.direction);
-                setBaseCategory({...copyBase});
-                return;
-            }
-            throw "no base category found"
-        }
-        categories[index].direction = getNewCategory(categories[index].direction)
-        setCategories([...categories]);
-    }
-
-    function showError(err: string) {
-        setErrorMessage(err)
-        setShowErr(true)
-        console.log("SHOWING...")
-        setTimeout(() => {
-            setShowErr(false)
-        }, 4000)
-    }
-
-    function isValidCategory(c: RequestBodyConnection) {
-        return !(c.nodeName == "" || c.connectionName == "");
-    }
-
-    function tryCreateStack() {
-        //check that eveything has been filled out
-        //loop through the categories and see that they have the correct info
-
-        for (const c of categories) {
-            if (!isValidCategory(c)) {
-                showError("please fill out all the categories")
-                return;
-            }
-        }
-
-        if (!isValidCategory(baseCategory)) {
-            showError("please fill out all the categories")
-            return;
-        }
-
-        if (categories.length < 2) {
-            showError("please create at least two subcategories")
-            return;
-        }
-
-        if (info == "") {
-            showError("please fill out information in the space provided")
-            return;
-        }
-
-        //all info filled out....
-        //send a request
-        createStack();
-
-    }
+    // //when you click on add category
+    // function addBlankCategory() {
+    //     setCategories([...categories, {
+    //         direction: Direction.NEUTRAL, nodeName: "", connectionName: ""
+    //     }])
+    // }
+    //
+    // //category is not blank
+    // function isValidCategory(c: RequestBodyConnection) {
+    //     return !(c.nodeName == "" || c.connectionName == "");
+    // }
+    //
+    // //validate that everything is filled out
+    // function tryCreateStack() {
+    //
+    //     //check that eveything has been filled out
+    //     //loop through the categories and see that they have the correct info
+    //
+    //     for (const c of categories) {
+    //         if (!isValidCategory(c)) {
+    //             setErrorMessage("please fill out all the categories")
+    //             return;
+    //         }
+    //     }
+    //
+    //     if (!isValidCategory(baseCategory)) {
+    //         setErrorMessage("please fill out all the categories")
+    //         return;
+    //     }
+    //
+    //     if (categories.length < 2) {
+    //         setErrorMessage("please create at least two subcategories")
+    //         return;
+    //     }
+    //
+    //     if (info == "") {
+    //         setErrorMessage("please fill out information in the space provided")
+    //         return;
+    //     }
+    //
+    //     //all info filled out....
+    //     //send a request
+    //     createStack();
+    // }
 
     return (
         <Dialogue hideDialogue={hideAddStackDialogue} title={"Create Connection Stack"}>
-            {
-                showErr &&
-                <div className={s.error}>
-                    <div className={s.errorInner}>
-                        {errorMessage}
-                    </div>
-                </div>
-            }
 
-            <div className={s.category}>
+            {// if there is an error (something is not filled out)
+                errorMessage != "" && Error(errorMessage)}
 
-                {/*select*/}
-                <div className={s.nodeDivOuter}>
-                    <div className={s.nodeDiv}></div>
-                    <div className={[s.content, s.customSelect].join(' ')}>
-                        <select name={"base-category"} onChange={(e) => {
-                            const index = baseCategories.findIndex(el => el.nodeId == e.target.value)
+            {/* base category with dropdown */}
+            <CategoryComp
+                index={BASE_CATEGORY_INDEX}
+                onUpdateCategory={updateCategoryUtil}
+                c={baseCategory}
+                isBaseCategory={true}
+                baseCategory={baseCategory}
+                dropDownBaseCategories={baseCategories}
+                setBaseCategory={setBaseCategory}
+                categories={categories}
+                setCategories={setCategories}
+                showCancel={true}
+            />
 
-                            //selected the empty category, so it won't be found
-                            if (index == -1) {
-                                //clear the base category if no option is selected
-                                setBaseCategory({...baseCategory, nodeId: "", nodeName: ""})
-                            } else
-                            //just set the name and nodeId when selecting the base category
-                            setBaseCategory({
-                                ...baseCategory,
-                                nodeId: baseCategories[index].nodeId,
-                                nodeName: baseCategories[index].label
-                            })
 
-                        }}>
-                            <option value={""} key={""}></option>
-                            {
-                                //the id's are the root node id's
-                                baseCategories.map(c => {
-                                    return <option value={c.nodeId} key={c.nodeId}>{c.label}</option>
-                                })
-                            }
-                        </select>
-                    </div>
-                </div>
-
-                {/*arrow*/}
-                {toggleButton(BASE_CATEGORY_INDEX, baseCategory)}
-            </div>
-
+            {/* show the custom categories the user has added */}
             <div className={s.categoriesContainer}>
-
-                {
-                    categories.map((c, index) => (
-                        <div className={s.category} key={index}>
-
-                            <img src={"buttons/cancel.svg"} className={s.cancel} onClick={() => {
-                                console.log("HI")
-                                setCategories(old =>
-                                    old.filter(((c, ind) => ind !== index))
-                                );
-                            }}/>
-
-
-                            {/*node*/}
-                            <div className={s.nodeDivOuter}>
-                                <div className={s.nodeDiv}></div>
-                                <div className={s.content}>
-                                    <input
-                                        type={"text"}
-                                        onBlur={(e) => updateCategory(index, e.target.value, UpdateType.NODE_NAME)}
-                                        placeholder={"new category name"}
-                                    />
-                                </div>
-                            </div>
-
-                            {/*arrow*/}
-                            {toggleButton(index, c)}
-                        </div>
-                    ))
-                }
-
+                {categories.map((c, index) => <CategoryComp
+                    key={index}
+                    index={index}
+                    onUpdateCategory={updateCategoryUtil}
+                    c={c}
+                    isBaseCategory={false}
+                    categories={categories}
+                    setCategories={setCategories}
+                    showCancel={true}
+                 />)}
             </div>
 
-            {categories.length <= 3 &&
-                <button onClick={addBlankCategory}>Add Category</button>
-            }
-
+            {/* allow the user to add more categories if there are fewer than 3*/}
+            {categories.length <= 3 && <button onClick={addBlankCategory}>Add Category</button>}
 
             <hr/>
+
+            {/* for filling out the information */}
             <div className={s.textDiv}>
                 <input
                     type={"text"}
@@ -382,20 +215,17 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 <label>Information</label>
                 <textarea onBlur={(e) => {
                     setInfo(e.target.value)
-                }
-                }></textarea>
+                }}></textarea>
             </div>
-            {
-                isLoading ?
-                    <button className={"buttonDisabled"}>
-                        <div>
-                            Please wait...
-                        </div>
-                    </button>
-                    :
-                    <button onClick={tryCreateStack}>
-                            Create Stack
-                    </button>
+
+            {/* button that shows if the API request is busy */}
+            {isLoading ? <button className={"buttonDisabled"}>
+                <div>
+                    Please wait...
+                </div>
+            </button> : <button onClick={tryCreateStack}>
+                Create Stack
+            </button>
 
             }
         </Dialogue>

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import { CreateRelRequestBody, NodeRelationship, Direction } from '../../../shared/interfaces';
-import Dialogue from "./Dialogue/Dialogue";
-import {HOST} from "../../../shared/variables"
+import {CreateRelRequestBody, Direction, NodeRelationship} from '../../../../shared/interfaces';
+import Dialogue from "../Dialogue/Dialogue";
+import {HOST} from "../../../../shared/variables"
 
 //dialogue to add a connection between two nodes
 function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, updateRelationship}: {
@@ -9,9 +9,8 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
     firstNode: string | null,
     secondNode: string | null,
     reset: () => void,
-    updateRelationship: (myRel1:NodeRelationship) => void
-})
-{
+    updateRelationship: (myRel1: NodeRelationship) => void
+}) {
 
     const nameRef = React.useRef<HTMLInputElement | null>(null);
     const checkRef = React.useRef<HTMLInputElement | null>(null);
@@ -27,10 +26,7 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
         }
 
         const body: CreateRelRequestBody = {
-            name: name,
-            toId: secondNode,
-            fromId: firstNode,
-            direction: direction
+            name: name, toId: secondNode, fromId: firstNode, direction: direction
         }
 
         console.log(body);
@@ -92,15 +88,15 @@ function AddConnectionDialogue({hideAddBox, firstNode, secondNode, reset, update
                 <label>Double sided:</label>
                 <input type={"checkbox"} ref={checkRef}/>
             </div>
+
+            {/*loading button for creating stack*/}
             {
-                isLoading ?
-                    <button className={"buttonDisabled"}>Please wait...</button>
-                    :
+                isLoading ? <button className={"buttonDisabled"}>Please wait...</button> :
                     <button onClick={tryCreateConnection}>Create</button>
             }
+
         </Dialogue>
     )
-
 }
 
 export default AddConnectionDialogue;

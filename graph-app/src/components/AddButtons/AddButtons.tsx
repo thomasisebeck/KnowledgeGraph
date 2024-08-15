@@ -3,8 +3,9 @@ import {HoverImage} from "../HoverImage/HoverImage";
 import s from './AddButtons.module.scss'
 
 interface AddButtonsProps {
-    showAddBox?: () => void,
-    showAddStack?: () => void
+    showAddBox: () => void,
+    showAddStack: () => void,
+    addCategory: () => void
 }
 
 enum IMAGES {
@@ -39,25 +40,13 @@ const images = [
     {
         normal: "buttons/add-category-node.svg",
         hover: "buttons/add-category-node-hover.svg",
-        message: "add category node between two others"
+        message: "add connection path between two nodes"
     },
 ]
 
-export const AddButtons = ({showAddBox, showAddStack}: AddButtonsProps) => {
+export const AddButtons = ({showAddBox, showAddStack, addCategory}: AddButtonsProps) => {
 
     const [expanded, setExpanded] = useState(false)
-
-    const addStack = () => {
-        if (showAddStack) {
-            showAddStack()
-        }
-    }
-
-    const addConnection = () => {
-        if (showAddBox) {
-            showAddBox()
-        }
-    }
 
     const toggleExpanded = () => {
         setExpanded(!expanded)
@@ -79,19 +68,19 @@ export const AddButtons = ({showAddBox, showAddStack}: AddButtonsProps) => {
                     <React.Fragment>
                         <HoverImage
                             message={images[IMAGES.ADD_NODE].message}
-                            onclick={addStack}
+                            onclick={showAddStack}
                             normalImage={images[IMAGES.ADD_NODE].normal}
                             hoverImage={images[IMAGES.ADD_NODE].hover}
                         />
                         <HoverImage
                             message={images[IMAGES.ADD_CONNECTION].message}
-                            onclick={addConnection}
+                            onclick={showAddBox}
                             normalImage={images[IMAGES.ADD_CONNECTION].normal}
                             hoverImage={images[IMAGES.ADD_CONNECTION].hover}
                         />
                         <HoverImage
                             message={images[IMAGES.ADD_CATEGORY_NODE].message}
-                            onclick={toggleExpanded}
+                            onclick={addCategory}
                             normalImage={images[IMAGES.ADD_CATEGORY_NODE].normal}
                             hoverImage={images[IMAGES.ADD_CATEGORY_NODE].hover}
                         />

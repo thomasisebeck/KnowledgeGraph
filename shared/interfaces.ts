@@ -6,6 +6,12 @@ export interface Node {
     isSnippetNode?:boolean
 }
 
+export interface Category {
+    categoryName: string,
+    connectionName: string,
+    connectionDirection: Direction
+}
+
 export interface Neo4jNode {
     labels: string[];
     properties: {
@@ -56,8 +62,6 @@ export interface FrontendBaseCateogries {
     nodeId: string,
     label: string
 }
-
-
 
 export interface NodeRelationship {
     type: string,

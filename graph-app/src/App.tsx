@@ -6,58 +6,63 @@ import {
     FrontendBaseCateogries,
     Node,
     NodeRelationship,
+    RequestBody,
+    RequestBodyConnection,
     UpvoteResult
 } from "../../shared/interfaces";
-import AddConnectionDialogue from "./components/AddConnectionDialogue";
+import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
-import {HoverImage} from "./components/HoverImage/HoverImage";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
 import {AddPhase, Phase} from "./interfaces";
 import {HOST} from "../../shared/variables"
 import s from './App.module.scss'
-
-function upvoteDownvoteButtons(selectedEdgeId: string, upvoteEdge: (edgeId: string, mustUpvote: boolean) => Promise<void>) {
-    return <div className={s.upvoteDownvoteContainer}>
-        <HoverImage
-            message={"upvote edge"}
-            normalImage={"buttons/upvote.svg"}
-            hoverImage={"buttons/upvote-hover.svg"}
-            onclick={async () => {
-                //upvote the edge
-                await upvoteEdge(selectedEdgeId, true)
-            }}
-        />
-        <HoverImage
-            message={"downvote edge"}
-            normalImage={"buttons/downvote.svg"}
-            hoverImage={"buttons/downvote-hover.svg"}
-            onclick={async () => {
-                //downvote the edge
-                await upvoteEdge(selectedEdgeId, false)
-            }}
-        />
-
-    </div>;
-}
+import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
+import Tasks from "./components/Tasks/Tasks";
+import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
 
 
 function App() {
 
     const [nodes, setNodes] = useState<Node[]>([])
     const [relationships, setRelationships] = useState<NodeRelationship[]>([])
+    const [stackLoading, setStackLoading] = useState<boolean>(false)
+    const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [addPhase, setAddPhase] = useState<AddPhase>({
         phase: Phase.NONE,
         secondNodeId: "",
         firstNodeId: ""
     })
-    // const [firstNode, setFirstNode] = useState<string | null>(null)
-    // const [secondNode, setSecondNode] = useState<string | null>(null)
-    // const [clickEvent, setClickEvent] = useState<clickEvent | null>(null)
+    const [addCategoryPhase, setAddCategoryPhase] = useState<AddPhase>({
+        phase: Phase.NONE,
+        secondNodeId: "",
+        firstNodeId: ""
+    })
+    const [hasNewRel, setHasNewRel] = useState<boolean>(false)
+    const [expandedNodesPerClick, setExpandedNodesPerClick] = useState<number[]>([])
+    const [precisionPerClick, sePrecisionPerClick] = useState<number[]>([])
+    const [recallPerClick, setRecallPerClick] = useState<number[]>([])
+    const [showGraph, setShowGraph] = useState(true)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
-    const [stackLoading, setStackLoading] = useState<boolean>(false)
     const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
-    const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
-    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+    const [categories, setCategories] = useState<RequestBodyConnection[]>([{
+        nodeName: "new category",
+        direction: Direction.NEUTRAL,
+        connectionName: "connection name"
+    }]);
+
+    const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
+        connectionName: "",
+        nodeId: "",
+        direction: Direction.NEUTRAL,
+        nodeName: "",
+    })
+
+
+    const [errorMessage, setErrorMessage] = useState("")
+
+    const [info, setInfo] = useState("")
+    const [heading, setHeading] = useState("")
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -117,10 +122,14 @@ function App() {
             console.log("adding nodes...")
             const newNodes = nodes;
 
+            let currExpandedNodes = 0;
+
             for (const node of neighborhood.nodes) {
                 const index = newNodes.findIndex((n) => n.nodeId == node.nodeId);
-                if (index == -1)
+                if (index == -1) {
                     newNodes.push(node);
+                    currExpandedNodes++;
+                }
             }
 
             const newRels = relationships;
@@ -133,9 +142,12 @@ function App() {
             console.log("setting...")
             setNodes([...newNodes])
             setRelationships([...newRels])
+            setExpandedNodesPerClick([...expandedNodesPerClick, currExpandedNodes])
         }
+
     }
 
+    //initial data from database
     function getData() {
         fetch(`${HOST}/initialData`).then(async res => {
             const data = await res.json();
@@ -170,7 +182,7 @@ function App() {
         })
     }
 
-//fetch the initial data and preload images
+    //fetch the initial data and preload images
     useEffect(() => {
         //fetch data
         getData();
@@ -202,22 +214,6 @@ function App() {
         })
 
     }, []);
-    //
-    // const tryUpvoteEdge = async () => {
-    //     if (clickEvent != null) {
-    //         if (clickEvent.clickType == ClickType.EDGE) {
-    //             await upvoteEdge(clickEvent.id, true)
-    //         }
-    //     }
-    // }
-    //
-    // const tryDownvoteEdge = async () => {
-    //     if (clickEvent != null) {
-    //         if (clickEvent.clickType == ClickType.EDGE) {
-    //             await upvoteEdge(clickEvent.id, false)
-    //         }
-    //     }
-    // }
 
     //handle selecting edges
     useEffect(() => {
@@ -226,9 +222,13 @@ function App() {
         }
     }, [selectedEdgeId]);
 
+    //handle selecting nodes
     useEffect(() => {
         if (selectedNodeId != null) {
-            //click first node
+
+            // -------------------------- add connection --------------------------- //
+
+            //click first node for adding connection
             if (addPhase.phase == Phase.FIRST) {
                 console.log("clicked first node, id: " + selectedNodeId)
                 setAddPhase({
@@ -249,7 +249,31 @@ function App() {
                 return;
             }
 
-            //handle expanding nodes
+            // -------------------------- add category ----------------------------- //
+
+            //click first node for adding category
+            if (addCategoryPhase.phase == Phase.FIRST) {
+                console.log("clicked first node to add category between")
+                setAddCategoryPhase({
+                    ...addCategoryPhase,
+                    phase: Phase.SECOND,
+                    firstNodeId: selectedNodeId
+                })
+                return;
+            }
+
+            if (addCategoryPhase.phase == Phase.SECOND) {
+                console.log("clicked second node to add category between")
+                setAddCategoryPhase({
+                    ...addCategoryPhase,
+                    phase: Phase.ADD_BOX,
+                    secondNodeId: selectedNodeId
+                })
+                return;
+            }
+
+            // -------------------- handle expanding nodes ------------------------------//
+
             if (nodes) {
                 for (const node of nodes)
                     if (node.nodeId == selectedNodeId && node.nodeType != "INFO") {
@@ -260,135 +284,10 @@ function App() {
         }
     }, [selectedNodeId]);
 
-    //register clicks for nodes and edges
-    // useEffect(() => {
-    //     // if (clickEvent && (addPhase == AddConnectionPhase.FIRST || addPhase == AddConnectionPhase.SECOND))
-    //     //     handleClickingNodesToConnectWhenAddingEdge();
-    //
-    //     if (clickEvent?.clickType == ClickType.NODE) {
-    //         handleSelectNode(clickEvent.id);
-    //     }
-    //
-    //     if (clickEvent?.clickType == ClickType.EDGE) {
-    //         handleSelectEdge(clickEvent.id);
-    //     }
-    // }, [clickEvent])
-    //
-    // handle clicks for nodes and edges
-    /*   const handleClickEvent = (event: any) => {
-
-          //has nodes, set node event on click
-          if (event.nodes.length > 0) {
-
-              console.log(event);
-
-              console.log("HAS NODES")
-
-              //todo: prevent clicking on info node
-              setClickEvent({
-                  clickType: ClickType.NODE,
-                  id: event.nodes[0]
-              })
-
-              const mouseX = event.pointer.DOM.x;
-              const mouseY = event.pointer.DOM.y;
-
-              console.log("MOUSE")
-              console.log(mouseX)
-              console.log(mouseY)
-
-              setShowPopup({
-                  mouseY: mouseY,
-                  mouseX: mouseX
-              })
-
-              return;
-          }
-
-          //has edges, set edge event on click
-          if (event.edges.length > 0) {
-              setClickEvent({
-                  clickType: ClickType.EDGE,
-                  id: event.edges[0]
-              })
-              return;
-          }
-      }*/
-
-    /*
-
-    if (clickEvent && clickEvent.clickType == ClickType.NODE) {
-
-            //click first node
-            if (addPhase == AddConnectionPhase.FIRST) {
-                console.log("MY NODE")
-                console.log(clickEvent);
-                console.log(clickEvent.node)
-                setFirstNode(clickEvent.id)
-                setAddPhase(AddConnectionPhase.SECOND)
-            }
-
-            //click second node
-            if (addPhase == AddConnectionPhase.SECOND) {
-                if (clickEvent.id !== firstNode) {
-                    setSecondNode(clickEvent.id)
-                    setAddPhase(AddConnectionPhase.ADD_BOX)
-                }
-            }
-        }
-     */
-
-    // const handleSelectNode = async (nodeId: string) => {
-    //
-    // }
-
-    // useEffect(() => {
-    //     console.log("handling select node with id: " + nodeId)
-    //     console.log(addPhase)
-    //
-    //     //see if you are adding a connection
-    //     if (addPhase != AddConnectionPhase.NONE) {
-    //         console.log("currently adding a connection")
-    //
-    //         //click first node
-    //         if (addPhase == AddConnectionPhase.FIRST) {
-    //             console.log("MY NODE")
-    //             setFirstNode(nodeId)
-    //             setAddPhase(AddConnectionPhase.SECOND)
-    //         }
-    //
-    //         //click second node
-    //         if (addPhase == AddConnectionPhase.SECOND) {
-    //             setSecondNode(nodeId)
-    //             setAddPhase(AddConnectionPhase.ADD_BOX)
-    //         }
-    //
-    //         return;
-    //     }
-    //
-    //
-    //     if (nodes) {
-    //         for (const node of nodes)
-    //             if (node.nodeId == nodeId && node.nodeType != INFO) {
-    //                 const res = await expandNode(node)
-    //             }
-    //     }
-    // }, [addPhase]);
-
-
-    //start adding a connection, show the dialogue to click on the first node
-    // const createConn = () => {
-    // }
-
+    //hide the dialogue and update the nodes and relationships
     const addStackToFrontend = (body: CreateStackReturnBody) => {
         const requestNodes = body.nodes as Node[];
         const requestRelationships = body.relationships;
-
-        console.log("nodes")
-        console.log(nodes)
-
-        console.log("rels")
-        console.log(requestRelationships)
 
         for (const n of requestNodes)
             updateNode(n)
@@ -397,11 +296,17 @@ function App() {
         for (const r of requestRelationships)
             updateRelationship(r);
 
-        setShowAddStackDialogue(false);
         setStackLoading(false);
-
     }
 
+    //when you click on add category
+    function addBlankCategory() {
+        setCategories([...categories, {
+            direction: Direction.NEUTRAL, nodeName: "", connectionName: ""
+        }])
+    }
+
+    //conditionally add a node if it doesn't exist
     function updateNode(toAdd: Node) {
         console.log("TO ADD")
         console.log(toAdd)
@@ -423,14 +328,13 @@ function App() {
                 console.log("ADDING NODE WITH SNIPPET")
             }
 
-
             //not found, insert new node
             return [...prevState, toAdd];
         })
 
     }
 
-    //used to update the relationship in the state after it's changed
+    //conditionally add a relationship if it doesn't exist
     function updateRelationship(result: NodeRelationship) {
 
         if (result == null) {
@@ -496,6 +400,8 @@ function App() {
                     })
                 );
 
+                setHasNewRel(!hasNewRel);
+
                 //nothing more to do after adding back
                 return;
             }
@@ -518,10 +424,124 @@ function App() {
 
     }
 
+    const addCategory = () => {
+        console.log("ADD Category, setting to first")
+        setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
+    }
+
+    //reset the nodes and edges for the next task
+    const resetGraph = () => {
+        setShowGraph(false)
+        setNodes(prevState => prevState.filter(n => n.nodeType === "ROOT"));
+        setRelationships([])
+        setShowGraph(true)
+    }
+
+    //category is not blank
+    function isValidCategory(c: RequestBodyConnection) {
+        return !(c.nodeName == "" || c.connectionName == "");
+    }
+
+    //validate that everything is filled out
+    //send the request to the api to add the stack
+    //then update the UI
+    function tryCreateStack() {
+
+        //check that eveything has been filled out
+        //loop through the categories and see that they have the correct info
+
+        for (const c of categories) {
+            if (!isValidCategory(c)) {
+                setErrorMessage("please fill out all the categories")
+                return;
+            }
+        }
+
+        if (!isValidCategory(baseCategory)) {
+            setErrorMessage("please fill out all the categories")
+            return;
+        }
+
+        if (categories.length < 2) {
+            setErrorMessage("please create at least two subcategories")
+            return;
+        }
+
+        if (info == "") {
+            setErrorMessage("please fill out information in the space provided")
+            return;
+        }
+
+        //all info filled out....
+        //send a request
+        //print details
+        (() => {
+            console.log(" ----------------------- ")
+            console.log(" > Creating stack with the following items: < ")
+            console.log("base")
+
+            console.log("nodeName: ", baseCategory.nodeName)
+            console.log("dir: ", baseCategory.direction)
+            console.log("conn name: ", baseCategory.connectionName)
+            console.log("node id: ", baseCategory.nodeId)
+            console.log(" > sub categories < ")
+
+            for (const c of categories) {
+                console.log("name: ", c.nodeName);
+                console.log("dir: ", c.direction);
+                console.log("conn name: ", c.connectionName)
+            }
+
+            console.log(" > info < ")
+            console.log(heading)
+            console.log(info);
+            console.log(" ----------------------- ")
+        })()
+
+        //get the connections from the state
+        const addedConnections: RequestBodyConnection[] = categories.map(c => {
+            return {
+                nodeName: c.nodeName, direction: c.direction, connectionName: c.connectionName
+            }
+        })
+
+        //construct the request
+        const body: RequestBody = {
+            rootNodeId: baseCategory.nodeId!, connections: [{
+                connectionName: baseCategory.connectionName,
+                nodeName: baseCategory.nodeName,
+                direction: baseCategory.direction
+            }, ...addedConnections], infoNode: {
+                label: heading, snippet: info,
+            }
+        }
+
+        //button loading
+        setStackLoading(true);
+
+        fetch(`${HOST}/createStack`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+        }).then(async result => {
+            console.log("App.ts AFTER CREATING STACK")
+
+            if (result.status === 200) {
+                const body = await result.json() as CreateStackReturnBody;
+                addStackToFrontend(body);
+            } else {
+                console.error("Cannot add stack to frontend");
+                console.error(result.status)
+                console.error(result)
+            }
+
+            setStackLoading(false);
+        })
+    }
+
     return (
         <div className={s.Container}>
+            {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
             {
-                nodes.length > 0 &&
+                nodes.length > 0 && showGraph &&
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
@@ -531,9 +551,11 @@ function App() {
             }
 
             {/*dialogue when creating a connection*/}
+            {/*or when the user wants to add a category between two nodes*/}
             <div className={s.CreateConnectionContainer}>
-                {addPhase.phase == Phase.FIRST && <p>Click on first node</p>}
-                {addPhase.phase == Phase.SECOND && <p>Click on second node</p>}
+                {(addPhase.phase == Phase.FIRST || addCategoryPhase.phase == Phase.FIRST) && <p>Click on first node</p>}
+                {(addPhase.phase == Phase.SECOND || addCategoryPhase.phase == Phase.SECOND) &&
+                    <p>Click on second node</p>}
             </div>
 
             {/*buttons to add relationships and nodes*/}
@@ -544,6 +566,7 @@ function App() {
                         phase: Phase.FIRST
                     })}
                     showAddStack={() => setShowAddStackDialogue(true)}
+                    addCategory={addCategory}
                 />
             </div>
 
@@ -566,15 +589,37 @@ function App() {
                 />
             }
 
-            {/*dialogue to add a new connection stack*/}
+            {/* dialogue for adding categories */}
+            {
+                addCategoryPhase.phase == Phase.ADD_BOX &&
+                <AddCategoryDialogue
+                    hideDialogue={() =>
+                        setAddCategoryPhase({...addCategoryPhase, phase: Phase.NONE})
+                    }
+                    firstNodeId={addCategoryPhase.firstNodeId}
+                    secondNodeId={addCategoryPhase.secondNodeId}
+                    baseCategory={baseCategory}
+                    setBaseCategory={setBaseCategory}
+                    categories={categories}
+                    setCategories={setCategories}
+                />
+            }
+
             {
                 showAddStackDialogue &&
                 <AddStackDialogue
                     hideAddStackDialogue={() => setShowAddStackDialogue(false)}
-                    addStackToFrontend={addStackToFrontend}
                     isLoading={stackLoading}
-                    setStackLoading={setStackLoading}
                     baseCategories={baseCategories}
+                    errorMessage={errorMessage}
+                    baseCategory={baseCategory}
+                    categories={categories}
+                    setCategories={setCategories}
+                    setBaseCategory={setBaseCategory}
+                    addBlankCategory={addBlankCategory}
+                    tryCreateStack={tryCreateStack}
+                    setHeading={setHeading}
+                    setInfo={setInfo}
                 />
             }
 
@@ -583,6 +628,13 @@ function App() {
                 selectedEdgeId != null &&
                 upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)
             }
+
+            <Tasks
+                resetGraph={resetGraph}
+                expandedNodesPerClick={expandedNodesPerClick}
+                precisionsPerClick={precisionPerClick}
+                recallPerClick={recallPerClick}
+            />
         </div>
     )
 }

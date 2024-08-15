@@ -27,7 +27,6 @@ button {
   box-sizing: border-box;
   border-color: $off-white;
   color: $dark-grey;
-  cursor: pointer;
   display: inline-block;
   padding: 4px 5px;
   text-decoration: none;
@@ -58,9 +57,11 @@ button {
   animation: breathe 1.5s infinite;
 }
 
-button:hover {
+button:not([disabled]):hover {
   transform: scale(1.05);
+  cursor: pointer;
 }
+
 input, select, textarea {
   border: 1px solid $off-white;
   font-size: 1rem;
