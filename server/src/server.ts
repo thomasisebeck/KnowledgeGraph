@@ -74,7 +74,6 @@ app.post('/createRel', async (req, res) => {
     }
 })
 
-//only get the topic nodes
 app.get('/initialData', async (req, res) => {
     console.log("CALLED INITIAL DATA")
     try {
@@ -202,14 +201,15 @@ app.get('/nodeName/:id', async (req, res) => {
 
         const result = await q.getNodeById(driver, req.params.id);
 
-        console.log("node by id")
-        console.log(result)
         res.status(200).json(result);
-
     } catch (e) {
         console.error(e)
 
     }
+})
+
+app.post('/connectionPath', async (req, res) => {
+
 })
 
 app.listen(process.env.PORT, () => {

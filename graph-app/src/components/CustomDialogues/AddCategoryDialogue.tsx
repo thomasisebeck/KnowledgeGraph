@@ -8,7 +8,6 @@ import {updateCategoryUtil} from "../Categories.util";
 import {UpdateType} from "../AddStackDialogue/DialogueUtils";
 import Toggle from "../Category/Toggle";
 import s from "../AddStackDialogue/AddStackDialogue.module.scss"
-import {toggleCategory} from "../Category/CategoryUtils";
 
 interface AddCategoryDialogueProps {
     hideDialogue: () => void,
@@ -17,7 +16,6 @@ interface AddCategoryDialogueProps {
 }
 
 const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
-
 
     const [categories, setCategories] = useState<RequestBodyConnection[]>([{
         nodeName: "new category",
@@ -34,7 +32,6 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
         direction: Direction.NEUTRAL,
         nodeName: "",
     })
-
 
     //gets the start and end nodes of the connection
     const getNodes = async () => {
@@ -72,7 +69,31 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
         }])
     }
 
+    //send the api request
+    const createPath = () => {
 
+        //print the details
+        (() => {
+            console.log(" ----------------------- ")
+            console.log(" > Creating stack with the following items: < ")
+
+            console.log("startNode")
+            console.log("name: ", baseConnection.nodeName);
+            console.log("dir: ", baseConnection.direction);
+            console.log("conn name: ", baseConnection.connectionName)
+            console.log("id: ", firstNodeId)
+
+            categories.forEach(c => {
+                console.log("name: ", c.nodeName);
+                console.log("dir: ", c.direction);
+                console.log("conn name: ", c.connectionName)
+            })
+
+            console.log("endNode")
+            console.log("id: ", secondNodeId)
+        })()
+
+    }
 
     return (
         <Dialogue hideDialogue={hideDialogue} title={"Add connection path between two nodes"}>
@@ -84,18 +105,20 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
                 </div>
             </Node>
 
-            <Toggle category={baseConnection!} index={BASE_CATEGORY_INDEX} categories={categories} setCategories={setCategories}>
+            <Toggle category={baseConnection!} index={BASE_CATEGORY_INDEX} categories={categories}
+                    setCategories={setCategories}>
                 <input type={"text"} placeholder={"connection label"}
-                   onClick={() => {
-                       console.log("UPDATE BASE")
-                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, "", UpdateType.CONNECTION_NAME,
-                           setCategories, categories);
-                   }}
-                   onBlur={(e) => {
-                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, e.target.value,
-                           UpdateType.CONNECTION_NAME, setCategories, categories);
-                   }}
-            />
+                       onClick={() => {
+                           console.log("UPDATE BASE")
+                           updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, "",
+                               UpdateType.CONNECTION_NAME,
+                               setCategories, categories);
+                       }}
+                       onBlur={(e) => {
+                           updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, e.target.value,
+                               UpdateType.CONNECTION_NAME, setCategories, categories);
+                       }}
+                />
             </Toggle>
 
             <CategoryComp
@@ -109,20 +132,20 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
 
             <div className={s.categoriesContainer}>
 
-            {/*connection label for the first node*/}
-            {
-                categories.map((c, index) =>
-                    <CategoryComp
-                        key={index}
-                        c={c}
-                        categories={categories}
-                        index={index}
-                        onUpdateCategory={updateCategoryUtil}
-                        isBaseCategory={false}
-                        setCategories={setCategories}
-                    />
-                )
-            }
+                {/*connection label for the first node*/}
+                {
+                    categories.map((c, index) =>
+                        <CategoryComp
+                            key={index}
+                            c={c}
+                            categories={categories}
+                            index={index}
+                            onUpdateCategory={updateCategoryUtil}
+                            isBaseCategory={false}
+                            setCategories={setCategories}
+                        />
+                    )
+                }
 
             </div>
             {/*ending node*/}
@@ -132,6 +155,7 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
                 </div>
             </Node>
             <button onClick={addBlankCategory}>Add Category</button>
+            <button onClick={createPath}>Create Path</button>
         </Dialogue>
 
     )

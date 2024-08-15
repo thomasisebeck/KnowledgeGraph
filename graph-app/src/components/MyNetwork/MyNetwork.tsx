@@ -204,18 +204,18 @@ const MyNetwork = ({nodes, relationships, setSelectedEdgeId, setSelectedNodeId} 
                 {/*render the relationships*/}
                 {
                     relationships && relationships.map(r => {
-                        const uniqueKey = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? '1' : '0'}`;
-                        const thickness = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
+                        const UNIQUE_KEY = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? '1' : '0'}`;
+                        const THICKNESS = (THICKNESS_MULTIPLIER * (sigmoid(r.votes + 1) - 0.5)) + MINIMUM_THICKNESS;
                         const ARROWS = r.direction == Direction.NEUTRAL ? '' : r.direction == Direction.AWAY ? 'to' : 'from'
                         const LABEL = displayLabels ? (r.type?.replaceAll('_', ' ').toLowerCase()) : '';
 
-                        return <Edge id={uniqueKey}
+                        return <Edge id={UNIQUE_KEY}
                                      from={r.from}
                                      to={r.to}
                                      label={LABEL}
-                                     width={thickness}
+                                     width={THICKNESS}
                                      arrows={ARROWS}
-                                     key={uniqueKey}
+                                     key={UNIQUE_KEY}
                         />
                     })
                 }

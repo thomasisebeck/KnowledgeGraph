@@ -3,7 +3,7 @@ import {UpdateType} from "./AddStackDialogue/DialogueUtils";
 import {Direction, RequestBodyConnection} from "../../../shared/interfaces"
 import {BASE_CATEGORY_INDEX} from "../../../shared/variables"
 
-export const updateCategoryUtil = (index: number, setBaseCategory: ((value: SetStateAction<RequestBodyConnection>) => void) | undefined,
+export const updateCategoryUtil = (index: number, setBaseCategory: ((value: SetStateAction<RequestBodyConnection>) => void),
                                    baseCategory: any, value: string | Direction, updateType: UpdateType,
                                    setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
                                    categories: RequestBodyConnection[]

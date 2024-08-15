@@ -86,12 +86,12 @@ export default function CategoryComp({
                         <Toggle category={baseCategory!} index={BASE_CATEGORY_INDEX} categories={categories} setCategories={setCategories}>
                             <input type={"text"} placeholder={"connection label"}
                                    onClick={() => {
-                                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory, baseCategory, "",
+                                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory!, baseCategory, "",
                                            UpdateType.CONNECTION_NAME,
                                            setCategories, categories);
                                    }}
                                    onBlur={(e) => {
-                                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory, baseCategory,
+                                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory!, baseCategory,
                                            e.target.value,
                                            UpdateType.CONNECTION_NAME, setCategories, categories);
                                    }}
@@ -122,12 +122,12 @@ export default function CategoryComp({
                         <Toggle index={index}  category={c} categories={categories} setCategories={setCategories}>
                             <input type={"text"} placeholder={"connection label"}
                                    onClick={() => {
-                                       updateCategoryUtil(index, setBaseCategory, baseCategory, "",
+                                       updateCategoryUtil(index, setBaseCategory!, baseCategory, "",
                                            UpdateType.CONNECTION_NAME,
                                            setCategories, categories);
                                    }}
                                    onBlur={(e) => {
-                                       updateCategoryUtil(index, setBaseCategory, baseCategory, e.target.value,
+                                       updateCategoryUtil(index, setBaseCategory!, baseCategory, e.target.value,
                                            UpdateType.CONNECTION_NAME, setCategories, categories);
                                    }}
                             />

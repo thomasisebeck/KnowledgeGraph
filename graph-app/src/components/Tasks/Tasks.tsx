@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useState} from "react";
 import {taskList, Task} from "./taskList";
 import s from './tasks.module.scss'
 import {HOST} from '../../../../shared/variables'
