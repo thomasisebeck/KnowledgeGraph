@@ -1,16 +1,19 @@
-import React from "react";
+import React, {SetStateAction} from "react";
 import {UpdateType} from "./AddStackDialogue/DialogueUtils";
-import {Direction, Neo4jNode, Category, RequestBodyConnection} from "../../../shared/interfaces"
+import {Direction, RequestBodyConnection} from "../../../shared/interfaces"
 
-export const updateCategoryUtil = (index: number, setBaseCategory: (value: React.SetStateAction<RequestBodyConnection>) => void,
-                            baseCategory: any, value: string | Direction, updateType: UpdateType,
-                            setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
-                            categories: RequestBodyConnection[]
+export const updateCategoryUtil = (index: number, setBaseCategory: ((value: SetStateAction<RequestBodyConnection>) => void) | undefined,
+                                   baseCategory: any, value: string | Direction, updateType: UpdateType,
+                                   setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
+                                   categories: RequestBodyConnection[]
 ) => {
 
     const BASE_CATEGORY_INDEX = -1;
 
     if (index == BASE_CATEGORY_INDEX) { //update base category
+        if (!setBaseCategory)
+            throw "check assigment, base category is not found!"
+
         switch (updateType) {
             case UpdateType.CONNECTION_DIRECTION:
                 setBaseCategory({...baseCategory, direction: value as Direction})
@@ -50,7 +53,5 @@ export const updateCategoryUtil = (index: number, setBaseCategory: (value: React
             })));
 
             break;
-
     }
-
 }

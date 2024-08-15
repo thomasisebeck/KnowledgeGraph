@@ -1,29 +1,15 @@
 import React, {useEffect, useState} from 'react'
 import Dialogue from "../Dialogue/Dialogue";
-import {Direction, Neo4jNode, Category, RequestBodyConnection} from "../../../../shared/interfaces"
+import {Direction, Neo4jNode, RequestBodyConnection} from "../../../../shared/interfaces"
 import {HOST} from "../../../../shared/variables"
 import Node from '../Node/Node'
 import CategoryComp from '../Category/CategoryComp'
-import {UpdateType} from '../AddStackDialogue/DialogueUtils';
 import {updateCategoryUtil} from "../Categories.util";
 
 interface AddCategoryDialogueProps {
     hideDialogue: () => void,
     firstNodeId: string,
     secondNodeId: string,
-}
-
-
-const getImageBasedOnDirection = (dir: Direction) => {
-    switch (dir) {
-        case Direction.NEUTRAL:
-            return 'buttons/neutral.svg'
-        case Direction.TOWARDS:
-            return 'buttons/up-arrow.svg'
-        case Direction.AWAY:
-            return 'buttons/down-arrow.svg'
-    }
-
 }
 
 const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
@@ -37,14 +23,8 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
     const [startNodeName, setStartNodeName] = useState<string>("");
     const [endNodeName, setEndNodeName] = useState<string>("");
 
-    const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
-        direction: Direction.AWAY,
-        nodeName: "",
-        connectionName: "",
-        nodeId: ""
-    })
+    //gets the start and end nodes of the connection
     const getNodes = async () => {
-
         const calls = [
             async (): Promise<Neo4jNode> => await fetch(`${HOST}/nodeName/${firstNodeId}`).then(res => res.json()),
             async (): Promise<Neo4jNode> => await fetch(`${HOST}/nodeName/${secondNodeId}`).then(res => res.json())
@@ -56,18 +36,14 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
 
         setStartNodeName(node1.properties.label)
         setEndNodeName(node2.properties.label)
-
     }
 
     //get the start and end node names
     useEffect(() => {
-        getNodes().then(result => {
-            // console.log(result.firstNode);
-            // console.log(result.secondNode);
-        })
+        getNodes();
     }, []);
 
-
+    //when the user adds a new category
     const addBlankCategory = () => {
         setCategories([...categories, {
             nodeName: "new category",
@@ -95,7 +71,8 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
                         onUpdateCategory={updateCategoryUtil}
                         isBaseCategory={false}
                         setCategories={setCategories}
-                    />)
+                    />
+                )
             }
 
             <Node>

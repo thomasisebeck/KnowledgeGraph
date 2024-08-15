@@ -1,0 +1,22 @@
+@import "../../variables";
+
+.error {
+  color: red;
+  position: fixed;
+  bottom: 20px;
+  text-align: center;
+  width: 100%;
+  left: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.errorInner {
+  background-color: white;
+  font-weight: bold;
+  border-radius: $border-rad;
+  padding: $padding;
+  animation: shake 4s ease-in-out;
+  animation-fill-mode: forwards;
+  position: relative;
+}

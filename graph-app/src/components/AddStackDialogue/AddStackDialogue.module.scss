@@ -15,7 +15,7 @@
 
 .category {
   position: relative;
-  width: 319px;
+  width: 100%;
 }
 .toggleButtonContainer {
   position: relative;
@@ -34,12 +34,13 @@
   height: 152px;
   overflow-y: scroll;
   padding: 5px 0;
+  min-width: 300px;
 }
 
 .cancel {
   position: absolute;
-  right: 20px;
-  top: 20px;
+  right: 18px;
+  top: 22px;
   z-index: 1;
 }
 
@@ -62,8 +63,6 @@
   outline: 3px solid grey;
 }
 
-
-
 .innerDiv {
   display: flex;
   justify-content: center;
@@ -72,7 +71,7 @@
 }
 
 .innerDiv input {
-  width:100px;
+  width: 100px;
   font-size: 14px;
   padding: 5px;
 }
@@ -81,17 +80,6 @@
   outline: none;
 
 }
-.error {
-  color: red;
-  position: fixed;
-  bottom: 20px;
-  text-align: center;
-  width: 100%;
-  left: 0;
-  display: flex;
-  justify-content: center;
-}
-
 @keyframes shake {
   0% {
     transform: translateX(0);
@@ -112,16 +100,6 @@
   100% {
     opacity: 0;
   }
-}
-
-.errorInner {
-  background-color: white;
-  font-weight: bold;
-  border-radius: $border-rad;
-  padding: $padding;
-  animation: shake 4s ease-in-out;
-  animation-fill-mode: forwards;
-  position: relative;
 }
 
 input[type="checkbox"] {
