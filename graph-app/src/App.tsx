@@ -23,9 +23,14 @@ import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogu
 
 function App() {
 
+    //graph stuff
     const [nodes, setNodes] = useState<Node[]>([])
     const [relationships, setRelationships] = useState<NodeRelationship[]>([])
+
+    //creating a stack
     const [stackLoading, setStackLoading] = useState<boolean>(false)
+
+    //selecting edges and nodes
     const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [addPhase, setAddPhase] = useState<AddPhase>({
@@ -38,31 +43,40 @@ function App() {
         secondNodeId: "",
         firstNodeId: ""
     })
+
     const [hasNewRel, setHasNewRel] = useState<boolean>(false)
+
+    //stats
     const [expandedNodesPerClick, setExpandedNodesPerClick] = useState<number[]>([])
     const [precisionPerClick, sePrecisionPerClick] = useState<number[]>([])
     const [recallPerClick, setRecallPerClick] = useState<number[]>([])
+
+    //loading and showing dialogues
     const [showGraph, setShowGraph] = useState(true)
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
-    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
-    const [categories, setCategories] = useState<RequestBodyConnection[]>([{
-        nodeName: "new category",
-        direction: Direction.NEUTRAL,
-        connectionName: "connection name"
-    }]);
+    const [errorMessage, setErrorMessage] = useState("")
 
+    //show dropdown
+    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
+
+    //adding categories between nodes
+    const [categories, setCategories] = useState<RequestBodyConnection[]>(
+        [{
+            nodeName: "new category",
+            direction: Direction.NEUTRAL,
+            connectionName: "connection name"
+        }]
+    );
+
+    //creating an information node
+    const [info, setInfo] = useState("")
+    const [heading, setHeading] = useState("")
     const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
         connectionName: "",
         nodeId: "",
         direction: Direction.NEUTRAL,
         nodeName: "",
     })
-
-
-    const [errorMessage, setErrorMessage] = useState("")
-
-    const [info, setInfo] = useState("")
-    const [heading, setHeading] = useState("")
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -400,7 +414,7 @@ function App() {
                     })
                 );
 
-                setHasNewRel(!hasNewRel);
+                // setHasNewRel(!hasNewRel);
 
                 //nothing more to do after adding back
                 return;
