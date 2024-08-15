@@ -13,25 +13,29 @@ interface AddCategoryDialogueProps {
     hideDialogue: () => void,
     firstNodeId: string,
     secondNodeId: string,
+    baseCategory: RequestBodyConnection,
+    setBaseCategory: React.Dispatch<React.SetStateAction<RequestBodyConnection>>
+    categories: RequestBodyConnection[],
+    setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>
 }
 
-const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
+const AddCategoryDialogue = ({hideDialogue, categories, setCategories, baseCategory, setBaseCategory, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
 
-    const [categories, setCategories] = useState<RequestBodyConnection[]>([{
-        nodeName: "new category",
-        direction: Direction.NEUTRAL,
-        connectionName: "connection name"
-    }]);
-
+    // const [categories, setCategories] = useState<RequestBodyConnection[]>([{
+    //     nodeName: "new category",
+    //     direction: Direction.NEUTRAL,
+    //     connectionName: "connection name"
+    // }]);
+    //
     const [startNodeName, setStartNodeName] = useState<string>("");
     const [endNodeName, setEndNodeName] = useState<string>("");
-
-    const [baseConnection, setBaseConnection] = useState<RequestBodyConnection>({
-        connectionName: "",
-        nodeId: "",
-        direction: Direction.NEUTRAL,
-        nodeName: "",
-    })
+    //
+    // const [baseConnection, setBaseConnection] = useState<RequestBodyConnection>({
+    //     connectionName: "",
+    //     nodeId: "",
+    //     direction: Direction.NEUTRAL,
+    //     nodeName: "",
+    // })
 
     //gets the start and end nodes of the connection
     const getNodes = async () => {
@@ -48,8 +52,8 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
         setEndNodeName(node2.properties.label)
 
         //the base connection is the start node
-        setBaseConnection({
-            ...baseConnection,
+        setBaseCategory({
+            ...baseCategory,
             nodeId: node1.properties.nodeId,
             nodeName: node1.properties.label,
         })
@@ -78,9 +82,9 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
             console.log(" > Creating stack with the following items: < ")
 
             console.log("startNode")
-            console.log("name: ", baseConnection.nodeName);
-            console.log("dir: ", baseConnection.direction);
-            console.log("conn name: ", baseConnection.connectionName)
+            console.log("name: ", baseCategory.nodeName);
+            console.log("dir: ", baseCategory.direction);
+            console.log("conn name: ", baseCategory.connectionName)
             console.log("id: ", firstNodeId)
 
             categories.forEach(c => {
@@ -92,6 +96,11 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
             console.log("endNode")
             console.log("id: ", secondNodeId)
         })()
+
+
+        console.log("Attempting to create path")
+        console.error("not implemented")
+
 
     }
 
@@ -105,24 +114,24 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
                 </div>
             </Node>
 
-            <Toggle category={baseConnection!} index={BASE_CATEGORY_INDEX} categories={categories}
+            <Toggle category={baseCategory!} index={BASE_CATEGORY_INDEX} categories={categories}
                     setCategories={setCategories}>
                 <input type={"text"} placeholder={"connection label"}
                        onClick={() => {
                            console.log("UPDATE BASE")
-                           updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, "",
+                           updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory, baseCategory, "",
                                UpdateType.CONNECTION_NAME,
                                setCategories, categories);
                        }}
                        onBlur={(e) => {
-                           updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, e.target.value,
+                           updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory, baseCategory, e.target.value,
                                UpdateType.CONNECTION_NAME, setCategories, categories);
                        }}
                 />
             </Toggle>
 
             <CategoryComp
-                c={baseConnection}
+                c={baseCategory}
                 categories={categories}
                 index={BASE_CATEGORY_INDEX}
                 onUpdateCategory={updateCategoryUtil}

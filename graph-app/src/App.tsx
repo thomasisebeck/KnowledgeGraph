@@ -6,6 +6,8 @@ import {
     FrontendBaseCateogries,
     Node,
     NodeRelationship,
+    RequestBody,
+    RequestBodyConnection,
     UpvoteResult
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
@@ -23,9 +25,7 @@ function App() {
 
     const [nodes, setNodes] = useState<Node[]>([])
     const [relationships, setRelationships] = useState<NodeRelationship[]>([])
-    const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
     const [stackLoading, setStackLoading] = useState<boolean>(false)
-    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
     const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
     const [addPhase, setAddPhase] = useState<AddPhase>({
@@ -43,6 +43,26 @@ function App() {
     const [precisionPerClick, sePrecisionPerClick] = useState<number[]>([])
     const [recallPerClick, setRecallPerClick] = useState<number[]>([])
     const [showGraph, setShowGraph] = useState(true)
+    const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false)
+    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([])
+    const [categories, setCategories] = useState<RequestBodyConnection[]>([{
+        nodeName: "new category",
+        direction: Direction.NEUTRAL,
+        connectionName: "connection name"
+    }]);
+
+    const [baseCategory, setBaseCategory] = useState<RequestBodyConnection>({
+        connectionName: "",
+        nodeId: "",
+        direction: Direction.NEUTRAL,
+        nodeName: "",
+    })
+
+
+    const [errorMessage, setErrorMessage] = useState("")
+
+    const [info, setInfo] = useState("")
+    const [heading, setHeading] = useState("")
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -239,7 +259,7 @@ function App() {
                     phase: Phase.SECOND,
                     firstNodeId: selectedNodeId
                 })
-                return ;
+                return;
             }
 
             if (addCategoryPhase.phase == Phase.SECOND) {
@@ -249,7 +269,7 @@ function App() {
                     phase: Phase.ADD_BOX,
                     secondNodeId: selectedNodeId
                 })
-                 return ;
+                return;
             }
 
             // -------------------- handle expanding nodes ------------------------------//
@@ -269,12 +289,6 @@ function App() {
         const requestNodes = body.nodes as Node[];
         const requestRelationships = body.relationships;
 
-        console.log("nodes")
-        console.log(nodes)
-
-        console.log("rels")
-        console.log(requestRelationships)
-
         for (const n of requestNodes)
             updateNode(n)
 
@@ -282,9 +296,14 @@ function App() {
         for (const r of requestRelationships)
             updateRelationship(r);
 
-        setShowAddStackDialogue(false);
         setStackLoading(false);
+    }
 
+    //when you click on add category
+    function addBlankCategory() {
+        setCategories([...categories, {
+            direction: Direction.NEUTRAL, nodeName: "", connectionName: ""
+        }])
     }
 
     //conditionally add a node if it doesn't exist
@@ -406,7 +425,7 @@ function App() {
     }
 
     const addCategory = () => {
-       console.log("ADD Category, setting to first")
+        console.log("ADD Category, setting to first")
         setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
     }
 
@@ -416,6 +435,106 @@ function App() {
         setNodes(prevState => prevState.filter(n => n.nodeType === "ROOT"));
         setRelationships([])
         setShowGraph(true)
+    }
+
+    //category is not blank
+    function isValidCategory(c: RequestBodyConnection) {
+        return !(c.nodeName == "" || c.connectionName == "");
+    }
+
+    //validate that everything is filled out
+    //send the request to the api to add the stack
+    //then update the UI
+    function tryCreateStack() {
+
+        //check that eveything has been filled out
+        //loop through the categories and see that they have the correct info
+
+        for (const c of categories) {
+            if (!isValidCategory(c)) {
+                setErrorMessage("please fill out all the categories")
+                return;
+            }
+        }
+
+        if (!isValidCategory(baseCategory)) {
+            setErrorMessage("please fill out all the categories")
+            return;
+        }
+
+        if (categories.length < 2) {
+            setErrorMessage("please create at least two subcategories")
+            return;
+        }
+
+        if (info == "") {
+            setErrorMessage("please fill out information in the space provided")
+            return;
+        }
+
+        //all info filled out....
+        //send a request
+        //print details
+        (() => {
+            console.log(" ----------------------- ")
+            console.log(" > Creating stack with the following items: < ")
+            console.log("base")
+
+            console.log("nodeName: ", baseCategory.nodeName)
+            console.log("dir: ", baseCategory.direction)
+            console.log("conn name: ", baseCategory.connectionName)
+            console.log("node id: ", baseCategory.nodeId)
+            console.log(" > sub categories < ")
+
+            for (const c of categories) {
+                console.log("name: ", c.nodeName);
+                console.log("dir: ", c.direction);
+                console.log("conn name: ", c.connectionName)
+            }
+
+            console.log(" > info < ")
+            console.log(heading)
+            console.log(info);
+            console.log(" ----------------------- ")
+        })()
+
+        //get the connections from the state
+        const addedConnections: RequestBodyConnection[] = categories.map(c => {
+            return {
+                nodeName: c.nodeName, direction: c.direction, connectionName: c.connectionName
+            }
+        })
+
+        //construct the request
+        const body: RequestBody = {
+            rootNodeId: baseCategory.nodeId!, connections: [{
+                connectionName: baseCategory.connectionName,
+                nodeName: baseCategory.nodeName,
+                direction: baseCategory.direction
+            }, ...addedConnections], infoNode: {
+                label: heading, snippet: info,
+            }
+        }
+
+        //button loading
+        setStackLoading(true);
+
+        fetch(`${HOST}/createStack`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+        }).then(async result => {
+            console.log("App.ts AFTER CREATING STACK")
+
+            if (result.status === 200) {
+                const body = await result.json() as CreateStackReturnBody;
+                addStackToFrontend(body);
+            } else {
+                console.error("Cannot add stack to frontend");
+                console.error(result.status)
+                console.error(result)
+            }
+
+            setStackLoading(false);
+        })
     }
 
     return (
@@ -434,8 +553,9 @@ function App() {
             {/*dialogue when creating a connection*/}
             {/*or when the user wants to add a category between two nodes*/}
             <div className={s.CreateConnectionContainer}>
-                {(addPhase.phase == Phase.FIRST || addCategoryPhase.phase == Phase.FIRST)  && <p>Click on first node</p>}
-                {(addPhase.phase == Phase.SECOND  || addCategoryPhase.phase == Phase.SECOND) && <p>Click on second node</p>}
+                {(addPhase.phase == Phase.FIRST || addCategoryPhase.phase == Phase.FIRST) && <p>Click on first node</p>}
+                {(addPhase.phase == Phase.SECOND || addCategoryPhase.phase == Phase.SECOND) &&
+                    <p>Click on second node</p>}
             </div>
 
             {/*buttons to add relationships and nodes*/}
@@ -478,19 +598,28 @@ function App() {
                     }
                     firstNodeId={addCategoryPhase.firstNodeId}
                     secondNodeId={addCategoryPhase.secondNodeId}
+                    baseCategory={baseCategory}
+                    setBaseCategory={setBaseCategory}
+                    categories={categories}
+                    setCategories={setCategories}
                 />
             }
 
-
-            {/*dialogue to add a new connection stack*/}
             {
                 showAddStackDialogue &&
                 <AddStackDialogue
                     hideAddStackDialogue={() => setShowAddStackDialogue(false)}
-                    addStackToFrontend={addStackToFrontend}
                     isLoading={stackLoading}
-                    setStackLoading={setStackLoading}
                     baseCategories={baseCategories}
+                    errorMessage={errorMessage}
+                    baseCategory={baseCategory}
+                    categories={categories}
+                    setCategories={setCategories}
+                    setBaseCategory={setBaseCategory}
+                    addBlankCategory={addBlankCategory}
+                    tryCreateStack={tryCreateStack}
+                    setHeading={setHeading}
+                    setInfo={setInfo}
                 />
             }
 

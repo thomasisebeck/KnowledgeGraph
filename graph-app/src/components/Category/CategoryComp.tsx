@@ -18,6 +18,7 @@ interface Props {
     dropDownBaseCategories?: FrontendBaseCateogries[],
     setBaseCategory?: (value: SetStateAction<RequestBodyConnection>) => void,
     onCancelClick?: () => void,
+    showCancel: boolean
 }
 
 const BASE_CATEGORY_INDEX = -1;
@@ -32,6 +33,7 @@ export default function CategoryComp({
     baseCategory,
     onUpdateCategory,
     index,
+    showCancel
 }: Props) {
 
 
@@ -104,8 +106,11 @@ export default function CategoryComp({
                 {
                     !isBaseCategory && <div className={s.category}>
 
-                        <img src={"buttons/cancel.svg"} className={[t.img, t.cancel].join(' ')}
+                        {
+                            showCancel &&
+                            <img src={"buttons/cancel.svg"} className={[t.img, t.cancel].join(' ')}
                              onClick={onCancelClick}/>
+                        }
 
                         <Node>
                             <input
