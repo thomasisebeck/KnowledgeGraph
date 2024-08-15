@@ -12,6 +12,7 @@ import {
 import CategoryComp from "../Category/CategoryComp";
 import {updateCategoryUtil} from "../Categories.util"
 import Error from "../Error/Error"
+import {toggleCategory} from "../Category/CategoryUtils";
 
 function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, setStackLoading, baseCategories}: {
     hideAddStackDialogue: () => void,
@@ -161,6 +162,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                 setCategories={setCategories}
             />
 
+
             {/* show the custom categories the user has added */}
             <div className={s.categoriesContainer}>
                 {categories.map((c, index) => <CategoryComp
@@ -171,7 +173,7 @@ function AddStackDialogue({hideAddStackDialogue, addStackToFrontend, isLoading, 
                     isBaseCategory={false}
                     categories={categories}
                     setCategories={setCategories}
-                />)}
+                 />)}
             </div>
 
             {/* allow the user to add more categories if there are fewer than 3*/}

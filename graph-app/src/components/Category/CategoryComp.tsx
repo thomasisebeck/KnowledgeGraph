@@ -1,9 +1,11 @@
 import React, {SetStateAction} from 'react'
 import {UpdateType} from "../AddStackDialogue/DialogueUtils";
-import {Direction, FrontendBaseCateogries, RequestBodyConnection} from "../../../../shared/interfaces";
+import {FrontendBaseCateogries, RequestBodyConnection, Direction} from "../../../../shared/interfaces";
 import s from '../AddStackDialogue/AddStackDialogue.module.scss'
 import Node from "../Node/Node";
-import {updateCategoryUtil} from "../Categories.util"
+import Toggle from "./Toggle";
+import {updateCategoryUtil} from "../Categories.util";
+import t from "./Toggle.module.scss"
 
 interface Props {
     index: number,
@@ -12,13 +14,9 @@ interface Props {
     isBaseCategory: boolean,
     categories: RequestBodyConnection[],
     setCategories: React.Dispatch<React.SetStateAction<RequestBodyConnection[]>>,
-
-    //if base category
     baseCategory?: RequestBodyConnection,
     dropDownBaseCategories?: FrontendBaseCateogries[],
-    setBaseCategory?: (value: SetStateAction<RequestBodyConnection>) => void
-
-    //if optional category
+    setBaseCategory?: (value: SetStateAction<RequestBodyConnection>) => void,
     onCancelClick?: () => void,
 }
 
@@ -33,19 +31,9 @@ export default function CategoryComp({
     isBaseCategory,
     baseCategory,
     onUpdateCategory,
-    index
+    index,
 }: Props) {
 
-    const getNewCategory = (dir: Direction) => {
-        switch (dir) {
-            case Direction.NEUTRAL:
-                return Direction.TOWARDS;
-            case Direction.TOWARDS:
-                return Direction.AWAY;
-            default:
-                return Direction.NEUTRAL;
-        }
-    }
 
     const onChangeBaseCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
         if (dropDownBaseCategories && setBaseCategory && baseCategory) {
@@ -70,64 +58,14 @@ export default function CategoryComp({
         setCategories(old => old.filter((c, ind) => ind != index))
     }
 
-    function toggleButton(index: number, category: RequestBodyConnection, toggleCategory: (index: number) => void) {
-        return (
-            <div className={s.innerDiv}>
-                {
-                    category.direction === Direction.TOWARDS && <div className={s.toggleButtonContainer}>
-                        <img onClick={() => toggleCategory(index)} src={"buttons/up-arrow.svg"}
-                             alt={"toggle direction up"}/>
-                    </div>
-                }
-                {
-                    category.direction === Direction.AWAY && <div className={s.toggleButtonContainer}>
-                        <img onClick={() => toggleCategoryDirection(index)} src={"buttons/down-arrow.svg"}
-                             alt={"toggle direction down"}/>
-                    </div>
-                }
-                {
-                    category.direction === Direction.NEUTRAL && <div className={s.toggleButtonContainer}>
-                        <img onClick={() => toggleCategoryDirection(index)} src={"buttons/neutral.svg"}
-                             alt={"toggle direction neutral"}/>
-                    </div>
-                }
-                <input type={"text"} placeholder={"connection label"}
-                       onClick={() => {
-                           updateCategoryUtil(index, setBaseCategory, baseCategory, "", UpdateType.CONNECTION_NAME,
-                               setCategories, categories);
-                       }}
-                       onBlur={(e) => {
-                           updateCategoryUtil(index, setBaseCategory, baseCategory, e.target.value,
-                               UpdateType.CONNECTION_NAME, setCategories, categories);
-                       }}
-                />
-            </div>
-        );
-    }
-
-    const toggleCategoryDirection = (index: number) => {
-
-        if (isBaseCategory) {
-            //handle base category separately
-            let copyBase = baseCategory!;
-            if (copyBase) {
-                copyBase.direction = getNewCategory(copyBase?.direction);
-                setBaseCategory!({...copyBase});
-                return;
-            }
-            throw "no base category found"
-        }
-
-        categories[index].direction = getNewCategory(categories[index].direction)
-        setCategories([...categories]);
-    }
 
     return (
         <div className={s.category}>
             <div className={[s.content, s.customSelect].join(' ')}>
 
                 {
-                    isBaseCategory && <React.Fragment>
+                    isBaseCategory && baseCategory && <React.Fragment>
+
                         {/*Node showing base category*/}
                         <Node>
                             <select name={"base-category"} onChange={onChangeBaseCategory}>
@@ -144,14 +82,30 @@ export default function CategoryComp({
                         </Node>
 
                         {/*arrow*/}
-                        {toggleButton(BASE_CATEGORY_INDEX, baseCategory!, toggleCategoryDirection)}
+                        {/*update using base category index*/}
+                        <Toggle category={baseCategory!} index={BASE_CATEGORY_INDEX} categories={categories} setCategories={setCategories}>
+                            <input type={"text"} placeholder={"connection label"}
+                                   onClick={() => {
+                                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory, baseCategory, "",
+                                           UpdateType.CONNECTION_NAME,
+                                           setCategories, categories);
+                                   }}
+                                   onBlur={(e) => {
+                                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseCategory, baseCategory,
+                                           e.target.value,
+                                           UpdateType.CONNECTION_NAME, setCategories, categories);
+                                   }}
+                            />
+                        </Toggle>
                     </React.Fragment>
                 }
 
-                {
-                    !isBaseCategory && <div className={s.category} key={index}>
 
-                        <img src={"buttons/cancel.svg"} className={s.cancel} onClick={onCancelClick}/>
+                {
+                    !isBaseCategory && <div className={s.category}>
+
+                        <img src={"buttons/cancel.svg"} className={[t.img, t.cancel].join(' ')}
+                             onClick={onCancelClick}/>
 
                         <Node>
                             <input
@@ -163,7 +117,22 @@ export default function CategoryComp({
                         </Node>
 
                         {/*arrows*/}
-                        {toggleButton(index, c, toggleCategoryDirection)}
+                        {/*extract the toggle, but keep the input in the parent state*/}
+                        {/*update using required index*/}
+                        <Toggle index={index}  category={c} categories={categories} setCategories={setCategories}>
+                            <input type={"text"} placeholder={"connection label"}
+                                   onClick={() => {
+                                       updateCategoryUtil(index, setBaseCategory, baseCategory, "",
+                                           UpdateType.CONNECTION_NAME,
+                                           setCategories, categories);
+                                   }}
+                                   onBlur={(e) => {
+                                       updateCategoryUtil(index, setBaseCategory, baseCategory, e.target.value,
+                                           UpdateType.CONNECTION_NAME, setCategories, categories);
+                                   }}
+                            />
+                        </Toggle>
+
                     </div>
                 }
 

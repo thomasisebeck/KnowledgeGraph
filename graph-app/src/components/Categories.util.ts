@@ -1,6 +1,7 @@
 import React, {SetStateAction} from "react";
 import {UpdateType} from "./AddStackDialogue/DialogueUtils";
 import {Direction, RequestBodyConnection} from "../../../shared/interfaces"
+import {BASE_CATEGORY_INDEX} from "../../../shared/variables"
 
 export const updateCategoryUtil = (index: number, setBaseCategory: ((value: SetStateAction<RequestBodyConnection>) => void) | undefined,
                                    baseCategory: any, value: string | Direction, updateType: UpdateType,
@@ -8,12 +9,14 @@ export const updateCategoryUtil = (index: number, setBaseCategory: ((value: SetS
                                    categories: RequestBodyConnection[]
 ) => {
 
-    const BASE_CATEGORY_INDEX = -1;
+    console.log("index")
+    console.log(index)
 
     if (index == BASE_CATEGORY_INDEX) { //update base category
         if (!setBaseCategory)
             throw "check assigment, base category is not found!"
 
+        console.log("UPDATING BASE")
         switch (updateType) {
             case UpdateType.CONNECTION_DIRECTION:
                 setBaseCategory({...baseCategory, direction: value as Direction})
@@ -29,6 +32,7 @@ export const updateCategoryUtil = (index: number, setBaseCategory: ((value: SetS
         return;
     }
 
+    console.log("UPDATING OTHER")
     switch (updateType) {
         case UpdateType.CONNECTION_DIRECTION:
             setCategories(categories.map(((e, ind) => {

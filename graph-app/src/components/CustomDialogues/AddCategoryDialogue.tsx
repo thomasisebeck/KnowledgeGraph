@@ -1,10 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import Dialogue from "../Dialogue/Dialogue";
 import {Direction, Neo4jNode, RequestBodyConnection} from "../../../../shared/interfaces"
-import {HOST} from "../../../../shared/variables"
+import {HOST, BASE_CATEGORY_INDEX} from "../../../../shared/variables"
 import Node from '../Node/Node'
 import CategoryComp from '../Category/CategoryComp'
 import {updateCategoryUtil} from "../Categories.util";
+import {UpdateType} from "../AddStackDialogue/DialogueUtils";
+import Toggle from "../Category/Toggle";
+import s from "../AddStackDialogue/AddStackDialogue.module.scss"
+import {toggleCategory} from "../Category/CategoryUtils";
 
 interface AddCategoryDialogueProps {
     hideDialogue: () => void,
@@ -14,6 +18,7 @@ interface AddCategoryDialogueProps {
 
 const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCategoryDialogueProps) => {
 
+
     const [categories, setCategories] = useState<RequestBodyConnection[]>([{
         nodeName: "new category",
         direction: Direction.NEUTRAL,
@@ -22,6 +27,14 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
 
     const [startNodeName, setStartNodeName] = useState<string>("");
     const [endNodeName, setEndNodeName] = useState<string>("");
+
+    const [baseConnection, setBaseConnection] = useState<RequestBodyConnection>({
+        connectionName: "",
+        nodeId: "",
+        direction: Direction.NEUTRAL,
+        nodeName: "",
+    })
+
 
     //gets the start and end nodes of the connection
     const getNodes = async () => {
@@ -36,6 +49,13 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
 
         setStartNodeName(node1.properties.label)
         setEndNodeName(node2.properties.label)
+
+        //the base connection is the start node
+        setBaseConnection({
+            ...baseConnection,
+            nodeId: node1.properties.nodeId,
+            nodeName: node1.properties.label,
+        })
     }
 
     //get the start and end node names
@@ -48,19 +68,48 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
         setCategories([...categories, {
             nodeName: "new category",
             connectionName: "new connection",
-            direction: Direction.AWAY
+            direction: Direction.NEUTRAL
         }])
     }
+
+
 
     return (
         <Dialogue hideDialogue={hideDialogue} title={"Add connection path between two nodes"}>
 
+            {/*starting node*/}
             <Node>
                 <div>
                     {startNodeName.replaceAll('_', ' ')}
                 </div>
             </Node>
 
+            <Toggle category={baseConnection!} index={BASE_CATEGORY_INDEX} categories={categories} setCategories={setCategories}>
+                <input type={"text"} placeholder={"connection label"}
+                   onClick={() => {
+                       console.log("UPDATE BASE")
+                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, "", UpdateType.CONNECTION_NAME,
+                           setCategories, categories);
+                   }}
+                   onBlur={(e) => {
+                       updateCategoryUtil(BASE_CATEGORY_INDEX, setBaseConnection, baseConnection, e.target.value,
+                           UpdateType.CONNECTION_NAME, setCategories, categories);
+                   }}
+            />
+            </Toggle>
+
+            <CategoryComp
+                c={baseConnection}
+                categories={categories}
+                index={BASE_CATEGORY_INDEX}
+                onUpdateCategory={updateCategoryUtil}
+                isBaseCategory={true}
+                setCategories={setCategories}
+            />
+
+            <div className={s.categoriesContainer}>
+
+            {/*connection label for the first node*/}
             {
                 categories.map((c, index) =>
                     <CategoryComp
@@ -75,6 +124,8 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
                 )
             }
 
+            </div>
+            {/*ending node*/}
             <Node>
                 <div>
                     {endNodeName.replaceAll('_', ' ')}
@@ -82,6 +133,7 @@ const AddCategoryDialogue = ({hideDialogue, firstNodeId, secondNodeId}: AddCateg
             </Node>
             <button onClick={addBlankCategory}>Add Category</button>
         </Dialogue>
+
     )
 }
 export default AddCategoryDialogue
