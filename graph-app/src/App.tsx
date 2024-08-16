@@ -44,8 +44,6 @@ function App() {
         firstNodeId: ""
     })
 
-    const [hasNewRel, setHasNewRel] = useState<boolean>(false)
-
     //stats
     const [expandedNodesPerClick, setExpandedNodesPerClick] = useState<number[]>([])
     const [precisionPerClick, sePrecisionPerClick] = useState<number[]>([])
@@ -413,8 +411,6 @@ function App() {
                         return rel;
                     })
                 );
-
-                // setHasNewRel(!hasNewRel);
 
                 //nothing more to do after adding back
                 return;
