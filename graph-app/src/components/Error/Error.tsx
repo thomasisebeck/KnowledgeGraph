@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from "react";
-import s from "../AddStackDialogue/AddStackDialogue.module.scss";
+import React, { useEffect, useState } from "react";
+import s from "./Error.module.scss";
+import { ERROR_MESSAGE_TIMEOUT } from "../../../../shared/variables";
 
 function Error(errorMessage: string) {
     const [show, setShow] = useState(true);
-
-    const ERROR_MESSAGE_TIMEOUT = 4000;
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -18,9 +17,7 @@ function Error(errorMessage: string) {
 
     return (
         <div className={s.error}>
-            <div className={s.errorInner}>
-                {errorMessage}
-            </div>
+            <div className={s.errorInner}>{errorMessage}</div>
         </div>
     );
 }

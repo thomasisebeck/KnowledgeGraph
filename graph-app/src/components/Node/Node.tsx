@@ -1,11 +1,11 @@
-import React from 'react'
-import s from './Node.module.scss'
+import React from "react";
+import s from "./Node.module.scss";
 
 interface NodeProps {
-    children: React.ReactNode
+    children: React.ReactNode;
 }
 
-function Node({children}: NodeProps) {
+function Node({ children }: NodeProps) {
     return (
         <div className={s.nodeDivOuter}>
             <div className={s.nodeDiv}></div>
@@ -14,7 +14,7 @@ function Node({children}: NodeProps) {
                 {children}
             </div>
         </div>
-    )
+    );
 }
 
 export default Node;

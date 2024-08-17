@@ -1,9 +1,14 @@
-import {HoverImageInterface} from "../../../../shared/interfaces"
-import React, {useState} from "react";
+import { HoverImageInterface } from "../../../../shared/interfaces";
+import React, { useState } from "react";
 
-import s from './HoverImage.module.scss'
+import s from "./HoverImage.module.scss";
 
-export const HoverImage = ({normalImage, hoverImage, onclick, message}: HoverImageInterface) => {
+export const HoverImage = ({
+    normalImage,
+    hoverImage,
+    onclick,
+    message,
+}: HoverImageInterface) => {
     const [isHovering, setIsHovering] = useState(false);
 
     return (
@@ -16,10 +21,12 @@ export const HoverImage = ({normalImage, hoverImage, onclick, message}: HoverIma
             {
                 <React.Fragment>
                     {isHovering && <p className={s.text}>{message}</p>}
-                    <img src={isHovering ? hoverImage : normalImage} alt={message}/>
+                    <img
+                        src={isHovering ? hoverImage : normalImage}
+                        alt={message}
+                    />
                 </React.Fragment>
             }
         </div>
-    )
-
-}
+    );
+};

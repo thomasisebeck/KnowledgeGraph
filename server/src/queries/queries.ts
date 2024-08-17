@@ -526,7 +526,6 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
             label: neighbors.properties.label,
             nodeType: neighbors.labels[0],
             snippet: neighbors.properties.snippet,
-            isSnippetNode: neighbors.properties.snippet != null,
         }
         toRetNodes = tryPushToArray(newNode, toRetNodes, false);
     }

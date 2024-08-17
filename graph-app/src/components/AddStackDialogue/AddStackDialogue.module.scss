@@ -1,5 +1,4 @@
 
-
 .category {
   position: relative;
 }
@@ -14,12 +13,6 @@
   top: 0;
 }
 
-
-.categoriesContainer {
-  height: 250px;
-  overflow-y: scroll;
-}
-
 .textDiv {
   position: relative;
 }
@@ -27,6 +20,7 @@
 .textDiv textarea, .textDiv input {
   width: calc(100% - 12px);
 }
+
 .textDiv input {
   margin-bottom: 6px;
 }
@@ -56,6 +50,7 @@
   outline: none;
 
 }
+
 @keyframes shake {
   0% {
     transform: translateX(0);

@@ -3,7 +3,6 @@ export interface Node {
     nodeId: string
     snippet?: string
     nodeType: string
-    isSnippetNode?:boolean
 }
 
 export interface Category {
