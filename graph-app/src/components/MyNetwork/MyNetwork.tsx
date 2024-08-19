@@ -5,6 +5,7 @@ import {
     Direction,
     GraphType,
     ROOT,
+    GraphNode
 } from "../../../../shared/interfaces";
 import s from "./myNetwork.module.scss";
 
@@ -114,15 +115,17 @@ const MyNetwork = ({
     };
 
     //get the color of the node based on it's type
-    const getColor = (myNode: string, isSnippet?: boolean) => {
-        if (isSnippet) return "#4f1350";
+    const getColor = (n: GraphNode) => {
+        if (n.snippet != null) return "#4f1350";
 
-        switch (myNode) {
+        switch (n.nodeType) {
             case ROOT:
-                return "#a6e68a";
+                return n.isExpanded ? "#c3c3c3": "#a6e68a"
             case CLASS:
-                return "#87b66f";
+                return n.isExpanded ? "#777777" : "#87b66f";
         }
+
+        console.error("could not find Node type!!!")
     };
 
     //get the size of the node based on it's type
@@ -188,9 +191,7 @@ const MyNetwork = ({
                     nodes.map((el) => (
                         <Node
                             color={
-                                el.snippet != null
-                                    ? getColor(el.nodeType, true)
-                                    : getColor(el.nodeType)
+                                getColor(el)
                             }
                             value={getValueBaseOnType(el.nodeType)}
                             shape={el.snippet != null ? "box" : "dot"}

@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import MyNetwork from "./components/MyNetwork/MyNetwork.js";
 import {
     CreateStackReturnBody,
     Direction,
     FrontendBaseCateogries,
-    Node,
+    GraphNode,
     NodeRelationship,
     RequestBody,
     RequestBodyConnection,
     UpvoteResult,
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
-import { AddButtons } from "./components/AddButtons/AddButtons";
+import {AddButtons} from "./components/AddButtons/AddButtons";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import { AddPhase, Phase } from "./interfaces";
-import { BASE_CATEGORY_INDEX, HOST } from "../../shared/variables";
+import {AddPhase, Phase} from "./interfaces";
+import {BASE_CATEGORY_INDEX, HOST} from "../../shared/variables";
 import s from "./App.module.scss";
-import { upvoteDownvoteButtons } from "./components/UpvoteDownvoteButtons";
+import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
 import Tasks from "./components/Tasks/Tasks";
 import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
 import CategoryComp from "./components/Category/CategoryComp";
-import { UpdateType } from "./components/AddStackDialogue/DialogueUtils";
+import {UpdateType} from "./components/AddStackDialogue/DialogueUtils";
 
 function App() {
     //graph stuff
-    const [nodes, setNodes] = useState<Node[]>([]);
+    const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
 
     //creating a stack
@@ -83,6 +83,10 @@ function App() {
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
+        console.log("expanding node...")
+        console.log(newNode)
+
+
         //expand the snippet of an info node
         if (newNode.snippet) {
             console.log("ADDING NODE");
@@ -127,8 +131,13 @@ function App() {
         //expand a classification node
         const DEPTH = 2;
 
+        //expand the node
+        const nodesCopy = nodes
+
+        //set node white for initial expansion
+        setNodes([...nodesCopy])
+
         if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
-            // console.log(`${counter++} CALLING EXPAND ON CLASSIFICATION NODE, ID: ${newNode.nodeId}`);
 
             const neighborhood = await fetch(
                 `${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`,
@@ -138,7 +147,9 @@ function App() {
 
             console.log("adding neighborhood to frontend...");
             console.log("adding nodes...");
-            const newNodes = nodes;
+
+            //use the copy to keep the white node
+            const newNodes = nodesCopy;
 
             let currExpandedNodes = 0;
 
@@ -147,6 +158,7 @@ function App() {
                     (n) => n.nodeId == node.nodeId,
                 );
                 if (index == -1) {
+                    //add each node not found in the current nodes
                     newNodes.push(node);
                     currExpandedNodes++;
                 }
@@ -158,8 +170,18 @@ function App() {
                 if (index == -1) newRels.push(rel);
             }
 
-            console.log("setting...");
-            setNodes([...newNodes]);
+            //set the nodes, taking into account the expanded node
+            setNodes(newNodes.map(n => {
+                if (n.nodeId == newNode.nodeId) {
+                    console.log("FOUND NODE")
+                    return {
+                        ...n,
+                        isExpanded: true
+                    }
+                }
+                return n;
+            }));
+
             setRelationships([...newRels]);
             setExpandedNodesPerClick([
                 ...expandedNodesPerClick,
@@ -176,11 +198,11 @@ function App() {
                 console.log("FRONTEND INIT DATA");
                 console.log(data);
 
-                const nodes = data.topicNodes as Node[];
+                const nodes = data.topicNodes as GraphNode[];
 
                 //set the categories for the dropdown menu
                 setBaseCategories(
-                    nodes.map((n: Node) => {
+                    nodes.map((n: GraphNode) => {
                         return {
                             nodeId: n.nodeId,
                             label: n.label.replaceAll("_", " "),
@@ -190,7 +212,7 @@ function App() {
 
                 //add nodes to frontend
                 setNodes(
-                    nodes.map((n: Node) => {
+                    nodes.map((n: GraphNode) => {
                         return {
                             nodeId: n.nodeId,
                             label: n.label,
@@ -313,7 +335,7 @@ function App() {
 
     //hide the dialogue and update the nodes and relationships
     const addStackToFrontend = (body: CreateStackReturnBody) => {
-        const requestNodes = body.nodes as Node[];
+        const requestNodes = body.nodes as GraphNode[];
         const requestRelationships = body.relationships;
 
         for (const n of requestNodes) updateNode(n);
@@ -377,7 +399,7 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return { ...e, direction: value as Direction };
+                            return {...e, direction: value as Direction};
                         return e;
                     }),
                 );
@@ -386,7 +408,7 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return { ...e, connectionName: value as string };
+                            return {...e, connectionName: value as string};
                         return e;
                     }),
                 );
@@ -396,7 +418,7 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return { ...e, nodeName: value as string };
+                            return {...e, nodeName: value as string};
                         return e;
                     }),
                 );
@@ -406,7 +428,7 @@ function App() {
     }
 
     //conditionally add a node if it doesn't exist
-    function updateNode(toAdd: Node) {
+    function updateNode(toAdd: GraphNode) {
         console.log("TO ADD");
         console.log(toAdd);
 
@@ -488,7 +510,7 @@ function App() {
 
                             console.log(
                                 "returning new rel with relID" +
-                                    relationship.relId,
+                                relationship.relId,
                             );
                             return {
                                 ...rel,
@@ -523,7 +545,7 @@ function App() {
     };
 
     const addCategory = () => {
-        setAddCategoryPhase({ ...addCategoryPhase, phase: Phase.FIRST });
+        setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
     };
 
     //reset the nodes and edges for the next task
@@ -629,7 +651,7 @@ function App() {
 
         fetch(`${HOST}/createStack`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(body),
         }).then(async (result) => {
             console.log("App.ts AFTER CREATING STACK");
@@ -676,7 +698,7 @@ function App() {
             <div className={s.plus}>
                 <AddButtons
                     showAddBox={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.FIRST })
+                        setAddPhase({...addPhase, phase: Phase.FIRST})
                     }
                     showAddStack={() => setShowAddStackDialogue(true)}
                     addCategory={addCategory}
@@ -688,11 +710,11 @@ function App() {
                 <AddConnectionDialogue
                     firstNode={addPhase.firstNodeId}
                     hideAddBox={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.NONE })
+                        setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     secondNode={addPhase.secondNodeId}
                     reset={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.NONE })
+                        setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     updateRelationship={updateRelationship}
                 />

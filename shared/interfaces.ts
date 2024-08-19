@@ -1,8 +1,9 @@
-export interface Node {
+export interface GraphNode {
     label: string,
     nodeId: string
     snippet?: string
     nodeType: string
+    isExpanded?: boolean
 }
 
 export interface Category {
@@ -22,7 +23,7 @@ export interface Neo4jNode {
 }
 
 export interface CreateStackReturnBody {
-    nodes: Node[],
+    nodes: GraphNode[],
     relationships: NodeRelationship[]
 }
 
@@ -96,7 +97,7 @@ export interface NodePair {
 }
 
 export interface GraphType {
-    nodes: Node[] | undefined,
+    nodes: GraphNode[] | undefined,
     relationships: NodeRelationship[] | undefined,
     setSelectedNodeId: (nodeId: string | null) => void
     setSelectedEdgeId: (edgeId: string | null) => void

@@ -1,9 +1,9 @@
-import {Driver, Relationship} from 'neo4j-driver'
+import {Driver} from 'neo4j-driver'
 import q from "../queries/queries"
 import sess from '../session'
 import 'dotenv/config'
 import {clearDB} from "../utils";
-import {nodeType, RequestBody, Direction} from "../../../shared/interfaces";
+import {Direction} from "../../../shared/interfaces";
 
 const URI = process.env.NEO4J_URI
 const USER = process.env.NEO4J_USERNAME
@@ -14,7 +14,6 @@ const DATABASE = process.env.DATABASE
 
 describe('queries', () => {
     let driver: Driver | null;
-    let nodeId: string;
 
     beforeAll(async () => {
         if (URI === undefined || USER === undefined || PASSWORD == undefined || DATABASE == undefined)
@@ -150,11 +149,11 @@ describe('queries', () => {
 
         const relFunctionCalls = [
             //from->to AWAY
-            q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, {nodeName: "ONE", direction: Direction.AWAY, connectionName: "new conn 1"}),
+            q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, "new conn 1", Direction.AWAY),
             //from<-to TOWARDS
-            q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, {nodeName: "TWO", direction: Direction.TOWARDS, connectionName: "new conn 2"}),
+            q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, "new conn 2", Direction.TOWARDS),
             //NEUTRAL
-            q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId, {nodeName: "THREE", direction: Direction.NEUTRAL, connectionName: "new conn 3"}),
+            q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId,"new conn 3", Direction.NEUTRAL),
         ]
 
         const rels = await Promise.all(relFunctionCalls);
