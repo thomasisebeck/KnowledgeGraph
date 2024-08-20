@@ -16,7 +16,7 @@ function SuggestiveInput({onBlur, placeholder}: Props) {
     async function getSuggestion() {
         if (value == "")
             return;
-        const list = await fetch(`${HOST}/suggest/${value.replaceAll(' ', '_')}`)
+        const list = await fetch(`${HOST}/suggest/${value.trim().replaceAll(' ', '_')}`)
             .then(res => res.json()) as string[]
 
         //remove the underscores
