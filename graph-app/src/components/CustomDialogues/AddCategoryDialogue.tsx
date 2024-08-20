@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
-import {
-    Direction,
-    Neo4jNode,
-    RequestBodyConnection,
-} from "../../../../shared/interfaces";
-import { BASE_CATEGORY_INDEX, HOST } from "../../../../shared/variables";
+import {ConnectionPath, Direction, Neo4jNode, RequestBodyConnection} from "../../../../shared/interfaces";
+import {BASE_CATEGORY_INDEX, HOST} from "../../../../shared/variables";
 import Node from "../Node/Node";
 import CategoryComp from "../Category/CategoryComp";
-import { UpdateType } from "../AddStackDialogue/DialogueUtils";
+import {UpdateType} from "../AddStackDialogue/DialogueUtils";
 import Toggle from "../Category/Toggle";
 import s from "../AddStackDialogue/AddStackDialogue.module.scss";
 
@@ -92,8 +88,9 @@ const AddCategoryDialogue = ({
     };
 
     //send the api request
-    const createPath = () => {
+    const createPath = async () => {
         //print the details
+        /*
         (() => {
             console.log(" ----------------------- ");
             console.log(" > Creating stack with the following items: < ");
@@ -113,9 +110,27 @@ const AddCategoryDialogue = ({
             console.log("endNode");
             console.log("id: ", secondNodeId);
         })();
+        */
 
-        console.log("Attempting to create path");
-        console.error("not implemented");
+        const body: ConnectionPath = {
+            categories: categories,
+            firstNodeId: firstNodeId,
+            secondNodeId: secondNodeId
+        }
+
+        console.log("fetching ...")
+        await fetch(`${HOST}/connectionPath`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body)
+        }).then(async res => {
+            console.log("After creating connection path...")
+            console.log(await res.json())
+        })
+        console.log("done")
+
     };
 
     return (
@@ -153,18 +168,6 @@ const AddCategoryDialogue = ({
                     }}
                 />
             </Toggle>
-
-            <CategoryComp
-                c={baseCategory}
-                categories={categories}
-                index={BASE_CATEGORY_INDEX}
-                updateCategory={updateCategory}
-                isBaseCategory={true}
-                setCategories={setCategories}
-                baseCategory={baseCategory}
-                setBaseCategory={setBaseCategory}
-                showCancel={false}
-            />
 
             <div className={s.categoriesContainer}>
                 {/*connection label for the first node*/}

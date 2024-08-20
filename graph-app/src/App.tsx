@@ -356,11 +356,7 @@ function App() {
         ]);
     }
 
-    function updateCategory(
-        index: number,
-        updateType: UpdateType,
-        value: string | Direction,
-    ) {
+    function updateCategory(index: number, updateType: UpdateType, value: string | Direction) {
         if (index == BASE_CATEGORY_INDEX) {
             //update base category
             if (!setBaseCategory)
@@ -552,9 +548,10 @@ function App() {
         setNodes((prevState) =>
             prevState.map(n => {
                 return {
-                ...n,
+                    ...n,
                     isExpanded: false
-            }}).filter(n => n.nodeType == "ROOT")
+                }
+            }).filter(n => n.nodeType == "ROOT")
         )
 
 

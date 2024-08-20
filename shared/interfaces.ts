@@ -49,6 +49,12 @@ export interface RequestBodyConnection {
     nodeId?: string
 }
 
+export interface ConnectionPath {
+    firstNodeId: string,
+    categories: RequestBodyConnection[]
+    secondNodeId: string
+}
+
 export interface RequestBody {
     infoNode: {
         label: string,
