@@ -28,7 +28,7 @@ function App() {
     //graph stuff
     const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
-    const [mustReset, setMustReset] = useState(false)
+    const [mustReset, setMustReset] = useState(true)
 
     //creating a stack
     const [stackLoading, setStackLoading] = useState<boolean>(false);
@@ -55,7 +55,6 @@ function App() {
     const [recallPerClick, setRecallPerClick] = useState<number[]>([]);
 
     //loading and showing dialogues
-    const [showGraph, setShowGraph] = useState(true);
     const [showAddStackDialogue, setShowAddStackDialogue] =
         useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -223,6 +222,11 @@ function App() {
                         };
                     }),
                 );
+
+                //after the graph has settled, allow the layout to be reset again
+                setTimeout(() => {
+                    setMustReset(false)
+                }, 10)
 
                 console.log("NODES SET");
             })
@@ -549,7 +553,6 @@ function App() {
 
     //reset the nodes and edges for the next task
     const resetGraph = () => {
-        setShowGraph(false);
         setNodes((prevState) =>
             prevState.map(n => {
                 return {
@@ -560,8 +563,9 @@ function App() {
         )
 
         setRelationships([]);
-        setShowGraph(true);
         setExpandedNodesPerClick([])
+
+        //reset the positions of the nodes
         setMustReset(true)
         setTimeout(() => {
             setMustReset(false)
@@ -686,7 +690,7 @@ function App() {
     return (
         <div className={s.Container}>
             {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
-            {nodes.length > 0 && showGraph && (
+            {nodes.length > 0 && (
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
