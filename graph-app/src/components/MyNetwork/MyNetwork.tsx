@@ -1,12 +1,6 @@
-import { Edge, Network, Node } from "@lifeomic/react-vis-network";
-import React, { useEffect, useRef, useState } from "react";
-import {
-    CLASS,
-    Direction,
-    GraphType,
-    ROOT,
-    GraphNode
-} from "../../../../shared/interfaces";
+import {Edge, Network, Node} from "@lifeomic/react-vis-network";
+import React, {useEffect, useRef, useState} from "react";
+import {CLASS, Direction, GraphNode, GraphType, ROOT} from "../../../../shared/interfaces";
 import s from "./myNetwork.module.scss";
 
 const options = {
@@ -62,6 +56,8 @@ const options = {
 //for edge thickness
 const THICKNESS_MULTIPLIER = 15;
 const MINIMUM_THICKNESS = 0.4;
+const NUM_ROOT_NODES = 13;
+const RADIUS = 10;
 
 const MyNetwork = ({
     nodes,
@@ -120,7 +116,7 @@ const MyNetwork = ({
 
         switch (n.nodeType) {
             case ROOT:
-                return n.isExpanded ? "#c3c3c3": "#a6e68a"
+                return n.isExpanded ? "#c3c3c3" : "#a6e68a"
             case CLASS:
                 return n.isExpanded ? "#777777" : "#87b66f";
         }
@@ -169,7 +165,14 @@ const MyNetwork = ({
     };
 
     //force rerender when label changes to update
-    useEffect(() => {}, [displayLabels]);
+    useEffect(() => {
+    }, [displayLabels]);
+
+    const getRootPos = (index: number, isX: boolean) => {
+        const angle = 360 / NUM_ROOT_NODES * index;
+        const radians = angle * (Math.PI / 180);
+        return RADIUS * ( isX ? Math.cos(radians) : Math.sin(radians) ) * 25
+    }
 
     return (
         <React.Fragment>
@@ -188,18 +191,31 @@ const MyNetwork = ({
             <Network options={options} ref={networkRef}>
                 {/*render the nodes*/}
                 {nodes &&
-                    nodes.map((el) => (
-                        <Node
-                            color={
-                                getColor(el)
-                            }
-                            value={getValueBaseOnType(el.nodeType)}
-                            shape={el.snippet != null ? "box" : "dot"}
-                            key={el.nodeId}
-                            id={el.nodeId}
-                            label={getNodeLabel(el)}
-                            margin={el.snippet != null ? 10 : 0}
-                        />
+                    nodes.map((el, index) => (
+                        el.nodeType == ROOT ?
+                            <Node
+                                color={getColor(el)}
+                                value={getValueBaseOnType(el.nodeType)}
+                                shape={el.snippet != null ? "box" : "dot"}
+                                key={el.nodeId}
+                                id={el.nodeId}
+                                label={getNodeLabel(el)}
+                                margin={el.snippet != null ? 10 : 0}
+                                x={getRootPos(index, true)}
+                                y={getRootPos(index, false)}
+                            />
+                            :
+                            <Node
+                                color={getColor(el)}
+                                value={getValueBaseOnType(el.nodeType)}
+                                shape={el.snippet != null ? "box" : "dot"}
+                                key={el.nodeId}
+                                id={el.nodeId}
+                                label={getNodeLabel(el)}
+                                x={100}
+                                y={100}
+                                margin={el.snippet != null ? 10 : 0}
+                            />
                     ))}
 
                 {/*render the relationships*/}
@@ -208,14 +224,14 @@ const MyNetwork = ({
                         const UNIQUE_KEY = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? "1" : "0"}`;
                         const THICKNESS =
                             THICKNESS_MULTIPLIER *
-                                (sigmoid(r.votes + 1) - 0.5) +
+                            (sigmoid(r.votes + 1) - 0.5) +
                             MINIMUM_THICKNESS;
                         const ARROWS =
                             r.direction == Direction.NEUTRAL
                                 ? ""
                                 : r.direction == Direction.AWAY
-                                  ? "to"
-                                  : "from";
+                                    ? "to"
+                                    : "from";
                         const LABEL = displayLabels
                             ? r.type?.replaceAll("_", " ").toLowerCase()
                             : "";
