@@ -1,5 +1,5 @@
-import { HoverImageInterface } from "../../../../shared/interfaces";
-import React, { useState } from "react";
+import {HoverImageInterface} from "../../../../shared/interfaces";
+import React, {useState} from "react";
 
 import s from "./HoverImage.module.scss";
 
@@ -8,8 +8,11 @@ export const HoverImage = ({
     hoverImage,
     onclick,
     message,
+    customPadding
 }: HoverImageInterface) => {
     const [isHovering, setIsHovering] = useState(false);
+
+    const style = customPadding ? { right: customPadding } : {}
 
     return (
         <div
@@ -20,10 +23,11 @@ export const HoverImage = ({
         >
             {
                 <React.Fragment>
-                    {isHovering && <p className={s.text}>{message}</p>}
+                    {isHovering && <p style={style} className={s.text}>{message}</p>}
                     <img
                         src={isHovering ? hoverImage : normalImage}
                         alt={message}
+
                     />
                 </React.Fragment>
             }

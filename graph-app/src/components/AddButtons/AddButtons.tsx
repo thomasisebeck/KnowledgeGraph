@@ -30,12 +30,12 @@ const images = [
     {
         normal: "buttons/exit.svg",
         hover: "buttons/exit-hover.svg",
-        message: "exit",
+        message: "",
     },
     {
         normal: "buttons/plus.svg",
         hover: "buttons/plus-hover.svg",
-        message: "menu",
+        message: "",
     },
     {
         normal: "buttons/add-category-node.svg",

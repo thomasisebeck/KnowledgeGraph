@@ -37,3 +37,13 @@
   height: 250px;
   overflow-y: scroll;
 }
+
+$len : 33px;
+.reset {
+  position: absolute;
+  bottom: 10px;
+  right: 110px;
+  z-index: 5;
+  width: $len;
+  height: $len;
+}

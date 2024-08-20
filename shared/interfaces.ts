@@ -107,7 +107,8 @@ export interface HoverImageInterface {
     normalImage: string,
     hoverImage: string,
     onclick: () => void,
-    message: string
+    message: string,
+    customPadding? : string
 }
 
 export const ROOT = "ROOT";

@@ -21,6 +21,7 @@ import Tasks from "./components/Tasks/Tasks";
 import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
 import CategoryComp from "./components/Category/CategoryComp";
 import {UpdateType} from "./components/AddStackDialogue/DialogueUtils";
+import {HoverImage} from "./components/HoverImage/HoverImage";
 
 function App() {
     //graph stuff
@@ -89,8 +90,6 @@ function App() {
 
         //expand the snippet of an info node
         if (newNode.snippet) {
-            console.log("ADDING NODE");
-            console.log(newNode.snippet);
 
             //create new id's so as not to conflict
             const INFO_ID = newNode.nodeId + "-info";
@@ -144,9 +143,6 @@ function App() {
             ).then(async (result) => {
                 return await result.json();
             });
-
-            console.log("adding neighborhood to frontend...");
-            console.log("adding nodes...");
 
             //use the copy to keep the white node
             const newNodes = nodesCopy;
@@ -251,6 +247,8 @@ function App() {
             "neutral.svg",
             "plus.svg",
             "plus-hover.svg",
+            "reset.svg",
+            "reset-hover.svg",
             "up-arrow.svg",
             "upvote.svg",
             "upvote-hover.svg",
@@ -551,9 +549,19 @@ function App() {
     //reset the nodes and edges for the next task
     const resetGraph = () => {
         setShowGraph(false);
-        setNodes((prevState) => prevState.filter((n) => n.nodeType === "ROOT"));
+        setNodes((prevState) =>
+            prevState.map(n => {
+                return {
+                ...n,
+                    isExpanded: false
+            }}).filter(n => n.nodeType == "ROOT")
+        )
+
+
         setRelationships([]);
         setShowGraph(true);
+        setExpandedNodesPerClick([])
+
     };
 
     //category is not blank
@@ -801,6 +809,13 @@ function App() {
                 precisionsPerClick={precisionPerClick}
                 recallPerClick={recallPerClick}
             />
+
+            <div className={s.reset}>
+                <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
+                            message={"reset the graph"} onclick={resetGraph}
+                            customPadding="45px"
+                />
+            </div>
         </div>
     );
 }
