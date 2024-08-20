@@ -562,7 +562,10 @@ function App() {
         setRelationships([]);
         setShowGraph(true);
         setExpandedNodesPerClick([])
-        setMustReset(!mustReset)
+        setMustReset(true)
+        setTimeout(() => {
+            setMustReset(false)
+        }, 10)
 
     };
 
