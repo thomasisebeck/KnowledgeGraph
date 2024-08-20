@@ -109,6 +109,10 @@ const removeNode = async (nodeId: string, driver: Driver) => {
 
 const createTopicNodes = async (driver: Driver) => {
 
+    //create the index when you make the topic nodes
+    const createIndexQuery = `CREATE FULLTEXT INDEX ${INDEX_NAME} IF NOT EXISTS FOR (n:CLASS) ON EACH [n.label]`
+    await executeGenericQuery(driver, createIndexQuery, {})
+
     return await Promise.all([
         createRootNode(driver, "Existence"),
         createRootNode(driver, "Ethics"),
@@ -164,13 +168,9 @@ const getAllData = async (driver: Driver) => {
     const rootNodesQuery =
         `MATCH (n:${ROOT}) RETURN n`;
 
-    //create an index for efficient searching
-    const createIndexQuery = `CREATE FULLTEXT INDEX ${INDEX_NAME} FOR (n:CLASS) ON EACH [n.label]`
-
     const [result, rootNodes] = await Promise.all([
         executeGenericQuery(driver, allNodesQuery, {}),
         executeGenericQuery(driver, rootNodesQuery, {}),
-        executeGenericQuery(driver, createIndexQuery, {}),
     ])
 
     let relationships: NodeRelationship[] = [];

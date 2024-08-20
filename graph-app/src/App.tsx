@@ -197,10 +197,13 @@ function App() {
                 console.log(data);
 
                 const nodes = data.topicNodes as GraphNode[];
+                console.log("NODES")
+                console.log(nodes)
 
                 //set the categories for the dropdown menu
                 setBaseCategories(
                     nodes.map((n: GraphNode) => {
+                        console.log(n)
                         return {
                             nodeId: n.nodeId,
                             label: n.label.replaceAll("_", " "),
