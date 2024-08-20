@@ -652,5 +652,5 @@ export default {
     upVoteRelationship,
     getAllData,
     getNeighborhood,
-    fuzzySearchLabel
+    fuzzySearchLabel,
 }
