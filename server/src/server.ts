@@ -3,7 +3,7 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {CreateRelRequestBody, RequestBody, ConnectionPath, UpvoteResult} from "../../shared/interfaces";
+import {ConnectionPath, CreateRelRequestBody, RequestBody, UpvoteResult} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
 import * as fs from "node:fs";
@@ -208,18 +208,34 @@ app.get('/nodeName/:id', async (req, res) => {
     }
 })
 
+app.get('/suggest/:query', async (req, res) => {
+    try {
+        if (req.params.query == null)
+            return res.status(400).json("query is null");
+
+        const result = await q.fuzzySearchLabel(driver, req.params.query);
+        console.log("RESULT")
+        console.log(result)
+        res.status(200).json(result);
+
+    } catch (e) {
+        console.error(e)
+        res.status(400).json(e as string);
+    }
+})
+
 app.post('/connectionPath', async (req, res) => {
-  try {
-      const body = req.body as ConnectionPath;
+    try {
+        const body = req.body as ConnectionPath;
 
-      console.log("Received at server...")
-      console.log(body)
+        console.log("Received at server...")
+        console.log(body)
 
 
-  } catch (e) {
-      console.error(e)
-      res.status(400).json(e as string);
-  }
+    } catch (e) {
+        console.error(e)
+        res.status(400).json(e as string);
+    }
 })
 
 app.listen(process.env.PORT, () => {

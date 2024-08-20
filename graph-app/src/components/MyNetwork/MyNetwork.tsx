@@ -175,10 +175,6 @@ const MyNetwork = ({
         return RADIUS * (isX ? Math.cos(radians) : Math.sin(radians)) * 25;
     }
 
-    const getNodes = () => {
-        return
-    }
-
     return (
         <React.Fragment>
             {/*checkbox for adding link labels or not*/}
@@ -199,17 +195,17 @@ const MyNetwork = ({
                 {/*render the nodes*/}
                 {
                     nodes!.map((el, index) => (
-                            <Node
-                                color={getColor(el)}
-                                value={getValueBaseOnType(el.nodeType)}
-                                shape={el.snippet != null ? "box" : "dot"}
-                                key={`${el.nodeId}-${rerender ? 'rerender' : 'normal'}`}
-                                id={el.nodeId}
-                                label={getNodeLabel(el)}
-                                margin={el.snippet != null ? 10 : 0}
-                                x={getRootPos(index, true)}
-                                y={getRootPos(index, false)}
-                            />
+                        <Node
+                            color={getColor(el)}
+                            value={getValueBaseOnType(el.nodeType)}
+                            shape={el.snippet != null ? "box" : "dot"}
+                            key={`${el.nodeId}-${rerender ? 'rerender' : 'normal'}`}
+                            id={el.nodeId}
+                            label={getNodeLabel(el)}
+                            margin={el.snippet != null ? 10 : 0}
+                            x={getRootPos(index, true)}
+                            y={getRootPos(index, false)}
+                        />
                     ))
                 }
 

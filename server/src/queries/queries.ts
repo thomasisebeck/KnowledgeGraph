@@ -9,6 +9,7 @@ import {
     CreateStackReturnBody,
     Direction,
     GraphNode,
+    INDEX_NAME,
     INFO,
     Neo4jNode,
     NodeRelationship,
@@ -163,9 +164,13 @@ const getAllData = async (driver: Driver) => {
     const rootNodesQuery =
         `MATCH (n:${ROOT}) RETURN n`;
 
+    //create an index for efficient searching
+    const createIndexQuery = `CREATE FULLTEXT INDEX ${INDEX_NAME} FOR (n:CLASS) ON EACH [n.label]`
+
     const [result, rootNodes] = await Promise.all([
         executeGenericQuery(driver, allNodesQuery, {}),
         executeGenericQuery(driver, rootNodesQuery, {}),
+        executeGenericQuery(driver, createIndexQuery, {}),
     ])
 
     let relationships: NodeRelationship[] = [];
@@ -553,6 +558,7 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
     //create all nodes
     const myNodes = await Promise.all(nodeFunctionCalls)
 
+
     //stack connection function calls then fire to create connections
     const relFunctionCalls = body.connections.map(async (conn, index) => {
         return findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId,
@@ -583,7 +589,6 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
         relationships: upVotedRelationships
     }
 }
-
 //----------------------------- DOES EXIST FUNCTIONS -----------------------------//
 
 const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
@@ -613,6 +618,27 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     return records.at(0)?.get("r")
 }
 
+/*
+CALL db.index.fulltext.queryNodes("movieNamesIndex", "title:matrix")
+YIELD node, score
+RETURN node.title as title, score
+ */
+const fuzzySearchLabel = async (driver: Driver, searchQuery: string) => {
+    const query =
+        `CALL db.index.fulltext.queryNodes("${INDEX_NAME}", "label:*${searchQuery}*")
+        YIELD node, score
+        RETURN node.label AS label, score
+        LIMIT 10`
+
+    const {records, summary} = await executeGenericQuery(driver, query, {})
+
+    const result = [];
+    for (const record of records) {
+       result.push(getField([record], 'label'));
+    }
+    return result;
+}
+
 export default {
     findOrCreateInformationNode,
     removeNode,
@@ -625,5 +651,6 @@ export default {
     createTopicNodes,
     upVoteRelationship,
     getAllData,
-    getNeighborhood
+    getNeighborhood,
+    fuzzySearchLabel
 }

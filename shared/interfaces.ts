@@ -122,3 +122,4 @@ export const ROOT = "ROOT";
 export const BOTH = "INFO | CLASS";
 export const INFO = "INFO";
 export const CLASS = "CLASS";
+export const INDEX_NAME = 'nodesIndex'
