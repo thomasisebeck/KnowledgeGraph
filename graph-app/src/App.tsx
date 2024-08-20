@@ -671,6 +671,7 @@ function App() {
             }
 
             setStackLoading(false);
+            setShowAddStackDialogue(false);
         });
     }
 

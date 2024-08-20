@@ -214,6 +214,8 @@ app.post('/connectionPath', async (req, res) => {
 
       console.log("Received at server...")
       console.log(body)
+
+
   } catch (e) {
       console.error(e)
       res.status(400).json(e as string);
