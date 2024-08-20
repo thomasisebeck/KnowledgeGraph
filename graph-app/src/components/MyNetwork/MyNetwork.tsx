@@ -64,6 +64,7 @@ const MyNetwork = ({
     relationships,
     setSelectedEdgeId,
     setSelectedNodeId,
+    rerender
 }: GraphType) => {
     const [displayLabels, setDisplayLabels] = useState(true);
 
@@ -171,7 +172,11 @@ const MyNetwork = ({
     const getRootPos = (index: number, isX: boolean) => {
         const angle = 360 / NUM_ROOT_NODES * index;
         const radians = angle * (Math.PI / 180);
-        return RADIUS * ( isX ? Math.cos(radians) : Math.sin(radians) ) * 25
+        return RADIUS * (isX ? Math.cos(radians) : Math.sin(radians)) * 25;
+    }
+
+    const getNodes = () => {
+        return
     }
 
     return (
@@ -188,35 +193,25 @@ const MyNetwork = ({
                     }}
                 />
             </div>
+
             <Network options={options} ref={networkRef}>
+
                 {/*render the nodes*/}
-                {nodes &&
-                    nodes.map((el, index) => (
-                        el.nodeType == ROOT ?
+                {
+                    nodes!.map((el, index) => (
                             <Node
                                 color={getColor(el)}
                                 value={getValueBaseOnType(el.nodeType)}
                                 shape={el.snippet != null ? "box" : "dot"}
-                                key={el.nodeId}
+                                key={`${el.nodeId}-${rerender ? 'rerender' : 'normal'}`}
                                 id={el.nodeId}
                                 label={getNodeLabel(el)}
                                 margin={el.snippet != null ? 10 : 0}
                                 x={getRootPos(index, true)}
                                 y={getRootPos(index, false)}
                             />
-                            :
-                            <Node
-                                color={getColor(el)}
-                                value={getValueBaseOnType(el.nodeType)}
-                                shape={el.snippet != null ? "box" : "dot"}
-                                key={el.nodeId}
-                                id={el.nodeId}
-                                label={getNodeLabel(el)}
-                                x={100}
-                                y={100}
-                                margin={el.snippet != null ? 10 : 0}
-                            />
-                    ))}
+                    ))
+                }
 
                 {/*render the relationships*/}
                 {relationships &&
@@ -249,7 +244,10 @@ const MyNetwork = ({
                         );
                     })}
             </Network>
+
+
         </React.Fragment>
+
     );
 };
 

@@ -107,6 +107,7 @@ export interface GraphType {
     relationships: NodeRelationship[] | undefined,
     setSelectedNodeId: (nodeId: string | null) => void
     setSelectedEdgeId: (edgeId: string | null) => void
+    rerender: boolean
 }
 
 export interface HoverImageInterface {

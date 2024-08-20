@@ -22,11 +22,13 @@ import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogu
 import CategoryComp from "./components/Category/CategoryComp";
 import {UpdateType} from "./components/AddStackDialogue/DialogueUtils";
 import {HoverImage} from "./components/HoverImage/HoverImage";
+import {getUnpackedSettings} from "node:http2";
 
 function App() {
     //graph stuff
     const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
+    const [mustReset, setMustReset] = useState(false)
 
     //creating a stack
     const [stackLoading, setStackLoading] = useState<boolean>(false);
@@ -554,10 +556,10 @@ function App() {
             }).filter(n => n.nodeType == "ROOT")
         )
 
-
         setRelationships([]);
         setShowGraph(true);
         setExpandedNodesPerClick([])
+        setMustReset(!mustReset)
 
     };
 
@@ -684,6 +686,7 @@ function App() {
                     relationships={relationships}
                     setSelectedNodeId={setSelectedNodeId}
                     setSelectedEdgeId={setSelectedEdgeId}
+                    rerender={mustReset}
                 />
             )}
 
