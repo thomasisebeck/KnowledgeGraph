@@ -133,6 +133,7 @@ export default function CategoryComp({
                         <div className={s.category}>
                             {showCancel && (
                                 <img
+                                    alt={"cancel"}
                                     src={"buttons/cancel.svg"}
                                     className={[t.img, t.cancel].join(" ")}
                                     onClick={onCancelClick}

@@ -2,7 +2,6 @@ import React from "react";
 import Dialogue from "../Dialogue/Dialogue";
 import s from "./AddStackDialogue.module.scss";
 import { RequestBodyConnection } from "../../../../shared/interfaces";
-import Error from "../Error/Error";
 
 function AddStackDialogue({
     hideAddStackDialogue,
