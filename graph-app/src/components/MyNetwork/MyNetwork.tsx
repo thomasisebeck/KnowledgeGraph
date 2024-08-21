@@ -56,8 +56,8 @@ const options = {
 //for edge thickness
 const THICKNESS_MULTIPLIER = 15;
 const MINIMUM_THICKNESS = 0.4;
-const NUM_ROOT_NODES = 13;
-const RADIUS = 10;
+const NUM_ROOT_NODES = 6;
+const RADIUS = 5;
 
 const MyNetwork = ({
     nodes,

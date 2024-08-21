@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
-import {ConnectionPath, Direction, Neo4jNode, RequestBodyConnection} from "../../../../shared/interfaces";
+import {ConnectionPath, Direction, Neo4jNode, RequestBodyConnection, ConnectionPathConnection} from "../../../../shared/interfaces";
 import {BASE_CATEGORY_INDEX, HOST} from "../../../../shared/variables";
 import Node from "../Node/Node";
 import CategoryComp from "../Category/CategoryComp";
@@ -112,10 +112,29 @@ const AddCategoryDialogue = ({
         })();
         */
 
+        const nodes: string[] = categories.map(c => c.nodeName)
+
+        let connections: ConnectionPathConnection[] = [];
+
+        //push the base connection
+        connections.push({
+            label: baseCategory.connectionName,
+            direction: baseCategory.direction
+        });
+
+        //push each other connection
+        connections = connections.concat(categories.map(c => {
+            return {
+                label: c.connectionName,
+                direction: c.direction
+            }
+        }))
+
         const body: ConnectionPath = {
-            categories: categories,
             firstNodeId: firstNodeId,
-            secondNodeId: secondNodeId
+            secondNodeId: secondNodeId,
+            nodes: nodes,
+            connections: connections
         }
 
         console.log("fetching ...")

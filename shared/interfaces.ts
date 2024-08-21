@@ -1,15 +1,15 @@
 export interface GraphNode {
-    label: string,
+    isExpanded?: boolean,
+    label: string
     nodeId: string
-    snippet?: string
     nodeType: string
-    isExpanded?: boolean
+    snippet?: string
 }
 
 export interface Category {
     categoryName: string,
-    connectionName: string,
-    connectionDirection: Direction
+    connectionDirection: Direction,
+    connectionName: string
 }
 
 export interface Neo4jNode {
@@ -49,9 +49,15 @@ export interface RequestBodyConnection {
     nodeId?: string
 }
 
+export interface ConnectionPathConnection {
+    direction: Direction,
+    label: string
+}
+
 export interface ConnectionPath {
-    firstNodeId: string,
-    categories: RequestBodyConnection[]
+    firstNodeId: string
+    nodes: string[]
+    connections: ConnectionPathConnection[] 
     secondNodeId: string
 }
 

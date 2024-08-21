@@ -114,19 +114,12 @@ const createTopicNodes = async (driver: Driver) => {
     await executeGenericQuery(driver, createIndexQuery, {})
 
     return await Promise.all([
-        createRootNode(driver, "Existence"),
-        createRootNode(driver, "Ethics"),
-        createRootNode(driver, "Society"),
-        createRootNode(driver, "Nature"),
-        createRootNode(driver, "Technology"),
-        createRootNode(driver, "Language"),
-        createRootNode(driver, "History"),
-        createRootNode(driver, "Physics"),
-        createRootNode(driver, "Metaphysics"),
-        createRootNode(driver, "Arts"),
-        createRootNode(driver, "Belief"),
-        createRootNode(driver, "Religion"),
-        createRootNode(driver, "Mathematics"),
+        createRootNode(driver, "Existence"), //being, reality, possibility
+        createRootNode(driver, "Ethics"), //morality, right vs wrong, conscience
+        createRootNode(driver, "Logic"), //reasoning, deduction, mathematics, truth
+        createRootNode(driver, "Culture"), //customs, traditions, art, literature
+        createRootNode(driver, "Nature"), //physical phenomenons, environment
+        createRootNode(driver, "Belief"), //faith, religion, spirituality
     ]);
 
 }
@@ -525,17 +518,52 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
 
 }
 
-const createConnectionPath = async (driver: Driver, body: ConnectionPath) => {
+const createConnectionPath = async (driver: Driver, body: ConnectionPath): Promise<CreateStackReturnBody> => {
 
     console.log("CREATE CONNECTION PATH");
 
-    const nodeFunctionCalls = body.categories.map(async c => {
-        return await findOrCreateClassificationNode(driver, c.nodeName);
+    const nodeFunctionCalls = body.nodes.map(async nodeName => {
+        return await findOrCreateClassificationNode(driver, nodeName);
     })
 
-    const myNodes = await Promise.all(nodeFunctionCalls);
+    const myNodes = await Promise.all([...nodeFunctionCalls]);
+
+    let index = 0;
+
+    console.log("NUM NODES")
+    console.log(myNodes.length)
+    console.log("NUM CONN")
+    console.log(body.connections.length)
+
+    const relFunctionCalls = body.connections.map(async (conn, index) => {
+        let fromNodeId;
+
+        if (index == 0)
+            fromNodeId = body.firstNodeId;
+        else
+            fromNodeId = myNodes[index - 1].nodeId;
+
+        let toNodeId;
+        if (index == body.connections.length - 1)
+            toNodeId = body.secondNodeId
+        else
+            toNodeId = myNodes[index].nodeId;
+
+        index++;
+        return await findOrCreateRelationship(driver, fromNodeId, toNodeId, conn.label, conn.direction);
+    })
+
+    const myRels = await Promise.all([...relFunctionCalls]);
+
+    return {
+        nodes: myNodes,
+        relationships: myRels
+    }
+
 
 }
+
+
 
 const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
     console.log("create stack...")
@@ -634,7 +662,7 @@ const fuzzySearchLabel = async (driver: Driver, searchQuery: string) => {
 
     const result = [];
     for (const record of records) {
-       result.push(getField([record], 'label'));
+        result.push(getField([record], 'label'));
     }
     return result;
 }
@@ -653,4 +681,5 @@ export default {
     getAllData,
     getNeighborhood,
     fuzzySearchLabel,
+    createConnectionPath
 }

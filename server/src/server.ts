@@ -227,10 +227,8 @@ app.get('/suggest/:query', async (req, res) => {
 app.post('/connectionPath', async (req, res) => {
     try {
         const body = req.body as ConnectionPath;
-
-        console.log("Received at server...")
-        console.log(body)
-
+        const result = await q.createConnectionPath(driver, body);
+        res.status(200).json(result)
 
     } catch (e) {
         console.error(e)
