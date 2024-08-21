@@ -143,7 +143,6 @@ app.post('/tasks', async (req, res) => {
 
     const FILE_PATH = './tasks.json'
 
-
     const taskData = req.body;
 
     // Read existing data, handle potential errors
@@ -157,7 +156,7 @@ app.post('/tasks', async (req, res) => {
     const parsedData = JSON.parse(existingData);
     parsedData.push(taskData); // Add new task to the array
 
-    const updatedData = JSON.stringify(parsedData, null, 2); // Stringify with indentation
+    const updatedData = JSON.stringify(parsedData, null, 4); // Stringify with indentation
 
     fs.writeFile(FILE_PATH, updatedData, {encoding: 'utf8'}, (err) => {
         if (err) {

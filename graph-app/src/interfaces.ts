@@ -16,6 +16,8 @@ export enum ClickType {
     EDGE,
 }
 
+
+
 export interface clickEvent {
     clickType: ClickType;
     id: string;

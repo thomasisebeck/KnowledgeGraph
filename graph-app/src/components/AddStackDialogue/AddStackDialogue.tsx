@@ -7,7 +7,6 @@ import Error from "../Error/Error";
 function AddStackDialogue({
     hideAddStackDialogue,
     isLoading,
-    errorMessage,
     addBlankCategory,
     tryCreateStack,
     categories,
@@ -17,7 +16,6 @@ function AddStackDialogue({
 }: {
     hideAddStackDialogue: () => void;
     isLoading: boolean;
-    errorMessage: string;
     categories: RequestBodyConnection[];
     addBlankCategory: () => void;
     tryCreateStack: () => void;
@@ -30,10 +28,6 @@ function AddStackDialogue({
             hideDialogue={hideAddStackDialogue}
             title={"Create Connection Stack"}
         >
-            {
-                // if there is an error (something is not filled out)
-                errorMessage != "" && Error(errorMessage)
-            }
 
             {/* base category with dropdown (passed down)*/}
             {/* show the custom categories the user has added */}

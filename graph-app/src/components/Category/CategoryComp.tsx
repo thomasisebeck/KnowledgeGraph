@@ -46,7 +46,7 @@ export default function CategoryComp({
             );
 
             //selected the empty category, so it won't be found
-            if (index == -1) {
+            if (index == BASE_CATEGORY_INDEX) {
                 //clear the base category if no option is selected
                 setBaseCategory({...baseCategory, nodeId: "", nodeName: ""});
             }
@@ -101,6 +101,8 @@ export default function CategoryComp({
                                 index={BASE_CATEGORY_INDEX}
                                 categories={categories}
                                 setCategories={setCategories}
+                                baseCategory={baseCategory}
+                                setBaseCategory={setBaseCategory}
                             >
                                 <input
                                     type={"text"}
@@ -158,6 +160,8 @@ export default function CategoryComp({
                                 category={c}
                                 categories={categories}
                                 setCategories={setCategories}
+                                baseCategory={baseCategory}
+                                setBaseCategory={setBaseCategory}
                             >
                                 <input
                                     type={"text"}

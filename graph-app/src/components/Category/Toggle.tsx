@@ -3,18 +3,20 @@ import {
     Direction,
     RequestBodyConnection,
 } from "../../../../shared/interfaces";
-import React, { ReactNode } from "react";
+import React, {ReactNode} from "react";
 import t from "./Toggle.module.scss";
-import { toggleCategory } from "./CategoryUtils";
+import {toggleCategory} from "./CategoryUtils";
 
 interface ToggleProps {
-    index: number;
-    category: RequestBodyConnection; // Assuming RequestBodyConnection is a defined type
-    children: ReactNode;
-    categories: RequestBodyConnection[];
+    index: number,
+    category: RequestBodyConnection,
+    children: ReactNode,
+    categories: RequestBodyConnection[],
     setCategories: React.Dispatch<
         React.SetStateAction<RequestBodyConnection[]>
-    >;
+    >,
+    baseCategory: RequestBodyConnection,
+    setBaseCategory: (value: React.SetStateAction<RequestBodyConnection>) => void
 }
 
 // function Toggle(index: number, category: RequestBodyConnection, toggleCategory: (index: number) => void,
@@ -25,6 +27,8 @@ function Toggle({
     children,
     categories,
     setCategories,
+    baseCategory,
+    setBaseCategory
 }: ToggleProps) {
     return (
         <div className={s.innerDiv}>
@@ -33,7 +37,7 @@ function Toggle({
                     <img
                         className={t.img}
                         onClick={() =>
-                            toggleCategory(index, categories, setCategories)
+                            toggleCategory(index, categories, setCategories, baseCategory, setBaseCategory)
                         }
                         src={"buttons/up-arrow.svg"}
                         alt={"toggle direction up"}
@@ -45,7 +49,7 @@ function Toggle({
                     <img
                         className={t.img}
                         onClick={() =>
-                            toggleCategory(index, categories, setCategories)
+                            toggleCategory(index, categories, setCategories, baseCategory, setBaseCategory)
                         }
                         src={"buttons/down-arrow.svg"}
                         alt={"toggle direction down"}
@@ -57,7 +61,7 @@ function Toggle({
                     <img
                         className={t.img}
                         onClick={() =>
-                            toggleCategory(index, categories, setCategories)
+                            toggleCategory(index, categories, setCategories, baseCategory, setBaseCategory)
                         }
                         src={"buttons/neutral.svg"}
                         alt={"toggle direction neutral"}

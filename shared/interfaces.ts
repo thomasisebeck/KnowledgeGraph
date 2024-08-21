@@ -1,3 +1,14 @@
+export interface Task {
+    question: string;
+    answer: string;
+    providedAnswer: string | null;
+    totalTime: number;
+    expandedNodesPerClick: number[];
+    targetNodeId: string;
+    clicksTillInNeighborhood: number;
+    totalClicks: number
+}
+
 export interface GraphNode {
     isExpanded?: boolean,
     label: string

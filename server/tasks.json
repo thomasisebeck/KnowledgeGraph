@@ -1,203 +1,65 @@
 [
   {
-    "question": "What is the approximate length of the Great Barrier Reef in kilometers?",
-    "answer": "2300",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 81566
-  },
-  {
-    "question": "What is the approximate length of the Great Barrier Reef in kilometers?",
-    "answer": "2300",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 12204
-  },
-  {
-    "question": "What is the approximate length of the Great Barrier Reef in kilometers?",
-    "answer": "2300",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 136200
-  },
-  {
-    "question": "How many times can a hummingbird's heart beat in one minute?",
-    "answer": "1200",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 4995
-  },
-  {
-    "question": "What is the second largest land mammal?",
-    "answer": "Rhinoceros",
-    "providedAnswer": "1200",
-    "timeTaken": 0,
-    "totalTime": 14490
-  },
-  {
-    "question": "What does essence define?",
-    "answer": "Essence defines the irreducible core nature of a thing.",
-    "providedAnswer": "The fundamental nature of a thing. Its irreducable core that defindes it's identity. ",
-    "totalTime": 50362,
-    "clicks": 0,
-    "clickedNodes": 3
-  },
-  {
-    "question": "What does essence define?",
-    "answer": "Essence defines the irreducible core nature of a thing.",
-    "providedAnswer": "Essence is the fundamental nature of a thing. ",
-    "totalTime": 39325,
-    "expandedNodesPerClick": [
-      5,
-      2,
-      1
-    ],
-    "precisionPerClick": [],
-    "recallPerClick": [],
-    "precisionsPerClick": []
-  },
-  {
     "question": "How does morality relate to behavior?",
     "answer": "Morality pertains to principles concerning the distinction between right and wrong behavior.",
-    "providedAnswer": "It is the distinction between good and bad behaviour",
-    "totalTime": 51356,
+    "providedAnswer": "nwq ",
+    "totalTime": 74324,
+    "expandedNodesPerClick": [],
+    "targetNodeId": "7a25822-ffe6-4b46-92fb-7e8690a1ba62",
+    "clicksTillInNeighborhood": 0,
+    "totalClicks": 0
+  },
+  {
+    "question": "What is the definition of consciousness?",
+    "answer": "Consciousness is the state of being aware of and responsive to one's surroundings.",
+    "providedAnswer": "new cn",
+    "totalTime": 56929,
     "expandedNodesPerClick": [
-      5,
-      2,
-      1,
-      2,
+      4,
       1
     ],
-    "precisionPerClick": [],
-    "recallPerClick": [],
-    "precisionsPerClick": []
+    "targetNodeId": "64b5d170-81e2-474a-9a4d-3bc664ba19c6",
+    "clicksTillInNeighborhood": 2,
+    "totalClicks": 2
   },
   {
     "question": "How is a collectivity formed?",
     "answer": "A collectivity is a group of individuals considered as a whole.",
-    "providedAnswer": "Collectivity referes to a group of individuals considered as a whole. ",
-    "totalTime": 154279,
-    "expandedNodesPerClick": [
-      5,
-      2,
-      1,
-      2,
-      1,
-      5,
-      2,
-      1,
-      4,
-      0,
-      2,
-      1,
-      1
-    ],
-    "precisionPerClick": [],
-    "recallPerClick": [],
-    "precisionsPerClick": []
-  },
-  {
-    "question": "How is knowledge acquired according to cognition?",
-    "answer": "Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.",
-    "providedAnswer": "Knowledge is understanding thorugh thought, experiences and the senses",
-    "totalTime": 281731,
-    "expandedNodesPerClick": [
-      5,
-      2,
-      1,
-      2,
-      1,
-      5,
-      2,
-      1,
-      4,
-      0,
-      2,
-      1,
-      1,
-      0,
-      4,
-      1,
-      0,
-      2,
-      1,
-      0,
-      0,
-      5,
-      1
-    ],
-    "precisionPerClick": [],
-    "recallPerClick": []
-  },
-  {
-    "question": "What does essence define?",
-    "answer": "Essence defines the irreducible core nature of a thing.",
     "providedAnswer": "hi",
-    "totalTime": 3572,
+    "totalTime": 19342,
     "expandedNodesPerClick": [],
-    "precisionPerClick": [],
-    "recallPerClick": []
+    "targetNodeId": "5350160c-9686-4ba2-bfd5-a95a4ed86da2",
+    "clicksTillInNeighborhood": 0,
+    "totalClicks": 0
   },
   {
-    "question": "How does morality relate to behavior?",
-    "answer": "Morality pertains to principles concerning the distinction between right and wrong behavior.",
-    "providedAnswer": "hih",
-    "totalTime": 10780,
+    "question": "How is information exchanged?",
+    "answer": "Communication is the imparting or exchanging of information by speaking, writing, or signaling.",
+    "providedAnswer": "hi",
+    "totalTime": 2984,
     "expandedNodesPerClick": [],
-    "precisionPerClick": [],
-    "recallPerClick": []
-  },
-  {
-    "question": "How is a collectivity formed?",
-    "answer": "A collectivity is a group of individuals considered as a whole.",
-    "providedAnswer": "hih",
-    "totalTime": 66636,
-    "expandedNodesPerClick": [],
-    "precisionPerClick": [],
-    "recallPerClick": []
+    "targetNodeId": "22c49e8f-2bdc-45a7-9e14-52bc2adbd990",
+    "clicksTillInNeighborhood": 0,
+    "totalClicks": 0
   },
   {
     "question": "How is knowledge acquired according to cognition?",
     "answer": "Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.",
-    "providedAnswer": "through though, experience and the senses",
-    "totalTime": 4537347,
-    "expandedNodesPerClick": [
-      5,
-      2
-    ]
+    "providedAnswer": "hi",
+    "totalTime": 28962,
+    "expandedNodesPerClick": [],
+    "targetNodeId": "31fa1c4d-be98-41df-89d0-de2f7fce6aa5",
+    "clicksTillInNeighborhood": 0,
+    "totalClicks": 0
   },
   {
-    "question": "How is a pattern defined in terms of characteristics or events?",
-    "answer": "A pattern is a recurring characteristic or event.",
-    "providedAnswer": "A recurring characteristic or event. ",
-    "totalTime": 140434,
-    "expandedNodesPerClick": [
-      5,
-      2,
-      2,
-      1
-    ]
-  },
-  {
-    "question": "What does essence define?",
-    "answer": "Essence defines the irreducible core nature of a thing.",
-    "providedAnswer": "The fundamental nature of a thing",
-    "totalTime": 23341,
-    "expandedNodesPerClick": [
-      5,
-      1
-    ]
-  },
-  {
-    "question": "How does morality relate to behavior?",
-    "answer": "Morality pertains to principles concerning the distinction between right and wrong behavior.",
-    "providedAnswer": "Morality is good or bad behaviour",
-    "totalTime": 48929,
-    "expandedNodesPerClick": [
-      5,
-      1,
-      2,
-      1
-    ]
+    "question": "How are goods and services exchanged in an economy?",
+    "answer": "An economy is a system of production and exchange of goods and services.",
+    "providedAnswer": "hi",
+    "totalTime": 10396,
+    "expandedNodesPerClick": [],
+    "targetNodeId": "8f18613a-d92e-409e-ac0d-95a62582861d",
+    "clicksTillInNeighborhood": 0,
+    "totalClicks": 0
   }
 ]
