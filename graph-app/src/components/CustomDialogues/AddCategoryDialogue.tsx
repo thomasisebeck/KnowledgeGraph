@@ -50,6 +50,7 @@ const AddCategoryDialogue = ({
 }: AddCategoryDialogueProps) => {
     const [startNodeName, setStartNodeName] = useState<string>("");
     const [endNodeName, setEndNodeName] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(false)
 
     //gets the start and end nodes of the connection
     const getNodes = async () => {
@@ -113,6 +114,8 @@ const AddCategoryDialogue = ({
     //send the api request
     const createPath = async () => {
 
+        setIsLoading(true)
+
         const nodes: string[] = categories.map(c => c.nodeName)
         let connections: ConnectionPathConnection[] = [];
 
@@ -145,13 +148,16 @@ const AddCategoryDialogue = ({
             body: JSON.stringify(body)
         }).then(async res => {
 
-            if (res.ok) {
-                const result = await res.json() as CreateStackReturnBody;
-                addStackToFrontend(result);
+            hideDialogue()
+
+            if (!res.ok) {
+                setErrorMessage(res.statusText);
                 return;
             }
 
-            setErrorMessage(res.statusText)
+            const result = await res.json() as CreateStackReturnBody;
+            setIsLoading(false)
+            addStackToFrontend(result);
         })
 
     };
@@ -216,7 +222,12 @@ const AddCategoryDialogue = ({
                 <div>{endNodeName.replaceAll("_", " ")}</div>
             </Node>
             <button onClick={addBlankCategory}>Add Category</button>
-            <button onClick={createPath}>Create Path</button>
+
+            {isLoading ?
+                <button className={"buttonDisabled"}>Loading</button>
+                :
+                <button onClick={createPath}>Create Path</button>
+            }
         </Dialogue>
     );
 };
