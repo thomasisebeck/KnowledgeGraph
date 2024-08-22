@@ -22,7 +22,6 @@ function Tasks({
     const [taskNumber, setTaskNumber] = useState<number | null>(null);
     const [text, setText] = useState("");
     const [currQuestion, setCurrQuestion] = useState<string | null>("");
-    const [complete, setComplete] = useState<boolean>(false);
 
     const postTaskToServer = async (time: number) => {
 
@@ -54,13 +53,8 @@ function Tasks({
     };
 
     const nextTask = async () => {
-        if (startTime == null || taskNumber == null) {
-            setErrorMessage("task number or start time is null")
-            return;
-        }
-
         //calculate the end time
-        const totalTime = Date.now() - startTime;
+        const totalTime = Date.now() - startTime!;
 
         //don't await posting, just move on
         await postTaskToServer(totalTime);
@@ -68,15 +62,8 @@ function Tasks({
         //set the start time for the next task
         setStartTime(Date.now());
 
-        const newTaskNumber = taskNumber + 1;
+        let newTaskNumber = taskNumber! + 1;
 
-        //reached the end of the task list, end the session
-        if (newTaskNumber > taskList.length - 1) {
-            setComplete(true)
-            return;
-        }
-
-        //update the task to the new task number
         setTaskNumber(newTaskNumber);
         setStatObject({...taskList[newTaskNumber]})
         setCurrQuestion(taskList[newTaskNumber].question)
@@ -85,7 +72,7 @@ function Tasks({
     return (
         <div className={s.container}>
             {/*All tasks are complete*/}
-            {complete ? <div>Tasks complete</div>
+            {taskNumber && taskNumber > taskList.length - 1 ? <div>Tasks complete</div>
                 :
                 // working on a task
                 <React.Fragment>

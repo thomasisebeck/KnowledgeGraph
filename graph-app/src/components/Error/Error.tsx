@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import s from "./Error.module.scss";
-import { ERROR_MESSAGE_TIMEOUT } from "../../../../shared/variables";
+import {ERROR_MESSAGE_TIMEOUT} from "../../../../shared/variables";
 
-function Error(errorMessage: string) {
+function Error({errorMessage} : {errorMessage: string}) {
     const [show, setShow] = useState(true);
 
     useEffect(() => {
@@ -13,12 +13,13 @@ function Error(errorMessage: string) {
         return () => clearTimeout(timer);
     }, [errorMessage]);
 
-    if (!show) return null;
-
     return (
-        <div className={s.error}>
-            <div className={s.errorInner}>{errorMessage}</div>
-        </div>
+        show ?
+            <div className={s.error}>
+                <div className={s.errorInner}>{errorMessage}</div>
+            </div>
+            :
+            <div></div>
     );
 }
 

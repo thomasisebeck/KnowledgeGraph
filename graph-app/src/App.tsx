@@ -87,6 +87,10 @@ function App() {
         totalClicks: 0
     })
 
+    const updateStatObject = (newObj: Task) => {
+        setStatObject({...newObj})
+    }
+
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
         console.log("expanding node...")
@@ -722,7 +726,6 @@ function App() {
     return (
         <div className={s.Container}>
 
-            {errorMessage != "" && Error(errorMessage)}
 
             {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
             {nodes.length > 0 && (
@@ -864,6 +867,8 @@ function App() {
                             customPadding="45px"
                 />
             </div>
+
+            {errorMessage != "" && <Error errorMessage={errorMessage}/> }
         </div>
     );
 }

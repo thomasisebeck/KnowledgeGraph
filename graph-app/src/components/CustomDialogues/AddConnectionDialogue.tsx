@@ -99,7 +99,7 @@ function AddConnectionDialogue({
         <React.Fragment>
             {
                 // if there is an error (something is not filled out)
-                errorMessage != "" && Error(errorMessage)
+                errorMessage != "" && <Error errorMessage={errorMessage}/>
             }
 
             <Dialogue hideDialogue={hideAddBox} title={"Create Connection"}>
