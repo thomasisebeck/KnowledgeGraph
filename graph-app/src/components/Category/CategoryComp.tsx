@@ -1,14 +1,11 @@
-import React, { SetStateAction } from "react";
-import { UpdateType } from "../AddStackDialogue/DialogueUtils";
-import {
-    Direction,
-    FrontendBaseCateogries,
-    RequestBodyConnection,
-} from "../../../../shared/interfaces";
+import React, {SetStateAction} from "react";
+import {UpdateType} from "../AddStackDialogue/DialogueUtils";
+import {Direction, FrontendBaseCateogries, RequestBodyConnection,} from "../../../../shared/interfaces";
 import s from "../AddStackDialogue/AddStackDialogue.module.scss";
 import Node from "../Node/Node";
 import Toggle from "./Toggle";
 import t from "./Toggle.module.scss";
+import SuggestiveInput from "../SuggestiveInput/SuggestiveInput";
 
 interface Props {
     index: number;
@@ -49,9 +46,9 @@ export default function CategoryComp({
             );
 
             //selected the empty category, so it won't be found
-            if (index == -1) {
+            if (index == BASE_CATEGORY_INDEX) {
                 //clear the base category if no option is selected
-                setBaseCategory({ ...baseCategory, nodeId: "", nodeName: "" });
+                setBaseCategory({...baseCategory, nodeId: "", nodeName: ""});
             }
             //just set the name and nodeId when selecting the base category
             else
@@ -104,6 +101,8 @@ export default function CategoryComp({
                                 index={BASE_CATEGORY_INDEX}
                                 categories={categories}
                                 setCategories={setCategories}
+                                baseCategory={baseCategory}
+                                setBaseCategory={setBaseCategory}
                             >
                                 <input
                                     type={"text"}
@@ -134,6 +133,7 @@ export default function CategoryComp({
                         <div className={s.category}>
                             {showCancel && (
                                 <img
+                                    alt={"cancel"}
                                     src={"buttons/cancel.svg"}
                                     className={[t.img, t.cancel].join(" ")}
                                     onClick={onCancelClick}
@@ -141,15 +141,14 @@ export default function CategoryComp({
                             )}
 
                             <Node>
-                                <input
-                                    type={"text"}
-                                    onBlur={(e) =>
+                                <SuggestiveInput
+                                    onBlur={(val: string) => {
                                         updateCategory(
                                             index,
                                             UpdateType.NODE_NAME,
-                                            e.target.value,
+                                            val,
                                         )
-                                    }
+                                    }}
                                     placeholder={"new category name"}
                                 />
                             </Node>
@@ -162,6 +161,8 @@ export default function CategoryComp({
                                 category={c}
                                 categories={categories}
                                 setCategories={setCategories}
+                                baseCategory={baseCategory}
+                                setBaseCategory={setBaseCategory}
                             >
                                 <input
                                     type={"text"}

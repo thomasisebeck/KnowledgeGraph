@@ -1,15 +1,26 @@
+export interface Task {
+    question: string;
+    answer: string;
+    providedAnswer: string | null;
+    totalTime: number;
+    expandedNodesPerClick: number[];
+    targetNodeId: string;
+    clicksTillInNeighborhood: number;
+    totalClicks: number
+}
+
 export interface GraphNode {
-    label: string,
+    isExpanded?: boolean,
+    label: string
     nodeId: string
-    snippet?: string
     nodeType: string
-    isExpanded?: boolean
+    snippet?: string
 }
 
 export interface Category {
     categoryName: string,
-    connectionName: string,
-    connectionDirection: Direction
+    connectionDirection: Direction,
+    connectionName: string
 }
 
 export interface Neo4jNode {
@@ -47,6 +58,18 @@ export interface RequestBodyConnection {
     connectionName: string,
     direction: Direction,
     nodeId?: string
+}
+
+export interface ConnectionPathConnection {
+    direction: Direction,
+    label: string
+}
+
+export interface ConnectionPath {
+    firstNodeId: string
+    nodes: string[]
+    connections: ConnectionPathConnection[] 
+    secondNodeId: string
 }
 
 export interface RequestBody {
@@ -101,6 +124,7 @@ export interface GraphType {
     relationships: NodeRelationship[] | undefined,
     setSelectedNodeId: (nodeId: string | null) => void
     setSelectedEdgeId: (edgeId: string | null) => void
+    rerender: boolean
 }
 
 export interface HoverImageInterface {
@@ -115,3 +139,4 @@ export const ROOT = "ROOT";
 export const BOTH = "INFO | CLASS";
 export const INFO = "INFO";
 export const CLASS = "CLASS";
+export const INDEX_NAME = 'nodesIndex'

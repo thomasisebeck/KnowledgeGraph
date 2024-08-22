@@ -6,7 +6,7 @@
     "test": "jest",
     "start": "ts-node src/server.ts",
     "dev": "nodemon --watch 'src/**' --exec ts-node src/server.ts",
-    "kill": "npx kill-port 5000"
+    "kill": "npx kill-port 3001"
   },
   "author": "",
   "license": "ISC",

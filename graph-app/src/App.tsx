@@ -8,7 +8,8 @@ import {
     NodeRelationship,
     RequestBody,
     RequestBodyConnection,
-    UpvoteResult,
+    Task,
+    UpvoteResult
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
@@ -22,11 +23,14 @@ import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogu
 import CategoryComp from "./components/Category/CategoryComp";
 import {UpdateType} from "./components/AddStackDialogue/DialogueUtils";
 import {HoverImage} from "./components/HoverImage/HoverImage";
+import Error from "./components/Error/Error";
 
 function App() {
-    //graph stuff
+
+    //graph components
     const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
+    const [mustReset, setMustReset] = useState(true)
 
     //creating a stack
     const [stackLoading, setStackLoading] = useState<boolean>(false);
@@ -45,23 +49,12 @@ function App() {
         firstNodeId: "",
     });
 
-    //stats
-    const [expandedNodesPerClick, setExpandedNodesPerClick] = useState<
-        number[]
-    >([]);
-    const [precisionPerClick, sePrecisionPerClick] = useState<number[]>([]);
-    const [recallPerClick, setRecallPerClick] = useState<number[]>([]);
-
     //loading and showing dialogues
-    const [showGraph, setShowGraph] = useState(true);
-    const [showAddStackDialogue, setShowAddStackDialogue] =
-        useState<boolean>(false);
+    const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState("");
 
     //show dropdown
-    const [baseCategories, setBaseCategories] = useState<
-        FrontendBaseCateogries[]
-    >([]);
+    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([]);
 
     //adding categories between nodes
     const [categories, setCategories] = useState<RequestBodyConnection[]>([
@@ -82,11 +75,26 @@ function App() {
         nodeName: "",
     });
 
+    //capture statistics
+    const [statObject, setStatObject] = useState<Task>({
+        expandedNodesPerClick: [],
+        clicksTillInNeighborhood: 0,
+        targetNodeId: "",
+        question: "",
+        answer: "",
+        providedAnswer: "",
+        totalTime: 0,
+        totalClicks: 0
+    })
+
+    const updateStatObject = (newObj: Task) => {
+        setStatObject({...newObj})
+    }
+
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
         console.log("expanding node...")
         console.log(newNode)
-
 
         //expand the snippet of an info node
         if (newNode.snippet) {
@@ -140,14 +148,22 @@ function App() {
 
             const neighborhood = await fetch(
                 `${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`,
-            ).then(async (result) => {
-                return await result.json();
+            ).then(async (res) => {
+
+                if (!res.ok) {
+                    setErrorMessage(res.statusText);
+                    return;
+                }
+
+                return await res.json();
             });
 
             //use the copy to keep the white node
             const newNodes = nodesCopy;
 
             let currExpandedNodes = 0;
+
+            let hasFound = false;
 
             for (const node of neighborhood.nodes) {
                 const index = newNodes.findIndex(
@@ -157,6 +173,18 @@ function App() {
                     //add each node not found in the current nodes
                     newNodes.push(node);
                     currExpandedNodes++;
+
+                    //check if the target node is now in the neighborhood
+                    //check if it hasn't been set yet
+                    console.log("node id: ", node.nodeId)
+                    console.log("target id: ", statObject.targetNodeId)
+                    console.log("stat object: ", statObject.clicksTillInNeighborhood)
+                    console.log("setting to: ", statObject.totalClicks)
+
+                    if (node.nodeId == statObject.targetNodeId && statObject.clicksTillInNeighborhood == 0) {
+                        console.warn("set current clicks to in neighborhood")
+                        hasFound = true;
+                    }
                 }
             }
 
@@ -169,7 +197,6 @@ function App() {
             //set the nodes, taking into account the expanded node
             setNodes(newNodes.map(n => {
                 if (n.nodeId == newNode.nodeId) {
-                    console.log("FOUND NODE")
                     return {
                         ...n,
                         isExpanded: true
@@ -179,10 +206,21 @@ function App() {
             }));
 
             setRelationships([...newRels]);
-            setExpandedNodesPerClick([
-                ...expandedNodesPerClick,
-                currExpandedNodes,
-            ]);
+
+            //add the current expanded nodes to the object
+            if (hasFound)
+                setStatObject({
+                    ...statObject,
+                    totalClicks: statObject.totalClicks + 1,
+                    clicksTillInNeighborhood: statObject.totalClicks + 1,
+                    expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
+                })
+            else
+                setStatObject({
+                    ...statObject,
+                    totalClicks: statObject.totalClicks + 1,
+                    expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
+                })
         }
     };
 
@@ -190,10 +228,13 @@ function App() {
     function getData() {
         fetch(`${HOST}/initialData`)
             .then(async (res) => {
-                const data = await res.json();
-                console.log("FRONTEND INIT DATA");
-                console.log(data);
 
+                if (!res.ok) {
+                    console.error(res.status)
+                    return;
+                }
+
+                const data = await res.json();
                 const nodes = data.topicNodes as GraphNode[];
 
                 //set the categories for the dropdown menu
@@ -219,7 +260,11 @@ function App() {
                     }),
                 );
 
-                console.log("NODES SET");
+                //after the graph has settled, allow the layout to be reset again
+                setTimeout(() => {
+                    setMustReset(false)
+                }, 10)
+
             })
             .catch((e) => {
                 console.error(e);
@@ -356,17 +401,14 @@ function App() {
         ]);
     }
 
-    function updateCategory(
-        index: number,
-        updateType: UpdateType,
-        value: string | Direction,
-    ) {
+    //update one of the categories during adding a stack or path
+    function updateCategory(index: number, updateType: UpdateType, value: string | Direction) {
         if (index == BASE_CATEGORY_INDEX) {
             //update base category
-            if (!setBaseCategory)
-                throw "check assigment, base category is not found!";
+            if (!setBaseCategory) {
+                setErrorMessage("check assignment, base category not found")
+            }
 
-            console.log("UPDATING BASE CATEGORY");
             switch (updateType) {
                 case UpdateType.CONNECTION_DIRECTION:
                     setBaseCategory({
@@ -391,7 +433,6 @@ function App() {
             return;
         }
 
-        console.log("UPDATING OTHER CATEGORY");
         switch (updateType) {
             case UpdateType.CONNECTION_DIRECTION:
                 setCategories(
@@ -427,11 +468,8 @@ function App() {
 
     //conditionally add a node if it doesn't exist
     function updateNode(toAdd: GraphNode) {
-        console.log("TO ADD");
-        console.log(toAdd);
-
         if (toAdd == null) {
-            console.error("Node is null");
+            setErrorMessage("Node is null")
             return;
         }
 
@@ -492,6 +530,12 @@ function App() {
                 relId: edgeId,
             }),
         }).then(async (res) => {
+
+            if (!res.ok) {
+                setErrorMessage(res.statusText);
+                return;
+            }
+
             const result = await res.json();
             const relationship = result as UpvoteResult;
 
@@ -542,25 +586,29 @@ function App() {
         });
     };
 
+    //show the dialogue to add a category
     const addCategory = () => {
         setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
     };
 
     //reset the nodes and edges for the next task
     const resetGraph = () => {
-        setShowGraph(false);
         setNodes((prevState) =>
             prevState.map(n => {
                 return {
-                ...n,
+                    ...n,
                     isExpanded: false
-            }}).filter(n => n.nodeType == "ROOT")
+                }
+            }).filter(n => n.nodeType == "ROOT")
         )
 
-
         setRelationships([]);
-        setShowGraph(true);
-        setExpandedNodesPerClick([])
+
+        //reset the positions of the nodes
+        setMustReset(true)
+        setTimeout(() => {
+            setMustReset(false)
+        }, 10)
 
     };
 
@@ -603,28 +651,28 @@ function App() {
         //all info filled out....
         //send a request
         //print details
-        (() => {
-            console.log(" ----------------------- ");
-            console.log(" > Creating stack with the following items: < ");
-            console.log("base");
+        /* (() => {
+             console.log(" ----------------------- ");
+             console.log(" > Creating stack with the following items: < ");
+             console.log("base");
 
-            console.log("nodeName: ", baseCategory.nodeName);
-            console.log("dir: ", baseCategory.direction);
-            console.log("conn name: ", baseCategory.connectionName);
-            console.log("node id: ", baseCategory.nodeId);
-            console.log(" > sub categories < ");
+             console.log("nodeName: ", baseCategory.nodeName);
+             console.log("dir: ", baseCategory.direction);
+             console.log("conn name: ", baseCategory.connectionName);
+             console.log("node id: ", baseCategory.nodeId);
+             console.log(" > sub categories < ");
 
-            for (const c of categories) {
-                console.log("name: ", c.nodeName);
-                console.log("dir: ", c.direction);
-                console.log("conn name: ", c.connectionName);
-            }
+             for (const c of categories) {
+                 console.log("name: ", c.nodeName);
+                 console.log("dir: ", c.direction);
+                 console.log("conn name: ", c.connectionName);
+             }
 
-            console.log(" > info < ");
-            console.log(heading);
-            console.log(info);
-            console.log(" ----------------------- ");
-        })();
+             console.log(" > info < ");
+             console.log(heading);
+             console.log(info);
+             console.log(" ----------------------- ");
+         })(); */
 
         //get the connections from the state
         const addedConnections: RequestBodyConnection[] = categories.map(
@@ -661,31 +709,32 @@ function App() {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(body),
-        }).then(async (result) => {
-            console.log("App.ts AFTER CREATING STACK");
+        }).then(async (res) => {
 
-            if (result.status === 200) {
-                const body = (await result.json()) as CreateStackReturnBody;
-                addStackToFrontend(body);
-            } else {
-                console.error("Cannot add stack to frontend");
-                console.error(result.status);
-                console.error(result);
+            if (!res.ok) {
+                setErrorMessage(res.statusText);
+                return;
             }
 
+            const body = (await res.json()) as CreateStackReturnBody;
+            addStackToFrontend(body);
             setStackLoading(false);
+            setShowAddStackDialogue(false);
         });
     }
 
     return (
         <div className={s.Container}>
+
+
             {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
-            {nodes.length > 0 && showGraph && (
+            {nodes.length > 0 && (
                 <MyNetwork
                     nodes={nodes}
                     relationships={relationships}
                     setSelectedNodeId={setSelectedNodeId}
                     setSelectedEdgeId={setSelectedEdgeId}
+                    rerender={mustReset}
                 />
             )}
 
@@ -744,6 +793,8 @@ function App() {
                     categories={categories}
                     setCategories={setCategories}
                     updateCategory={updateCategory}
+                    addStackToFrontend={addStackToFrontend}
+                    setErrorMessage={setErrorMessage}
                 />
             )}
 
@@ -752,7 +803,6 @@ function App() {
                 <AddStackDialogue
                     hideAddStackDialogue={() => setShowAddStackDialogue(false)}
                     isLoading={stackLoading}
-                    errorMessage={errorMessage}
                     categories={categories}
                     addBlankCategory={addBlankCategory}
                     tryCreateStack={tryCreateStack}
@@ -798,6 +848,7 @@ function App() {
                 </AddStackDialogue>
             )}
 
+
             {/*buttons to upvote and downvote relationships*/}
             {selectedEdgeId != null &&
                 upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)}
@@ -805,9 +856,9 @@ function App() {
             {/*task list for the user to complete*/}
             <Tasks
                 resetGraph={resetGraph}
-                expandedNodesPerClick={expandedNodesPerClick}
-                precisionsPerClick={precisionPerClick}
-                recallPerClick={recallPerClick}
+                statObject={statObject}
+                setStatObject={setStatObject}
+                setErrorMessage={setErrorMessage}
             />
 
             <div className={s.reset}>
@@ -816,6 +867,8 @@ function App() {
                             customPadding="45px"
                 />
             </div>
+
+            {errorMessage != "" && <Error errorMessage={errorMessage}/> }
         </div>
     );
 }

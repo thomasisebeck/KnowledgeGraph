@@ -5,11 +5,13 @@ import {executeGenericQuery, getField, toSnakeCase} from "../utils";
 import {
     BOTH,
     CLASS,
+    ConnectionPath,
     CreateStackReturnBody,
     Direction,
+    GraphNode,
+    INDEX_NAME,
     INFO,
     Neo4jNode,
-    GraphNode,
     NodeRelationship,
     RequestBody,
     ROOT,
@@ -60,7 +62,6 @@ const findOrCreateInformationNode = async (driver: Driver, label: string, snippe
 }
 
 
-
 const createRootNode = async (driver: Driver, label: string): Promise<GraphNode> => {
     const query =
         `MERGE (n:${ROOT} {label: $label}) 
@@ -108,20 +109,17 @@ const removeNode = async (nodeId: string, driver: Driver) => {
 
 const createTopicNodes = async (driver: Driver) => {
 
+    //create the index when you make the topic nodes
+    const createIndexQuery = `CREATE FULLTEXT INDEX ${INDEX_NAME} IF NOT EXISTS FOR (n:CLASS) ON EACH [n.label]`
+    await executeGenericQuery(driver, createIndexQuery, {})
+
     return await Promise.all([
-        createRootNode(driver, "Existence"),
-        createRootNode(driver, "Ethics"),
-        createRootNode(driver, "Society"),
-        createRootNode(driver, "Nature"),
-        createRootNode(driver, "Technology"),
-        createRootNode(driver, "Language"),
-        createRootNode(driver, "History"),
-        createRootNode(driver, "Physics"),
-        createRootNode(driver, "Metaphysics"),
-        createRootNode(driver, "Arts"),
-        createRootNode(driver, "Belief"),
-        createRootNode(driver, "Religion"),
-        createRootNode(driver, "Mathematics"),
+        createRootNode(driver, "Existence"), //being, reality, possibility
+        createRootNode(driver, "Ethics"), //morality, right vs wrong, conscience
+        createRootNode(driver, "Logic"), //reasoning, deduction, mathematics, truth
+        createRootNode(driver, "Culture"), //customs, traditions, art, literature
+        createRootNode(driver, "Nature"), //physical phenomenons, environment
+        createRootNode(driver, "Belief"), //faith, religion, spirituality
     ]);
 
 }
@@ -316,10 +314,12 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
             let res;
             if (numRelationshipsDeleted === 1) {
                 console.log("adding single sided connection")
-                res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type, Direction.AWAY);
+                res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type,
+                    Direction.AWAY);
             } else {
                 console.log("adding double sided connection")
-                res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type, Direction.NEUTRAL);
+                res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type,
+                    Direction.NEUTRAL);
             }
 
             console.dir(r, {depth: null})
@@ -406,7 +406,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
         nodeIdTo: nodeIdTo
     }))
 
-    const myRelationships = await Promise.all([...queryFunctionCalls])
+    const myRelationships = await Promise.all(queryFunctionCalls)
     const r = getField(myRelationships[0].records, "r");
 
     return {
@@ -421,7 +421,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 }
 
 const tryPushSegment = (segment: Segment, array: Segment[]): Segment[] => {
-   const index = array.findIndex(seg => seg.rel.properties.relId == segment.rel.properties.relId)
+    const index = array.findIndex(seg => seg.rel.properties.relId == segment.rel.properties.relId)
     if (index !== -1) //already there
         return array;
 
@@ -443,14 +443,14 @@ const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelat
     const res: NodeRelationship[] = [];
 
     for (const s of toRetSegments) {
-       res.push({
-           relId: s.rel.properties.relId,
-           votes: s.rel.properties.votes,
-           direction: s.isDoubleSided ? Direction.NEUTRAL : Direction.AWAY,
-           type: s.rel.type,
-           from: s.startNodeId,
-           to: s.endNodeId
-       })
+        res.push({
+            relId: s.rel.properties.relId,
+            votes: s.rel.properties.votes,
+            direction: s.isDoubleSided ? Direction.NEUTRAL : Direction.AWAY,
+            type: s.rel.type,
+            from: s.startNodeId,
+            to: s.endNodeId
+        })
     }
 
     return res;
@@ -486,8 +486,8 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
     const segments = getField(resultRelationships.records, 'segments') as Segment[];
     // console.dir(segments, {depth: null})
 
-    let toRetSegments:Segment[] = [];
-    let toRetNodes:Node[] = [];
+    let toRetSegments: Segment[] = [];
+    let toRetNodes: Node[] = [];
 
     for (const s of segments) {
         toRetSegments = tryPushSegment(s, toRetSegments);
@@ -518,63 +518,87 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
 
 }
 
+const createConnectionPath = async (driver: Driver, body: ConnectionPath): Promise<CreateStackReturnBody> => {
+
+    console.log("CREATE CONNECTION PATH");
+
+    const nodeFunctionCalls = body.nodes.map(async nodeName => {
+        return await findOrCreateClassificationNode(driver, nodeName);
+    })
+
+    const myNodes = await Promise.all([...nodeFunctionCalls]);
+
+    let index = 0;
+
+    console.log("NUM NODES")
+    console.log(myNodes.length)
+    console.log("NUM CONN")
+    console.log(body.connections.length)
+
+    const relFunctionCalls = body.connections.map(async (conn, index) => {
+        let fromNodeId;
+
+        if (index == 0)
+            fromNodeId = body.firstNodeId;
+        else
+            fromNodeId = myNodes[index - 1].nodeId;
+
+        let toNodeId;
+        if (index == body.connections.length - 1)
+            toNodeId = body.secondNodeId
+        else
+            toNodeId = myNodes[index].nodeId;
+
+        index++;
+        return await findOrCreateRelationship(driver, fromNodeId, toNodeId, conn.label, conn.direction);
+    })
+
+    const myRels = await Promise.all([...relFunctionCalls]);
+
+    return {
+        nodes: myNodes,
+        relationships: myRels
+    }
+
+
+}
+
+
+
 const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
-
     console.log("create stack...")
-    console.dir(body, {depth: null});
 
-    console.log("pushing functions")
     //stack node function calls
-    const nodeFunctionCalls = body.connections.map(((conn, index) => {
-        return async () => {
-            if (index == 0) { //root
-                const rootNode = await getNodeById(driver, body.rootNodeId) as Neo4jNode;
-                console.log("ROOT")
-                console.log(rootNode)
-                return {
-                    nodeType: ROOT,
-                    nodeId: rootNode.properties.nodeId,
-                    label: rootNode.labels[0]
-                }
+    let nodeFunctionCalls = body.connections.map(async (conn, index) => {
+        if (index == 0) { //root
+            const rootNode = await getNodeById(driver, body.rootNodeId) as Neo4jNode;
+            return {
+                nodeType: ROOT,
+                nodeId: rootNode.properties.nodeId,
+                label: rootNode.labels[0]
             }
-            return findOrCreateClassificationNode(driver, conn.nodeName)
         }
-    }));
+        return await findOrCreateClassificationNode(driver, conn.nodeName);
+    });
 
-    nodeFunctionCalls.push(
-        async () => {
-            return findOrCreateInformationNode(driver, body.infoNode.label, body.infoNode.snippet)
-        }
-    )
-
-    console.log("calling...")
-
-    console.dir("CALLS")
-    console.dir(nodeFunctionCalls, {depth: null})
+    nodeFunctionCalls.push(findOrCreateInformationNode(driver, body.infoNode.label, body.infoNode.snippet))
 
     //create all nodes
-    const myNodes = await Promise.all(nodeFunctionCalls.map((call) => call()))
+    const myNodes = await Promise.all(nodeFunctionCalls)
 
-    console.log("NODES")
-    console.log(myNodes)
 
     //stack connection function calls then fire to create connections
-    const relFunctionCalls = body.connections.map((conn, index) =>
-        async () => {
-            console.log("MY NODE", myNodes[index])
-            console.log("+ 1: ", myNodes[index + 1].nodeId)
-            return findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId, conn.connectionName, conn.direction)
-        }
-    );
-    const myRelationships = await Promise.all(relFunctionCalls.map((call) => call()))
+    const relFunctionCalls = body.connections.map(async (conn, index) => {
+        return findOrCreateRelationship(driver, myNodes[index].nodeId, myNodes[index + 1].nodeId,
+            conn.connectionName, conn.direction)
+    });
+    const myRelationships = await Promise.all(relFunctionCalls)
 
     //stack upvote function calls then fire to upvote all relationships
-    const upvoteRelFunctionCalls = myRelationships.map((conn) =>
-        async () => {
-            return upVoteRelationship(driver, conn.relId, true)
-        }
-    )
-    const upVotedRelationshipsCalls = await Promise.all(upvoteRelFunctionCalls.map((call) => call()))
+    const upvoteRelFunctionCalls = myRelationships.map((conn) => {
+        return upVoteRelationship(driver, conn.relId, true)
+    })
+    const upVotedRelationshipsCalls = await Promise.all(upvoteRelFunctionCalls)
 
     const upVotedRelationships: NodeRelationship[] = upVotedRelationshipsCalls.map((conn, index) => {
         //only thing that needs to change is the votes
@@ -588,22 +612,17 @@ const createStack = async (driver: Driver, body: RequestBody): Promise<CreateSta
         }
     })
 
-    console.log("queries.ts createStack AFTER CREATION....")
-    console.dir({
-        nodes: myNodes,
-        relationships: myRelationships
-    }, {depth: null})
-
     return {
         nodes: myNodes,
         relationships: upVotedRelationships
     }
 }
-
 //----------------------------- DOES EXIST FUNCTIONS -----------------------------//
 
 const relationshipExistsBetweenNodes = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, relationshipLabel: string): Promise<boolean> => {
-    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${toSnakeCase(relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${toSnakeCase(relationshipLabel)}]-(n2))`;
+    const query = `MATCH (n1 {nodeId: '${nodeIdFrom}'})-[:${toSnakeCase(
+        relationshipLabel)}]-(n2 {nodeId: '${nodeIdTo}'}) RETURN EXISTS((n1)-[:${toSnakeCase(
+        relationshipLabel)}]-(n2))`;
     const {records} = await executeGenericQuery(driver, query, {});
 
     if (records.length == 0)
@@ -627,6 +646,27 @@ const getRelationshipById = async (driver: Driver, relId: string) => {
     return records.at(0)?.get("r")
 }
 
+/*
+CALL db.index.fulltext.queryNodes("movieNamesIndex", "title:matrix")
+YIELD node, score
+RETURN node.title as title, score
+ */
+const fuzzySearchLabel = async (driver: Driver, searchQuery: string) => {
+    const query =
+        `CALL db.index.fulltext.queryNodes("${INDEX_NAME}", "label:*${searchQuery}*")
+        YIELD node, score
+        RETURN node.label AS label, score
+        LIMIT 10`
+
+    const {records, summary} = await executeGenericQuery(driver, query, {})
+
+    const result = [];
+    for (const record of records) {
+        result.push(getField([record], 'label'));
+    }
+    return result;
+}
+
 export default {
     findOrCreateInformationNode,
     removeNode,
@@ -639,5 +679,7 @@ export default {
     createTopicNodes,
     upVoteRelationship,
     getAllData,
-    getNeighborhood
+    getNeighborhood,
+    fuzzySearchLabel,
+    createConnectionPath
 }
