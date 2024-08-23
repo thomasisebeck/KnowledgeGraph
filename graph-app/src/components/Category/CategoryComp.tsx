@@ -8,22 +8,23 @@ import t from "./Toggle.module.scss";
 import SuggestiveInput from "../SuggestiveInput/SuggestiveInput";
 
 interface Props {
-    index: number;
-    c: RequestBodyConnection;
-    isBaseCategory: boolean;
-    categories: RequestBodyConnection[];
+    index: number,
+    c: RequestBodyConnection,
+    isBaseCategory: boolean,
+    categories: RequestBodyConnection[],
     setCategories: React.Dispatch<
         React.SetStateAction<RequestBodyConnection[]>
-    >;
-    baseCategory: RequestBodyConnection;
-    dropDownBaseCategories?: FrontendBaseCateogries[];
-    setBaseCategory: (value: SetStateAction<RequestBodyConnection>) => void;
-    showCancel: boolean;
+    >,
+    baseCategory: RequestBodyConnection,
+    dropDownBaseCategories?: FrontendBaseCateogries[],
+    setBaseCategory: (value: SetStateAction<RequestBodyConnection>) => void,
+    showCancel: boolean,
     updateCategory: (
         index: number,
         updateType: UpdateType,
         value: string | Direction,
-    ) => void;
+    ) => void,
+    setErrorMessage: (value: (((prevState: (string | null)) => (string | null)) | string | null)) => void
 }
 
 const BASE_CATEGORY_INDEX = -1;
@@ -38,6 +39,7 @@ export default function CategoryComp({
     index,
     showCancel,
     updateCategory,
+    setErrorMessage
 }: Props) {
     const onChangeBaseCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
         if (dropDownBaseCategories && setBaseCategory && baseCategory) {
@@ -150,6 +152,7 @@ export default function CategoryComp({
                                         )
                                     }}
                                     placeholder={"new category name"}
+                                    setErrorMessage={setErrorMessage}
                                 />
                             </Node>
 

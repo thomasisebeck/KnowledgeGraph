@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
 import Dialogue from "../Dialogue/Dialogue";
 import {
     ConnectionPath,
@@ -8,7 +8,7 @@ import {
     Neo4jNode,
     RequestBodyConnection
 } from "../../../../shared/interfaces";
-import {BASE_CATEGORY_INDEX, HOST} from "../../../../shared/variables";
+import {BASE_CATEGORY_INDEX, HOST, ERROR_MESSAGE_TIMEOUT} from "../../../../shared/variables";
 import Node from "../Node/Node";
 import CategoryComp from "../Category/CategoryComp";
 import {UpdateType} from "../AddStackDialogue/DialogueUtils";
@@ -33,7 +33,7 @@ interface AddCategoryDialogueProps {
         value: string | Direction,
     ) => void,
     addStackToFrontend: (body: CreateStackReturnBody) => void,
-    setErrorMessage: (value: (((prevState: string) => string) | string)) => void
+    setErrorMessage: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 const AddCategoryDialogue = ({
@@ -90,6 +90,7 @@ const AddCategoryDialogue = ({
 
         } catch (e) {
             setErrorMessage(e as string)
+            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
         }
 
     };

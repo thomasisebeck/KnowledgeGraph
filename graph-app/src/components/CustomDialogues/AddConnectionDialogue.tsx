@@ -15,16 +15,17 @@ function AddConnectionDialogue({
     secondNode,
     reset,
     updateRelationship,
+    setErrorMessage
 }: {
-    hideAddBox: () => void;
-    firstNode: string | null;
-    secondNode: string | null;
-    reset: () => void;
-    updateRelationship: (myRel1: NodeRelationship) => void;
+    hideAddBox: () => void,
+    firstNode: string | null,
+    secondNode: string | null,
+    reset: () => void,
+    updateRelationship: (myRel1: NodeRelationship) => void,
+    setErrorMessage: (value: string | null) => void
 }) {
     const nameRef = React.useRef<HTMLInputElement | null>(null);
     const checkRef = React.useRef<HTMLInputElement | null>(null);
-    const [errorMessage, setErrorMessage] = React.useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     //function to send an api request to create a connection
@@ -52,29 +53,20 @@ function AddConnectionDialogue({
             if (res.status == 200) {
                 const body = await res.json();
 
-                //todo: see the format of a double-sided rel
-                console.log("BODY");
-                console.log(body);
-
                 //get the response for the updated relationship
                 const myRel1 = body as NodeRelationship;
 
                 //search for the relationship on the existing graph and update the value
                 updateRelationship(myRel1);
 
-                //success
                 return;
             }
 
-            showError("error: " + res.status);
+            setErrorMessage("error: " + res.status)
+            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
             reset();
         });
     };
-
-    function showError(error: string) {
-        setErrorMessage(error);
-        setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
-    }
 
     const tryCreateConnection = async () => {
         if (nameRef.current != null && checkRef.current != null) {
@@ -92,16 +84,12 @@ function AddConnectionDialogue({
             }
         }
 
-        showError("name is not set");
+        setErrorMessage("name is not set")
+        setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
     };
 
     return (
         <React.Fragment>
-            {
-                // if there is an error (something is not filled out)
-                errorMessage != "" && <Error errorMessage={errorMessage}/>
-            }
-
             <Dialogue hideDialogue={hideAddBox} title={"Create Connection"}>
                 <div>
                     <label>Name the connection:</label>

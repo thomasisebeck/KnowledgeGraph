@@ -15,7 +15,7 @@ import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDia
 import {AddButtons} from "./components/AddButtons/AddButtons";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
 import {AddPhase, Phase} from "./interfaces";
-import {BASE_CATEGORY_INDEX, HOST} from "../../shared/variables";
+import {BASE_CATEGORY_INDEX, ERROR_MESSAGE_TIMEOUT, HOST} from "../../shared/variables";
 import s from "./App.module.scss";
 import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
 import Tasks from "./components/Tasks/Tasks";
@@ -51,7 +51,7 @@ function App() {
 
     //loading and showing dialogues
     const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     //show dropdown
     const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([]);
@@ -267,7 +267,8 @@ function App() {
 
             })
             .catch((e) => {
-                console.error(e);
+                setErrorMessage(e.toString())
+                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
             });
     }
 
@@ -633,6 +634,9 @@ function App() {
 
         if (!isValidCategory(baseCategory)) {
             setErrorMessage("please fill out all the categories");
+            setTimeout(() => {
+                setErrorMessage(null)
+            }, ERROR_MESSAGE_TIMEOUT)
             return;
         }
 
@@ -713,14 +717,17 @@ function App() {
 
             if (!res.ok) {
                 setErrorMessage(res.statusText);
-                return;
+                setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            } else {
+                const body = (await res.json()) as CreateStackReturnBody;
+                addStackToFrontend(body);
             }
-
-            const body = (await res.json()) as CreateStackReturnBody;
-            addStackToFrontend(body);
             setStackLoading(false);
             setShowAddStackDialogue(false);
-        });
+        }).catch(e => {
+            setErrorMessage(e.toString())
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+        })
     }
 
     return (
@@ -774,6 +781,7 @@ function App() {
                         setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     updateRelationship={updateRelationship}
+                    setErrorMessage={setErrorMessage}
                 />
             )}
 
@@ -821,6 +829,7 @@ function App() {
                         categories={categories}
                         setCategories={setCategories}
                         showCancel={false}
+                        setErrorMessage={setErrorMessage}
                     />
 
                     {/* other custom categories that the user added */}
@@ -841,6 +850,7 @@ function App() {
                                     showCancel={true}
                                     baseCategory={baseCategory}
                                     setBaseCategory={setBaseCategory}
+                                    setErrorMessage={setErrorMessage}
                                 />
                             ),
                         )}
@@ -868,7 +878,7 @@ function App() {
                 />
             </div>
 
-            {errorMessage != "" && <Error errorMessage={errorMessage}/> }
+            {errorMessage && <Error errorMessage={errorMessage}/>}
         </div>
     );
 }

@@ -1,1 +1,57 @@
-[]
+[
+    {
+        "question": "What does essence define?",
+        "answer": "Essence defines the irreducible core nature of a thing.",
+        "providedAnswer": "core nature",
+        "totalTime": 17377,
+        "expandedNodesPerClick": [
+            10,
+            1
+        ],
+        "targetNodeId": "bcf495e8-80ef-44b2-ab5b-90733e35884a",
+        "clicksTillInNeighborhood": 2,
+        "totalClicks": 2
+    },
+    {
+        "question": "How does morality relate to behavior?",
+        "answer": "Morality pertains to principles concerning the distinction between right and wrong behavior.",
+        "providedAnswer": "good",
+        "totalTime": 31981,
+        "expandedNodesPerClick": [],
+        "targetNodeId": "7a25822-ffe6-4b46-92fb-7e8690a1ba62",
+        "clicksTillInNeighborhood": 0,
+        "totalClicks": 0
+    },
+    {
+        "question": "What is the definition of consciousness?",
+        "answer": "Consciousness is the state of being aware of and responsive to one's surroundings.",
+        "providedAnswer": "new person",
+        "totalTime": 9663,
+        "expandedNodesPerClick": [
+            4,
+            6
+        ],
+        "targetNodeId": "64b5d170-81e2-474a-9a4d-3bc664ba19c6",
+        "clicksTillInNeighborhood": 0,
+        "totalClicks": 2
+    },
+    {
+        "question": "How is a collectivity formed?",
+        "answer": "A collectivity is a group of individuals considered as a whole.",
+        "providedAnswer": "hellot",
+        "totalTime": 268407,
+        "expandedNodesPerClick": [
+            4,
+            6,
+            1,
+            6,
+            1,
+            5,
+            0,
+            1
+        ],
+        "targetNodeId": "5350160c-9686-4ba2-bfd5-a95a4ed86da2",
+        "clicksTillInNeighborhood": 0,
+        "totalClicks": 8
+    }
+]
