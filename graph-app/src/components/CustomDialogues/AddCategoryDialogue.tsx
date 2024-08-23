@@ -215,6 +215,7 @@ const AddCategoryDialogue = ({
                         showCancel={true}
                         baseCategory={baseCategory}
                         setBaseCategory={setBaseCategory}
+                        setErrorMessage={setErrorMessage}
                     />
                 ))}
             </div>
