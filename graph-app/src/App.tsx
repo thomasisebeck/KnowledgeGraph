@@ -93,8 +93,6 @@ function App() {
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
-        console.log("expanding node...")
-        console.log(newNode)
 
         //expand the snippet of an info node
         if (newNode.snippet) {
@@ -144,7 +142,11 @@ function App() {
         //set node white for initial expansion
         setNodes([...nodesCopy])
 
+
         if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
+
+            console.log("getting neighborhood")
+            let success = true;
 
             const neighborhood = await fetch(
                 `${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`,
@@ -152,11 +154,19 @@ function App() {
 
                 if (!res.ok) {
                     setErrorMessage(res.statusText);
+                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
                     return;
                 }
 
                 return await res.json();
-            });
+            }).catch((e) => {
+                setErrorMessage(e.toString())
+                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                success = false;
+            })
+
+            if (!success)
+                return ;
 
             //use the copy to keep the white node
             const newNodes = nodesCopy;
@@ -222,6 +232,7 @@ function App() {
                     expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
                 })
         }
+
     };
 
     //initial data from database
@@ -370,7 +381,13 @@ function App() {
                         node.nodeId == selectedNodeId &&
                         node.nodeType != "INFO"
                     ) {
-                        expandNode(node);
+                        try{
+                            expandNode(node);
+                        } catch (e) {
+                            console.error("CAUGHT ERROR")
+                            setErrorMessage(e as string)
+                            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                        }
                         return;
                     }
             }
