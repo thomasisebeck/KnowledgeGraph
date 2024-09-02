@@ -10,7 +10,8 @@
     "test": "vitest",
     "clean": "yarn cache clean --force",
     "preview": "vite preview",
-    "lint:": "npx eslint"
+    "lint:": "npx eslint",
+    "kill:": "npx kill-port 3000"
   },
   "dependencies": {
     "-": "^0.0.1",
