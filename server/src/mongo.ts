@@ -23,7 +23,7 @@ const addTask = async (data: Task) => {
         client = new MongoClient(URI);
 
     const database = client.db("user-actions")
-    const actions = database.collection("actions")
+    const actions = database.collection("answers")
     return await actions.insertOne(data);
 }
 

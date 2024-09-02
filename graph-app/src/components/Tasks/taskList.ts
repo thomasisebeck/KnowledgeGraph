@@ -12,7 +12,8 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "bcf495e8-80ef-44b2-ab5b-90733e35884a",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     // Info: Morality pertains to principles concerning the distinction between right and wrong or good and bad
@@ -26,7 +27,8 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "7a25822-ffe6-4b46-92fb-7e8690a1ba62",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     // Info: Consciousness is the state of being aware of and responsive to one's surroundings.
@@ -40,11 +42,12 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "64b5d170-81e2-474a-9a4d-3bc664ba19c6",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     // Info: Collectivity refers to a group of individuals considered as a whole.
-    // Categorization: Culture -> is comprised of -> groups - relates to - shared characteristics - exhibit
+    // Categorization: Culture -> comprises -> groups - relates to - shared characteristics - exhibit
     // Title: What is a collectivity?
     {
         question: "How is a collectivity formed?",
@@ -54,7 +57,8 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "5350160c-9686-4ba2-bfd5-a95a4ed86da2",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     // Info: Communication is the imparting or exchanging of information by speaking, writing, or signaling.
@@ -68,7 +72,8 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "22c49e8f-2bdc-45a7-9e14-52bc2adbd990",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     //Info: Cognition is the mental process of acquiring knowledge and understanding through thought, experience, and the senses.
@@ -82,7 +87,8 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "31fa1c4d-be98-41df-89d0-de2f7fce6aa5",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     // Info: An economy is a system of production and exchange of goods and services.
@@ -96,7 +102,8 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "8f18613a-d92e-409e-ac0d-95a62582861d",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 
     // Info: A pattern is a recurring characteristic or event.
@@ -111,6 +118,7 @@ export const taskList: Task[] = [
         expandedNodesPerClick: [],
         targetNodeId: "8f18613a-d92e-409e-ac0d-95a62582861d",
         clicksTillInNeighborhood: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     },
 ];

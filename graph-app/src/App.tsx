@@ -84,7 +84,8 @@ function App() {
         answer: "",
         providedAnswer: "",
         totalTime: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     })
 
     const updateStatObject = (newObj: Task) => {
