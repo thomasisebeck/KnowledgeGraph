@@ -88,6 +88,9 @@ function App() {
         username: ""
     })
 
+    const [upvotedEdges, setUpvotedEdges] = useState<string[]>([])
+    const [downvotedEdges, setDownvotedEdges] = useState<string[]>([])
+
     const updateStatObject = (newObj: Task) => {
         setStatObject({...newObj})
     }
@@ -538,7 +541,24 @@ function App() {
 
     //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
+
+        //return early if in upvoted or downvoted already...
+
+        if (mustUpvote && upvotedEdges.indexOf(edgeId) !== -1) {
+            setErrorMessage("cannot upvote an edge twice")
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            return ;
+        }
+
+        if (!mustUpvote && downvotedEdges.indexOf(edgeId) != -1) {
+            setErrorMessage("cannot downvote an edge twice")
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            return ;
+        }
+
         const URL = mustUpvote ? `${HOST}/upvoteRel` : `${HOST}/downvoteRel`;
+        //if in downvoted: remove
+        //if not in upvoted: upvote
 
         await fetch(URL, {
             method: "POST",
@@ -557,6 +577,22 @@ function App() {
 
             const result = await res.json();
             const relationship = result as UpvoteResult;
+
+            //add to upvoted or downvoted edges to prevent doing it twice
+            if (mustUpvote) {
+                //if in downvoted edges, remove
+                if (downvotedEdges.indexOf(edgeId) !== -1)
+                    setDownvotedEdges(downvotedEdges.filter(e => e !== edgeId))
+                else //otherwise add to upvoted edges
+                setUpvotedEdges([...upvotedEdges, edgeId])
+            }
+            else {
+                //if in upvoted edges, remove
+                if (upvotedEdges.indexOf(edgeId) !== -1)
+                    setUpvotedEdges(upvotedEdges.filter(e => e !== edgeId))
+                else //otherwise add ot downvoted edges
+                setDownvotedEdges([...downvotedEdges, edgeId])
+            }
 
             if (relationship.newRelId != null) {
                 //rel kept alive, add back
@@ -879,7 +915,7 @@ function App() {
 
             {/*buttons to upvote and downvote relationships*/}
             {selectedEdgeId != null &&
-                upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)}
+                upvoteDownvoteButtons(selectedEdgeId, upvoteEdge, upvotedEdges, downvotedEdges)}
 
             {/*task list for the user to complete*/}
             <Tasks
