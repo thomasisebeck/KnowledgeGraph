@@ -6,7 +6,8 @@ export interface Task {
     expandedNodesPerClick: number[];
     targetNodeId: string;
     clicksTillInNeighborhood: number;
-    totalClicks: number
+    totalClicks: number;
+    username: string;
 }
 
 export interface GraphNode {

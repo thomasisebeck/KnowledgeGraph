@@ -12,20 +12,21 @@ interface TasksProps {
 }
 
 function Tasks({
-    resetGraph,
-    statObject,
-    setStatObject,
-    setErrorMessage
-}: TasksProps) {
+                   resetGraph,
+                   statObject,
+                   setStatObject,
+                   setErrorMessage
+               }: TasksProps) {
 
     const [startTime, setStartTime] = useState<number | null>(null);
     const [taskNumber, setTaskNumber] = useState<number | null>(null);
     const [text, setText] = useState("");
     const [currQuestion, setCurrQuestion] = useState<string | null>("");
+    const [username, setUsername] = useState("")
 
     const postTaskToServer = async (time: number) => {
 
-        const toPost = {...statObject, totalTime: time};
+        const toPost = {...statObject, totalTime: time, username: username};
 
         await fetch(`${HOST}/tasks`, {
             method: "POST",
@@ -78,7 +79,16 @@ function Tasks({
                 <React.Fragment>
                     {
                         currQuestion == "" ?
-                            <button onClick={startTasks}>Begin Tasks</button>
+                            <div className={s.stack}>
+                                <input type={"text"}
+                                       placeholder={"name"}
+                                       onChange={(e) => {
+                                           setUsername(e.target.value)
+                                       }}
+                                       value={username}
+                                ></input>
+                                <button onClick={startTasks}>Begin Tasks</button>
+                            </div>
                             :
                             <React.Fragment>
                                 <div>
