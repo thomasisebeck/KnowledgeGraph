@@ -5,6 +5,7 @@ import {executeGenericQuery, getField, toSnakeCase} from "../utils";
 import {
     BOTH,
     CLASS,
+    INITIAL_VOTES,
     ConnectionPath,
     CreateStackReturnBody,
     Direction,
@@ -347,7 +348,6 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
 }
 
 const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction): Promise<NodeRelationship> => {
-    const VOTES_ON_CREATION = 5;
 
     if (connName.includes("-"))
         throw "labels cannot include hyphens";
@@ -396,7 +396,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
              MERGE (n1)-[r:${toSnakeCase(connName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
-             r.votes = ${VOTES_ON_CREATION}
+             r.votes = ${INITIAL_VOTES}
              RETURN r`
         )
     }

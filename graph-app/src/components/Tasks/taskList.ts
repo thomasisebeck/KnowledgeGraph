@@ -1,5 +1,22 @@
 import {Task} from "../../../../shared/interfaces"
 
+/*
+
+PROCEDURE:
+1. Number the posts
+2. Split into n groups
+3. Divide classification tasks among groups
+4. Classify, keeping track of who classified what
+5. Crowdsource: everyone gets to add their opinion
+6. Run info finding tasks on posts not classified
+
+person:                    |     p1    |     p2    |     p3    |     p4    |
+post group to classify:    |     1     |     2     |     3     |     4     |
+*** everyone crowdsources ******
+post group to find:        | all but 1 | all but 2 | all but 3 | all but 4 |
+
+*/
+
 export const taskList: Task[] = [
     //Essence is the fundamental nature of a thing, its irreducible core that defines its identity.
     //Classification: Existence - relates to -> identity - defines -> core nature - associated with -

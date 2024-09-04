@@ -121,8 +121,7 @@ app.get('/allData', async (req, res) => {
 
 app.post('/updateEdgeList', async (req, res) => {
 
-    console.log("UPDATING EDGE LIST")
-    console.log("NAME:")
+    console.log("UPDATING EDGE LIST FOR:")
     console.log(req.body.username)
 
     try {

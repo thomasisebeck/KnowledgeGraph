@@ -410,11 +410,11 @@ function App() {
     useEffect(() => {
 
         if (statObject.username == "" || statObject.username == null)
-            return ;
+            return;
 
         console.log("SENDING POST TO UPDATE EDGE LIST")
 
-        const body:VoteData = {
+        const body: VoteData = {
             username: statObject.username,
             upvotedEdges: upvotedEdges,
             downvotedEdges: downvotedEdges
@@ -440,14 +440,26 @@ function App() {
     }, [upvotedEdges, downvotedEdges]);
 
     //hide the dialogue and update the nodes and relationships
+    //prevent voting on the stack for the current user
     const addStackToFrontend = (body: CreateStackReturnBody) => {
         const requestNodes = body.nodes as GraphNode[];
         const requestRelationships = body.relationships;
 
-        for (const n of requestNodes) updateNode(n);
+        //add all these relationships to upvoted and downvoted edges so they cannot be modified
+        //by the person who created them!
+
+        for (const n of requestNodes)
+            updateNode(n);
 
         //update or add rel
-        for (const r of requestRelationships) updateRelationship(r);
+        for (const r of requestRelationships) {
+            //add to upvoted and downvoted lists to prevent
+            //the person who added the post from voting on it
+
+            setUpvotedEdges([...upvotedEdges, r.relId])
+            setDownvotedEdges([...downvotedEdges, r.relId])
+            updateRelationship(r);
+        }
 
         setStackLoading(false);
     };
@@ -584,7 +596,6 @@ function App() {
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
 
         //return early if in upvoted or downvoted already...
-
         if (mustUpvote && upvotedEdges.indexOf(edgeId) !== -1) {
             setErrorMessage("cannot upvote an edge twice")
             setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
