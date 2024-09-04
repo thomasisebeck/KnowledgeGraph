@@ -8,14 +8,16 @@ interface TasksProps {
     resetGraph: () => void,
     statObject: Task,
     setStatObject: (newObject: Task) => void,
-    setErrorMessage: (value: string) => void
+    setErrorMessage: (value: string) => void,
+    getData: (username: string) => void
 }
 
 function Tasks({
                    resetGraph,
                    statObject,
                    setStatObject,
-                   setErrorMessage
+                   setErrorMessage,
+                   getData
                }: TasksProps) {
 
     const [startTime, setStartTime] = useState<number | null>(null);
@@ -50,7 +52,8 @@ function Tasks({
         setTaskNumber(0);
         setStartTime(Date.now());
         setCurrQuestion(taskList[0].question)
-        setStatObject({...taskList[0]})
+        setStatObject({...taskList[0], username: username})
+        getData(username);
     };
 
     const nextTask = async () => {

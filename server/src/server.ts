@@ -6,7 +6,7 @@ import sess from './session'
 import {ConnectionPath, CreateRelRequestBody, RequestBody, UpvoteResult, Task} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
-import {addTask, closeClient} from "./mongo"
+import m from "./mongo"
 
 const app = express();
 app.use(bodyParser.json())
@@ -74,14 +74,22 @@ app.post('/createRel', async (req, res) => {
     }
 })
 
-app.get('/initialData', async (req, res) => {
+app.get('/initialData/:username', async (req, res) => {
     console.log("CALLED INITIAL DATA")
     try {
-        await q.createTopicNodes(driver).then(nodes => {
-            res.status(200).json({
-                topicNodes: nodes
-            })
+        if (req.params.username == null)
+            throw "username is null"
+
+        const [topicNodes, voteData] = await Promise.all([
+            q.createTopicNodes(driver),
+            m.getVoteData(req.params.username)
+        ])
+
+        res.status(200).json({
+            topicNodes: topicNodes,
+            voteData: voteData
         })
+
     } catch (e) {
         console.error(e)
         res.status(400).json(e as string);
@@ -109,6 +117,21 @@ app.get('/allData', async (req, res) => {
         console.error(e)
         res.status(400).json(e as string);
     }
+})
+
+app.post('/updateEdgeList', async (req, res) => {
+
+    console.log("UPDATING EDGE LIST")
+    console.log("NAME:")
+    console.log(req.body.username)
+
+    try {
+        await m.updateVoteData(req.body);
+        return res.status(200).json({success: true})
+    } catch (e) {
+        return res.status(400).json(e as string)
+    }
+
 })
 
 async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
@@ -143,7 +166,7 @@ app.post('/tasks', async (req, res) => {
 
     const taskData = req.body as Task;
 
-    await addTask(taskData);
+    await m.addTask(taskData);
 
     res.status(200).json({
         success: true,
@@ -218,6 +241,6 @@ app.listen(process.env.PORT, () => {
 })
 
 process.on("SIGINT", async () => {
-    await closeClient()
+    await m.closeClient()
     process.exit(0)
 })

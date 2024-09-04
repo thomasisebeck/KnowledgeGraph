@@ -9,7 +9,11 @@ export interface Task {
     totalClicks: number;
     username: string;
 }
-
+export interface VoteData {
+    username: string,
+    upvotedEdges: string[],
+    downvotedEdges: string[]
+}
 export interface GraphNode {
     isExpanded?: boolean,
     label: string
@@ -125,6 +129,8 @@ export interface GraphType {
     relationships: NodeRelationship[] | undefined,
     setSelectedNodeId: (nodeId: string | null) => void
     setSelectedEdgeId: (edgeId: string | null) => void
+    displayLabels: boolean,
+    setDisplayLabels: (newValue: boolean) => void
     rerender: boolean
 }
 

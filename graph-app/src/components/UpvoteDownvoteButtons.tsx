@@ -8,6 +8,7 @@ export function upvoteDownvoteButtons(
     upvotedEdges: string[],
     downVotedEdges: string[]
 ) {
+
     return (
         <div className={s.upvoteDownvoteContainer}>
 
