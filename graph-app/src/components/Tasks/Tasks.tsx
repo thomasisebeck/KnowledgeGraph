@@ -12,6 +12,12 @@ interface TasksProps {
     getData: (username: string) => void
 }
 
+enum TaskState {
+    ENTER_NAME,
+    WAITING_TO_START,
+    STARTED
+}
+
 function Tasks({
                    resetGraph,
                    statObject,
@@ -25,9 +31,9 @@ function Tasks({
     const [text, setText] = useState("");
     const [currQuestion, setCurrQuestion] = useState<string | null>("");
     const [username, setUsername] = useState("")
+    const [taskState, setTaskState] = useState<TaskState>(TaskState.WAITING_TO_START)
 
     const postTaskToServer = async (time: number) => {
-
         const toPost = {...statObject, totalTime: time, username: username};
 
         await fetch(`${HOST}/tasks`, {
@@ -54,6 +60,7 @@ function Tasks({
         setCurrQuestion(taskList[0].question)
         setStatObject({...taskList[0], username: username})
         getData(username);
+        setTaskState(TaskState.STARTED)
     };
 
     const nextTask = async () => {
@@ -73,26 +80,45 @@ function Tasks({
         setCurrQuestion(taskList[newTaskNumber].question)
     };
 
+    //state 1 -> still to enter name
+    //state 2 -> entered name, but tasks not started
+    //state 3 -> tasks started
+
     return (
         <div className={s.container}>
             {/*All tasks are complete*/}
-            {taskNumber && taskNumber > taskList.length - 1 ? <div>Tasks complete</div>
-                :
-                // working on a task
+            {
+                taskState == TaskState.WAITING_TO_START &&
+                <button onClick={() => setTaskState(TaskState.ENTER_NAME)}>Start Tasks</button>
+            }
+
+            {/*haven't fetched data, waiting to enter name*/}
+            {
+                taskState == TaskState.ENTER_NAME &&
+                <div className={s.stack}>
+                    <input type={"text"}
+                           placeholder={"name"}
+                           onChange={(e) => {
+                               setUsername(e.target.value)
+                           }}
+                           value={username}
+                    ></input>
+                    <button onClick={startTasks}>Next</button>
+                </div>
+            }
+
+            {/*started tasks (done exploring initial graph), show text box*/}
+            {
+                //only show this when they've entered their name
+                taskState == TaskState.STARTED &&
                 <React.Fragment>
                     {
-                        currQuestion == "" ?
-                            <div className={s.stack}>
-                                <input type={"text"}
-                                       placeholder={"name"}
-                                       onChange={(e) => {
-                                           setUsername(e.target.value)
-                                       }}
-                                       value={username}
-                                ></input>
-                                <button onClick={startTasks}>Begin Tasks</button>
-                            </div>
+                        taskNumber && taskNumber > taskList.length - 1
+                            ?
+                            // got to the last task in the list
+                            <div>Tasks complete</div>
                             :
+                            // working on a task
                             <React.Fragment>
                                 <div>
                                     <p>{currQuestion}</p>
@@ -106,15 +132,14 @@ function Tasks({
                                         value={text}
                                     />
                                 </div>
+
                                 {
-                                    text == "" ?
-                                        <button disabled>Submit</button>
-                                        :
+                                    text == "" ? <button disabled>Submit</button> :
                                         <button onClick={nextTask}>Submit</button>
                                 }
+
                             </React.Fragment>
                     }
-
                 </React.Fragment>
             }
 

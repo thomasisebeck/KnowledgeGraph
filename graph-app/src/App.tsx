@@ -93,10 +93,6 @@ function App() {
     const [upvotedEdges, setUpvotedEdges] = useState<string[]>([])
     const [downvotedEdges, setDownvotedEdges] = useState<string[]>([])
 
-    const updateStatObject = (newObj: Task) => {
-        setStatObject({...newObj})
-    }
-
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
 
@@ -732,7 +728,7 @@ function App() {
     //send the request to the api to add the stack
     //then update the UI
     function tryCreateStack() {
-        //check that eveything has been filled out
+        //check that everything has been filled out
         //loop through the categories and see that they have the correct info
 
         for (const c of categories) {

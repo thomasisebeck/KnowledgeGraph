@@ -19,7 +19,7 @@ PHASE 0: TUTORIAL
 let people learn on a different data set
 have them explore the graph for some time
 have them put information on the graph
-have them upvote and down vote connections
+have them upvote and downvote connections
 have them connect 2 nodes
 have them add a category between two nodes
 
@@ -31,7 +31,7 @@ crowdsource
 ---------------------------
 
 PHASE 2:
-find 45% of posts not in realm 1
+find 45% of remaining posts in realm 1
 
 PHASE 3:
 find 45% of posts not in realm 1
