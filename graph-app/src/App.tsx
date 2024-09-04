@@ -9,7 +9,8 @@ import {
     RequestBody,
     RequestBodyConnection,
     Task,
-    UpvoteResult
+    UpvoteResult,
+    VoteData
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
@@ -31,6 +32,7 @@ function App() {
     const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
     const [mustReset, setMustReset] = useState(true)
+    const [displayLabels, setDisplayLabels] = useState(true);
 
     //creating a stack
     const [stackLoading, setStackLoading] = useState<boolean>(false);
@@ -84,8 +86,12 @@ function App() {
         answer: "",
         providedAnswer: "",
         totalTime: 0,
-        totalClicks: 0
+        totalClicks: 0,
+        username: ""
     })
+
+    const [upvotedEdges, setUpvotedEdges] = useState<string[]>([])
+    const [downvotedEdges, setDownvotedEdges] = useState<string[]>([])
 
     const updateStatObject = (newObj: Task) => {
         setStatObject({...newObj})
@@ -166,7 +172,7 @@ function App() {
             })
 
             if (!success)
-                return ;
+                return;
 
             //use the copy to keep the white node
             const newNodes = nodesCopy;
@@ -236,17 +242,27 @@ function App() {
     };
 
     //initial data from database
-    function getData() {
-        fetch(`${HOST}/initialData`)
+    function getData(username: string) {
+        fetch(`${HOST}/initialData/${username}`)
             .then(async (res) => {
 
                 if (!res.ok) {
                     console.error(res.status)
+                    setErrorMessage("Failed to get initial data")
+                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
                     return;
                 }
 
                 const data = await res.json();
+
                 const nodes = data.topicNodes as GraphNode[];
+                const voteData = data.voteData as VoteData;
+
+                console.log("vote data:")
+                console.log(voteData)
+
+                setUpvotedEdges([...voteData.upvotedEdges])
+                setDownvotedEdges([...voteData.downvotedEdges])
 
                 //set the categories for the dropdown menu
                 setBaseCategories(
@@ -285,9 +301,6 @@ function App() {
 
     //fetch the initial data and preload images
     useEffect(() => {
-        //fetch data
-        getData();
-
         const images = [
             "add-category-node.svg",
             "add-category-node-hover.svg",
@@ -381,7 +394,7 @@ function App() {
                         node.nodeId == selectedNodeId &&
                         node.nodeType != "INFO"
                     ) {
-                        try{
+                        try {
                             expandNode(node);
                         } catch (e) {
                             console.error("CAUGHT ERROR")
@@ -394,15 +407,59 @@ function App() {
         }
     }, [selectedNodeId]);
 
+    useEffect(() => {
+
+        if (statObject.username == "" || statObject.username == null)
+            return;
+
+        console.log("SENDING POST TO UPDATE EDGE LIST")
+
+        const body: VoteData = {
+            username: statObject.username,
+            upvotedEdges: upvotedEdges,
+            downvotedEdges: downvotedEdges
+        };
+
+        //send the new upvoted edges list to the mongo table
+        fetch(`${HOST}/updateEdgeList`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'Application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(result => {
+                if (!result.ok) {
+                    setErrorMessage("Failed up update edge list")
+                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                }
+
+                console.log("result on frontend:")
+                console.log(result)
+            })
+    }, [upvotedEdges, downvotedEdges]);
+
     //hide the dialogue and update the nodes and relationships
+    //prevent voting on the stack for the current user
     const addStackToFrontend = (body: CreateStackReturnBody) => {
         const requestNodes = body.nodes as GraphNode[];
         const requestRelationships = body.relationships;
 
-        for (const n of requestNodes) updateNode(n);
+        //add all these relationships to upvoted and downvoted edges so they cannot be modified
+        //by the person who created them!
+
+        for (const n of requestNodes)
+            updateNode(n);
 
         //update or add rel
-        for (const r of requestRelationships) updateRelationship(r);
+        for (const r of requestRelationships) {
+            //add to upvoted and downvoted lists to prevent
+            //the person who added the post from voting on it
+
+            setUpvotedEdges([...upvotedEdges, r.relId])
+            setDownvotedEdges([...downvotedEdges, r.relId])
+            updateRelationship(r);
+        }
 
         setStackLoading(false);
     };
@@ -537,7 +594,23 @@ function App() {
 
     //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
+
+        //return early if in upvoted or downvoted already...
+        if (mustUpvote && upvotedEdges.indexOf(edgeId) !== -1) {
+            setErrorMessage("cannot upvote an edge twice")
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            return;
+        }
+
+        if (!mustUpvote && downvotedEdges.indexOf(edgeId) != -1) {
+            setErrorMessage("cannot downvote an edge twice")
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            return;
+        }
+
         const URL = mustUpvote ? `${HOST}/upvoteRel` : `${HOST}/downvoteRel`;
+        //if in downvoted: remove
+        //if not in upvoted: upvote
 
         await fetch(URL, {
             method: "POST",
@@ -557,7 +630,27 @@ function App() {
             const result = await res.json();
             const relationship = result as UpvoteResult;
 
+            //add to upvoted or downvoted edges to prevent doing it twice
+            if (mustUpvote) {
+                //if in downvoted edges, remove
+                if (downvotedEdges.indexOf(edgeId) !== -1)
+                    setDownvotedEdges(downvotedEdges.filter(e => e !== edgeId))
+                else //otherwise add to upvoted edges
+                    setUpvotedEdges([...upvotedEdges, edgeId])
+            } else {
+                //if in upvoted edges, remove
+                if (upvotedEdges.indexOf(edgeId) !== -1)
+                    setUpvotedEdges(upvotedEdges.filter(e => e !== edgeId))
+                else //otherwise add ot downvoted edges
+                    setDownvotedEdges([...downvotedEdges, edgeId])
+            }
+
             if (relationship.newRelId != null) {
+                //todo: remove from downvoted edges and prevent from being downvoted further
+                setDownvotedEdges(downvotedEdges.filter(e => e != edgeId))
+                setDownvotedEdges([...downvotedEdges, relationship.newRelId])
+
+
                 //rel kept alive, add back
                 setRelationships((prevState) =>
                     prevState?.map((rel) => {
@@ -759,6 +852,8 @@ function App() {
                     setSelectedNodeId={setSelectedNodeId}
                     setSelectedEdgeId={setSelectedEdgeId}
                     rerender={mustReset}
+                    setDisplayLabels={setDisplayLabels}
+                    displayLabels={displayLabels}
                 />
             )}
 
@@ -878,7 +973,7 @@ function App() {
 
             {/*buttons to upvote and downvote relationships*/}
             {selectedEdgeId != null &&
-                upvoteDownvoteButtons(selectedEdgeId, upvoteEdge)}
+                upvoteDownvoteButtons(selectedEdgeId, upvoteEdge, upvotedEdges, downvotedEdges)}
 
             {/*task list for the user to complete*/}
             <Tasks
@@ -886,6 +981,7 @@ function App() {
                 statObject={statObject}
                 setStatObject={setStatObject}
                 setErrorMessage={setErrorMessage}
+                getData={getData}
             />
 
             <div className={s.reset}>

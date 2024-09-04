@@ -6,9 +6,14 @@ export interface Task {
     expandedNodesPerClick: number[];
     targetNodeId: string;
     clicksTillInNeighborhood: number;
-    totalClicks: number
+    totalClicks: number;
+    username: string;
 }
-
+export interface VoteData {
+    username: string,
+    upvotedEdges: string[],
+    downvotedEdges: string[]
+}
 export interface GraphNode {
     isExpanded?: boolean,
     label: string
@@ -124,6 +129,8 @@ export interface GraphType {
     relationships: NodeRelationship[] | undefined,
     setSelectedNodeId: (nodeId: string | null) => void
     setSelectedEdgeId: (edgeId: string | null) => void
+    displayLabels: boolean,
+    setDisplayLabels: (newValue: boolean) => void
     rerender: boolean
 }
 
@@ -140,3 +147,4 @@ export const BOTH = "INFO | CLASS";
 export const INFO = "INFO";
 export const CLASS = "CLASS";
 export const INDEX_NAME = 'nodesIndex'
+export const INITIAL_VOTES = 3;

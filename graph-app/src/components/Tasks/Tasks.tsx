@@ -8,24 +8,27 @@ interface TasksProps {
     resetGraph: () => void,
     statObject: Task,
     setStatObject: (newObject: Task) => void,
-    setErrorMessage: (value: string) => void
+    setErrorMessage: (value: string) => void,
+    getData: (username: string) => void
 }
 
 function Tasks({
-    resetGraph,
-    statObject,
-    setStatObject,
-    setErrorMessage
-}: TasksProps) {
+                   resetGraph,
+                   statObject,
+                   setStatObject,
+                   setErrorMessage,
+                   getData
+               }: TasksProps) {
 
     const [startTime, setStartTime] = useState<number | null>(null);
     const [taskNumber, setTaskNumber] = useState<number | null>(null);
     const [text, setText] = useState("");
     const [currQuestion, setCurrQuestion] = useState<string | null>("");
+    const [username, setUsername] = useState("")
 
     const postTaskToServer = async (time: number) => {
 
-        const toPost = {...statObject, totalTime: time};
+        const toPost = {...statObject, totalTime: time, username: username};
 
         await fetch(`${HOST}/tasks`, {
             method: "POST",
@@ -49,7 +52,8 @@ function Tasks({
         setTaskNumber(0);
         setStartTime(Date.now());
         setCurrQuestion(taskList[0].question)
-        setStatObject({...taskList[0]})
+        setStatObject({...taskList[0], username: username})
+        getData(username);
     };
 
     const nextTask = async () => {
@@ -78,7 +82,16 @@ function Tasks({
                 <React.Fragment>
                     {
                         currQuestion == "" ?
-                            <button onClick={startTasks}>Begin Tasks</button>
+                            <div className={s.stack}>
+                                <input type={"text"}
+                                       placeholder={"name"}
+                                       onChange={(e) => {
+                                           setUsername(e.target.value)
+                                       }}
+                                       value={username}
+                                ></input>
+                                <button onClick={startTasks}>Begin Tasks</button>
+                            </div>
                             :
                             <React.Fragment>
                                 <div>

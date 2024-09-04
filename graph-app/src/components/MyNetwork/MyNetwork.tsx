@@ -64,9 +64,10 @@ const MyNetwork = ({
     relationships,
     setSelectedEdgeId,
     setSelectedNodeId,
-    rerender
+    rerender,
+    displayLabels,
+    setDisplayLabels
 }: GraphType) => {
-    const [displayLabels, setDisplayLabels] = useState(true);
 
     //get a reference to the network object
     const networkRef = useRef(null);
