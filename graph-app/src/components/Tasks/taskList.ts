@@ -40,7 +40,6 @@ find 45% of posts not in realm 1
 
 export const taskList: Task[] = [
 
-
     //Consciousness acts as the lens through which we interpret sensory inputs. It filters and organizes incoming information based on our personal experiences, beliefs, and cognitive processes. This subjective processing shapes our perception of reality, highlighting how consciousness and perception are intricately connected.
     {
         question: "How does consciousness influence perception?",
