@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import {Driver, Relationship} from "neo4j-driver";
 import * as crypto from "node:crypto";
-import {executeGenericQuery, getField, toSnakeCase} from "../utils";
+import {clearDB, executeGenericQuery, getField, toSnakeCase} from "../utils";
 import {
     BOTH,
     CLASS,
@@ -17,7 +17,8 @@ import {
     RequestBody,
     ROOT,
     Segment,
-    UpvoteResult
+    UpvoteResult,
+    TutorialResult
 } from "../../../shared/interfaces";
 
 
@@ -123,6 +124,104 @@ const createTopicNodes = async (driver: Driver) => {
         createRootNode(driver, "Belief"), //faith, religion, spirituality
     ]);
 
+}
+
+const createTutorialNodes = async (driver: Driver): Promise<TutorialResult> => {
+    console.log("REQUEST TO CREATE TUTORIAL NODES...")
+
+    await clearDB(driver)
+
+    const tutorialRoots = await Promise.all([
+        createRootNode(driver, "Ethics"),
+        createRootNode(driver, "Nature"),
+        createRootNode(driver, "Belief")
+    ])
+
+    const ethicsBody: RequestBody = {
+        infoNode: {
+            label: "medial ethical dilemma",
+            snippet: "A doctor may face the difficult decision of prioritizing the life of a mother over her unborn child in a medical emergency. Such situations highlight the complexities of ethical decision-making and the importance of considering the potential consequences of each choice."
+        },
+        connections: [
+            {
+                nodeName: "Ethics",
+                direction: Direction.AWAY,
+                connectionName: "relates to"
+            },
+            {
+                nodeName: "morals",
+                direction: Direction.AWAY,
+                connectionName: "encompasses"
+            },
+            {
+                nodeName: "moral dilemmas",
+                direction: Direction.AWAY,
+                connectionName: "example"
+            },
+        ],
+        rootNodeId: tutorialRoots[0].nodeId
+    }
+
+    const natureBody: RequestBody = {
+        infoNode: {
+            label: "the Acacia Pied Barbet has a unique appearance",
+            snippet: "These birds have striking black and white plumage with a stark red patch on their foreheads"
+        },
+        connections: [
+            {
+                nodeName: "Nature",
+                direction: Direction.NEUTRAL,
+                connectionName: "relates to"
+            },
+            {
+                nodeName: "bird",
+                direction: Direction.AWAY,
+                connectionName: "species"
+            },
+            {
+                nodeName: "barbets",
+                direction: Direction.AWAY,
+                connectionName: "contains"
+            },
+        ],
+        rootNodeId: tutorialRoots[1].nodeId
+    }
+
+    const beliefBody: RequestBody = {
+        infoNode: {
+            label: "Humanism in shaping humanity",
+            snippet: "Values such as tolerance and opposition to slavery took shape in humanism. It suggested that the universal man did not encompass all humans, but was shaped by gender and race."
+        },
+        connections: [
+            {
+                nodeName: "Belief",
+                direction: Direction.NEUTRAL,
+                connectionName: "relates to"
+            },
+            {
+                nodeName: "Tolerance",
+                direction: Direction.AWAY,
+                connectionName: "relates to"
+            },
+            {
+                nodeName: "Human Rights",
+                direction: Direction.TOWARDS,
+                connectionName: "strives to bring about"
+            },
+        ],
+        rootNodeId: tutorialRoots[2].nodeId
+    }
+
+    const stacks = await Promise.all([
+        createStack(driver, ethicsBody),
+        createStack(driver, natureBody),
+        createStack(driver, beliefBody)
+    ])
+
+    return {
+        rootNodes: tutorialRoots,
+        stacksToAdd: stacks
+    };
 }
 
 const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
@@ -323,10 +422,6 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
                     Direction.NEUTRAL);
             }
 
-            console.dir(r, {depth: null})
-            console.log("VOTES")
-            console.log(r.properties.votes.toNumber());
-
             //keep connection alive
             return {
                 relId: r.properties.relId,
@@ -457,8 +552,6 @@ const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelat
 }
 
 const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
-    console.log("ID: " + nodeId)
-    console.log("DEPTH: " + depth)
 
     const relationshipsQuery =
         `MATCH (start {nodeId: '${nodeId}'})
@@ -484,7 +577,6 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
     ]);
 
     const segments = getField(resultRelationships.records, 'segments') as Segment[];
-    // console.dir(segments, {depth: null})
 
     let toRetSegments: Segment[] = [];
     let toRetNodes: Node[] = [];
@@ -504,12 +596,12 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
         toRetNodes = tryPushToArray(newNode, toRetNodes, false);
     }
 
-    console.log("--------------------------")
-    console.log({
-        relationships: convertSegmentsToNodeRelationships(toRetSegments),
-        nodes: toRetNodes
-    })
-    console.log("--------------------------")
+    // console.log("--------------------------")
+    // console.log({
+    //     relationships: convertSegmentsToNodeRelationships(toRetSegments),
+    //     nodes: toRetNodes
+    // })
+    // console.log("--------------------------")
 
     return {
         relationships: convertSegmentsToNodeRelationships(toRetSegments),
@@ -527,13 +619,6 @@ const createConnectionPath = async (driver: Driver, body: ConnectionPath): Promi
     })
 
     const myNodes = await Promise.all([...nodeFunctionCalls]);
-
-    let index = 0;
-
-    console.log("NUM NODES")
-    console.log(myNodes.length)
-    console.log("NUM CONN")
-    console.log(body.connections.length)
 
     const relFunctionCalls = body.connections.map(async (conn, index) => {
         let fromNodeId;
@@ -553,16 +638,14 @@ const createConnectionPath = async (driver: Driver, body: ConnectionPath): Promi
         return await findOrCreateRelationship(driver, fromNodeId, toNodeId, conn.label, conn.direction);
     })
 
-    const myRels = await Promise.all([...relFunctionCalls]);
+    const myRelationships = await Promise.all([...relFunctionCalls]);
 
     return {
         nodes: myNodes,
-        relationships: myRels
+        relationships: myRelationships
     }
 
-
 }
-
 
 
 const createStack = async (driver: Driver, body: RequestBody): Promise<CreateStackReturnBody> => {
@@ -658,7 +741,7 @@ const fuzzySearchLabel = async (driver: Driver, searchQuery: string) => {
         RETURN node.label AS label, score
         LIMIT 10`
 
-    const {records, summary} = await executeGenericQuery(driver, query, {})
+    const {records} = await executeGenericQuery(driver, query, {})
 
     const result = [];
     for (const record of records) {
@@ -681,5 +764,6 @@ export default {
     getAllData,
     getNeighborhood,
     fuzzySearchLabel,
-    createConnectionPath
+    createConnectionPath,
+    createTutorialNodes
 }

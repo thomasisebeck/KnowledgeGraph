@@ -89,12 +89,16 @@ function Tasks({
             {/*All tasks are complete*/}
             {
                 taskState == TaskState.WAITING_TO_START &&
-                <button onClick={() => setTaskState(TaskState.ENTER_NAME)}>Start Tasks</button>
+                <div>
+                    <div className={s.waitingContainer}>Explore the graph and get a feel for the app!</div>
+                    <div className={s.waitingContainer}>When you're ready to start, press the button...</div>
+                    <button onClick={() => setTaskState(TaskState.ENTER_NAME)}>Start Tasks</button>
+                </div>
             }
 
             {/*haven't fetched data, waiting to enter name*/}
             {
-                taskState == TaskState.ENTER_NAME &&
+            taskState == TaskState.ENTER_NAME &&
                 <div className={s.stack}>
                     <input type={"text"}
                            placeholder={"name"}

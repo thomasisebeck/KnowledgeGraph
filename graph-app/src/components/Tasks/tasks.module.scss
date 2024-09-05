@@ -15,9 +15,44 @@
   width: calc(100% - 12px);
 }
 
-.stack {
-
+@keyframes fade-out {
+  0% {
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  4% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  8% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
+
+.waitingContainer {
+  animation: fade-out;
+  animation-fill-mode: forwards;
+  animation-duration: 30s;
+}
+
+.waitingContainer div {
+  margin-top: 8px;
+  margin-bottom: 5px;
+}
+
 
 button:disabled {
   color: $disabled-text;

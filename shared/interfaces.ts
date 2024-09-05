@@ -77,6 +77,11 @@ export interface ConnectionPath {
     secondNodeId: string
 }
 
+export interface TutorialResult {
+    rootNodes: GraphNode[],
+    stacksToAdd: CreateStackReturnBody[],
+}
+
 export interface RequestBody {
     infoNode: {
         label: string,

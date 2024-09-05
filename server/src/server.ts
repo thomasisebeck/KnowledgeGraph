@@ -3,7 +3,7 @@ import 'dotenv/config';
 import {Driver} from "neo4j-driver";
 import bodyParser from "body-parser";
 import sess from './session'
-import {ConnectionPath, CreateRelRequestBody, RequestBody, UpvoteResult, Task} from "../../shared/interfaces";
+import {ConnectionPath, CreateRelRequestBody, RequestBody, UpvoteResult, Task, TutorialResult} from "../../shared/interfaces";
 import q from "./queries/queries"
 import cors from 'cors'
 import m from "./mongo"
@@ -71,6 +71,17 @@ app.post('/createRel', async (req, res) => {
         console.log("SERVER ERROR")
         console.log(e)
         res.status(500).json(e as string)
+    }
+})
+
+app.get('/dummyData', async (req, res) => {
+    try {
+        const result:TutorialResult = await q.createTutorialNodes(driver);
+        console.log("AFTER CREATING DUMMY")
+        console.log(result)
+        res.status(200).json(result)
+    } catch (e) {
+        res.status(400).json(e as string)
     }
 })
 

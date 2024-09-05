@@ -10,7 +10,8 @@ import {
     RequestBodyConnection,
     Task,
     UpvoteResult,
-    VoteData
+    VoteData,
+    TutorialResult
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
 import {AddButtons} from "./components/AddButtons/AddButtons";
@@ -295,6 +296,47 @@ function App() {
             });
     }
 
+    const getDummyData = async () => {
+        console.log("GETTING DUMMY DATA")
+        console.warn("ENDPOINT NOT CODED!")
+        console.warn("USE ANOTHER GRAPH!")
+
+        fetch(`${HOST}/dummyData`)
+            .then(async (res) => {
+                console.log("result ")
+                if (!res.ok) {
+                   throw res.statusText;
+                }
+
+                const result = await res.json() as TutorialResult;
+
+                setBaseCategories(
+                    result.rootNodes.map((n: GraphNode) => {
+                        return {
+                            nodeId: n.nodeId,
+                            label: n.label.replaceAll("_", " "),
+                        };
+                    }),
+                );
+
+                //add root nodes
+                setNodes([...result.rootNodes])
+
+                //add stacks
+                result.stacksToAdd.forEach(s => {
+                    addStackToFrontend(s)
+                })
+
+                //reset the graph
+                resetGraph();
+
+            })
+            .catch((e) => {
+                setErrorMessage(e.toString())
+                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+            })
+    }
+
     //fetch the initial data and preload images
     useEffect(() => {
         const images = [
@@ -324,6 +366,8 @@ function App() {
             const image = new Image();
             image.src = "buttons/" + img;
         });
+
+        getDummyData()
     }, []);
 
     //handle selecting edges
@@ -440,6 +484,8 @@ function App() {
     const addStackToFrontend = (body: CreateStackReturnBody) => {
         const requestNodes = body.nodes as GraphNode[];
         const requestRelationships = body.relationships;
+
+        console.log("ADDING STACK...")
 
         //add all these relationships to upvoted and downvoted edges so they cannot be modified
         //by the person who created them!
