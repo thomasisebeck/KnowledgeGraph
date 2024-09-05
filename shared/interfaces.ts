@@ -14,6 +14,7 @@ export interface VoteData {
     upvotedEdges: string[],
     downvotedEdges: string[]
 }
+
 export interface GraphNode {
     isExpanded?: boolean,
     label: string

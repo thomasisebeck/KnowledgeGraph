@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import MyNetwork from "./components/MyNetwork/MyNetwork.js";
 import {
     CreateStackReturnBody,
@@ -10,28 +10,31 @@ import {
     RequestBodyConnection,
     Task,
     UpvoteResult,
-    VoteData
+    VoteData,
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
-import {AddButtons} from "./components/AddButtons/AddButtons";
+import { AddButtons } from "./components/AddButtons/AddButtons";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddPhase, Phase} from "./interfaces";
-import {BASE_CATEGORY_INDEX, ERROR_MESSAGE_TIMEOUT, HOST} from "../../shared/variables";
+import { AddPhase, Phase } from "./interfaces";
+import {
+    BASE_CATEGORY_INDEX,
+    ERROR_MESSAGE_TIMEOUT,
+    HOST,
+} from "../../shared/variables";
 import s from "./App.module.scss";
-import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
+import { upvoteDownvoteButtons } from "./components/UpvoteDownvoteButtons";
 import Tasks from "./components/Tasks/Tasks";
 import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
 import CategoryComp from "./components/Category/CategoryComp";
-import {UpdateType} from "./components/AddStackDialogue/DialogueUtils";
-import {HoverImage} from "./components/HoverImage/HoverImage";
+import { UpdateType } from "./components/AddStackDialogue/DialogueUtils";
+import { HoverImage } from "./components/HoverImage/HoverImage";
 import Error from "./components/Error/Error";
 
 function App() {
-
     //graph components
     const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
-    const [mustReset, setMustReset] = useState(true)
+    const [mustReset, setMustReset] = useState(true);
     const [displayLabels, setDisplayLabels] = useState(true);
 
     //creating a stack
@@ -52,11 +55,14 @@ function App() {
     });
 
     //loading and showing dialogues
-    const [showAddStackDialogue, setShowAddStackDialogue] = useState<boolean>(false);
+    const [showAddStackDialogue, setShowAddStackDialogue] =
+        useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     //show dropdown
-    const [baseCategories, setBaseCategories] = useState<FrontendBaseCateogries[]>([]);
+    const [baseCategories, setBaseCategories] = useState<
+        FrontendBaseCateogries[]
+    >([]);
 
     //adding categories between nodes
     const [categories, setCategories] = useState<RequestBodyConnection[]>([
@@ -87,216 +93,78 @@ function App() {
         providedAnswer: "",
         totalTime: 0,
         totalClicks: 0,
-        username: ""
-    })
+        username: "",
+    });
 
-    const [upvotedEdges, setUpvotedEdges] = useState<string[]>([])
-    const [downvotedEdges, setDownvotedEdges] = useState<string[]>([])
+    const [upvotedEdges, setUpvotedEdges] = useState<string[]>([]);
+    const [downvotedEdges, setDownvotedEdges] = useState<string[]>([]);
 
     const updateStatObject = (newObj: Task) => {
-        setStatObject({...newObj})
-    }
+        setStatObject({ ...newObj });
+    };
+
+    const [currStep, setCurrStep] = useState(0);
+
+    const tutorialSteps: string[] = [
+        "Welcome to Connections! \n This tutorial will guide you around the interface",
+    ];
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
+        console.error("expanding not implemented");
 
-        //expand the snippet of an info node
-        if (newNode.snippet) {
-
-            //create new id's so as not to conflict
-            const INFO_ID = newNode.nodeId + "-info";
-            const REL_ID = newNode.nodeId + "-rel";
-
-            //check that no duplicates are added
-            for (const n of nodes) {
-                if (n.nodeId == INFO_ID) return;
-            }
-
-            //add the node
-            setNodes([
-                {
-                    nodeId: INFO_ID,
-                    label: newNode.label,
-                    snippet: newNode.snippet,
-                    nodeType: "INFO",
-                },
-                ...nodes,
-            ]);
-
-            //add rel
-            setRelationships([
-                {
-                    direction: Direction.AWAY,
-                    votes: 5,
-                    relId: REL_ID,
-                    from: newNode.nodeId,
-                    to: INFO_ID,
-                    type: "",
-                },
-                ...relationships,
-            ]);
-
-            return;
+        switch (newNode.nodeId) {
+            case "ethics":
+                break;
+            case "nature":
+                break;
+            case "science":
+                break;
         }
-
-        //expand a classification node
-        const DEPTH = 2;
-
-        //expand the node
-        const nodesCopy = nodes
-
-        //set node white for initial expansion
-        setNodes([...nodesCopy])
-
-
-        if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
-
-            console.log("getting neighborhood")
-            let success = true;
-
-            const neighborhood = await fetch(
-                `${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`,
-            ).then(async (res) => {
-
-                if (!res.ok) {
-                    setErrorMessage(res.statusText);
-                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-                    return;
-                }
-
-                return await res.json();
-            }).catch((e) => {
-                setErrorMessage(e.toString())
-                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-                success = false;
-            })
-
-            if (!success)
-                return;
-
-            //use the copy to keep the white node
-            const newNodes = nodesCopy;
-
-            let currExpandedNodes = 0;
-
-            let hasFound = false;
-
-            for (const node of neighborhood.nodes) {
-                const index = newNodes.findIndex(
-                    (n) => n.nodeId == node.nodeId,
-                );
-                if (index == -1) {
-                    //add each node not found in the current nodes
-                    newNodes.push(node);
-                    currExpandedNodes++;
-
-                    //check if the target node is now in the neighborhood
-                    //check if it hasn't been set yet
-                    console.log("node id: ", node.nodeId)
-                    console.log("target id: ", statObject.targetNodeId)
-                    console.log("stat object: ", statObject.clicksTillInNeighborhood)
-                    console.log("setting to: ", statObject.totalClicks)
-
-                    if (node.nodeId == statObject.targetNodeId && statObject.clicksTillInNeighborhood == 0) {
-                        console.warn("set current clicks to in neighborhood")
-                        hasFound = true;
-                    }
-                }
-            }
-
-            const newRels = relationships;
-            for (const rel of neighborhood.relationships) {
-                const index = newRels.findIndex((r) => r.relId == rel.relId);
-                if (index == -1) newRels.push(rel);
-            }
-
-            //set the nodes, taking into account the expanded node
-            setNodes(newNodes.map(n => {
-                if (n.nodeId == newNode.nodeId) {
-                    return {
-                        ...n,
-                        isExpanded: true
-                    }
-                }
-                return n;
-            }));
-
-            setRelationships([...newRels]);
-
-            //add the current expanded nodes to the object
-            if (hasFound)
-                setStatObject({
-                    ...statObject,
-                    totalClicks: statObject.totalClicks + 1,
-                    clicksTillInNeighborhood: statObject.totalClicks + 1,
-                    expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
-                })
-            else
-                setStatObject({
-                    ...statObject,
-                    totalClicks: statObject.totalClicks + 1,
-                    expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
-                })
-        }
-
     };
 
     //initial data from database
-    function getData(username: string) {
-        fetch(`${HOST}/initialData/${username}`)
-            .then(async (res) => {
+    function getData() {
+        const nodes: GraphNode[] = [
+            {
+                label: "ethics",
+                nodeId: "ethics",
+                nodeType: "Root",
+            },
+            {
+                label: "nature",
+                nodeId: "nature",
+                nodeType: "Root",
+            },
+            {
+                label: "science",
+                nodeId: "science",
+                nodeType: "Root",
+            },
+        ];
 
-                if (!res.ok) {
-                    console.error(res.status)
-                    setErrorMessage("Failed to get initial data")
-                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-                    return;
-                }
+        //set the categories for the dropdown menu
+        setBaseCategories(
+            nodes.map((n: GraphNode) => {
+                return {
+                    nodeId: n.nodeId,
+                    label: n.label.replaceAll("_", " "),
+                };
+            }),
+        );
 
-                const data = await res.json();
-
-                const nodes = data.topicNodes as GraphNode[];
-                const voteData = data.voteData as VoteData;
-
-                console.log("vote data:")
-                console.log(voteData)
-
-                setUpvotedEdges([...voteData.upvotedEdges])
-                setDownvotedEdges([...voteData.downvotedEdges])
-
-                //set the categories for the dropdown menu
-                setBaseCategories(
-                    nodes.map((n: GraphNode) => {
-                        return {
-                            nodeId: n.nodeId,
-                            label: n.label.replaceAll("_", " "),
-                        };
-                    }),
-                );
-
-                //add nodes to frontend
-                setNodes(
-                    nodes.map((n: GraphNode) => {
-                        return {
-                            nodeId: n.nodeId,
-                            label: n.label,
-                            snippet: undefined,
-                            isSnippetNode: false,
-                            nodeType: n.nodeType,
-                        };
-                    }),
-                );
-
-                //after the graph has settled, allow the layout to be reset again
-                setTimeout(() => {
-                    setMustReset(false)
-                }, 10)
-
-            })
-            .catch((e) => {
-                setErrorMessage(e.toString())
-                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-            });
+        //add nodes to frontend
+        setNodes(
+            nodes.map((n: GraphNode) => {
+                return {
+                    nodeId: n.nodeId,
+                    label: n.label,
+                    snippet: undefined,
+                    isSnippetNode: false,
+                    nodeType: n.nodeType,
+                };
+            }),
+        );
     }
 
     //fetch the initial data and preload images
@@ -328,6 +196,8 @@ function App() {
             const image = new Image();
             image.src = "buttons/" + img;
         });
+
+        getData();
     }, []);
 
     //handle selecting edges
@@ -397,9 +267,12 @@ function App() {
                         try {
                             expandNode(node);
                         } catch (e) {
-                            console.error("CAUGHT ERROR")
-                            setErrorMessage(e as string)
-                            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                            console.error("CAUGHT ERROR");
+                            setErrorMessage(e as string);
+                            setTimeout(
+                                () => setErrorMessage(null),
+                                ERROR_MESSAGE_TIMEOUT,
+                            );
                         }
                         return;
                     }
@@ -408,35 +281,32 @@ function App() {
     }, [selectedNodeId]);
 
     useEffect(() => {
+        if (statObject.username == "" || statObject.username == null) return;
 
-        if (statObject.username == "" || statObject.username == null)
-            return;
-
-        console.log("SENDING POST TO UPDATE EDGE LIST")
+        console.log("SENDING POST TO UPDATE EDGE LIST");
 
         const body: VoteData = {
             username: statObject.username,
             upvotedEdges: upvotedEdges,
-            downvotedEdges: downvotedEdges
+            downvotedEdges: downvotedEdges,
         };
 
         //send the new upvoted edges list to the mongo table
         fetch(`${HOST}/updateEdgeList`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'Application/json'
+                "Content-Type": "Application/json",
             },
-            body: JSON.stringify(body)
-        })
-            .then(result => {
-                if (!result.ok) {
-                    setErrorMessage("Failed up update edge list")
-                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-                }
+            body: JSON.stringify(body),
+        }).then((result) => {
+            if (!result.ok) {
+                setErrorMessage("Failed up update edge list");
+                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
+            }
 
-                console.log("result on frontend:")
-                console.log(result)
-            })
+            console.log("result on frontend:");
+            console.log(result);
+        });
     }, [upvotedEdges, downvotedEdges]);
 
     //hide the dialogue and update the nodes and relationships
@@ -448,16 +318,15 @@ function App() {
         //add all these relationships to upvoted and downvoted edges so they cannot be modified
         //by the person who created them!
 
-        for (const n of requestNodes)
-            updateNode(n);
+        for (const n of requestNodes) updateNode(n);
 
         //update or add rel
         for (const r of requestRelationships) {
             //add to upvoted and downvoted lists to prevent
             //the person who added the post from voting on it
 
-            setUpvotedEdges([...upvotedEdges, r.relId])
-            setDownvotedEdges([...downvotedEdges, r.relId])
+            setUpvotedEdges([...upvotedEdges, r.relId]);
+            setDownvotedEdges([...downvotedEdges, r.relId]);
             updateRelationship(r);
         }
 
@@ -477,11 +346,15 @@ function App() {
     }
 
     //update one of the categories during adding a stack or path
-    function updateCategory(index: number, updateType: UpdateType, value: string | Direction) {
+    function updateCategory(
+        index: number,
+        updateType: UpdateType,
+        value: string | Direction,
+    ) {
         if (index == BASE_CATEGORY_INDEX) {
             //update base category
             if (!setBaseCategory) {
-                setErrorMessage("check assignment, base category not found")
+                setErrorMessage("check assignment, base category not found");
             }
 
             switch (updateType) {
@@ -513,7 +386,7 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return {...e, direction: value as Direction};
+                            return { ...e, direction: value as Direction };
                         return e;
                     }),
                 );
@@ -522,7 +395,7 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return {...e, connectionName: value as string};
+                            return { ...e, connectionName: value as string };
                         return e;
                     }),
                 );
@@ -532,7 +405,7 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return {...e, nodeName: value as string};
+                            return { ...e, nodeName: value as string };
                         return e;
                     }),
                 );
@@ -544,7 +417,7 @@ function App() {
     //conditionally add a node if it doesn't exist
     function updateNode(toAdd: GraphNode) {
         if (toAdd == null) {
-            setErrorMessage("Node is null")
+            setErrorMessage("Node is null");
             return;
         }
 
@@ -594,17 +467,16 @@ function App() {
 
     //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
-
         //return early if in upvoted or downvoted already...
         if (mustUpvote && upvotedEdges.indexOf(edgeId) !== -1) {
-            setErrorMessage("cannot upvote an edge twice")
-            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            setErrorMessage("cannot upvote an edge twice");
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
             return;
         }
 
         if (!mustUpvote && downvotedEdges.indexOf(edgeId) != -1) {
-            setErrorMessage("cannot downvote an edge twice")
-            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            setErrorMessage("cannot downvote an edge twice");
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
             return;
         }
 
@@ -621,7 +493,6 @@ function App() {
                 relId: edgeId,
             }),
         }).then(async (res) => {
-
             if (!res.ok) {
                 setErrorMessage(res.statusText);
                 return;
@@ -634,22 +505,23 @@ function App() {
             if (mustUpvote) {
                 //if in downvoted edges, remove
                 if (downvotedEdges.indexOf(edgeId) !== -1)
-                    setDownvotedEdges(downvotedEdges.filter(e => e !== edgeId))
-                else //otherwise add to upvoted edges
-                    setUpvotedEdges([...upvotedEdges, edgeId])
+                    setDownvotedEdges(
+                        downvotedEdges.filter((e) => e !== edgeId),
+                    );
+                //otherwise add to upvoted edges
+                else setUpvotedEdges([...upvotedEdges, edgeId]);
             } else {
                 //if in upvoted edges, remove
                 if (upvotedEdges.indexOf(edgeId) !== -1)
-                    setUpvotedEdges(upvotedEdges.filter(e => e !== edgeId))
-                else //otherwise add ot downvoted edges
-                    setDownvotedEdges([...downvotedEdges, edgeId])
+                    setUpvotedEdges(upvotedEdges.filter((e) => e !== edgeId));
+                //otherwise add ot downvoted edges
+                else setDownvotedEdges([...downvotedEdges, edgeId]);
             }
 
             if (relationship.newRelId != null) {
                 //todo: remove from downvoted edges and prevent from being downvoted further
-                setDownvotedEdges(downvotedEdges.filter(e => e != edgeId))
-                setDownvotedEdges([...downvotedEdges, relationship.newRelId])
-
+                setDownvotedEdges(downvotedEdges.filter((e) => e != edgeId));
+                setDownvotedEdges([...downvotedEdges, relationship.newRelId]);
 
                 //rel kept alive, add back
                 setRelationships((prevState) =>
@@ -663,7 +535,7 @@ function App() {
 
                             console.log(
                                 "returning new rel with relID" +
-                                relationship.relId,
+                                    relationship.relId,
                             );
                             return {
                                 ...rel,
@@ -699,28 +571,29 @@ function App() {
 
     //show the dialogue to add a category
     const addCategory = () => {
-        setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
+        setAddCategoryPhase({ ...addCategoryPhase, phase: Phase.FIRST });
     };
 
     //reset the nodes and edges for the next task
     const resetGraph = () => {
         setNodes((prevState) =>
-            prevState.map(n => {
-                return {
-                    ...n,
-                    isExpanded: false
-                }
-            }).filter(n => n.nodeType == "ROOT")
-        )
+            prevState
+                .map((n) => {
+                    return {
+                        ...n,
+                        isExpanded: false,
+                    };
+                })
+                .filter((n) => n.nodeType == "ROOT"),
+        );
 
         setRelationships([]);
 
         //reset the positions of the nodes
-        setMustReset(true)
+        setMustReset(true);
         setTimeout(() => {
-            setMustReset(false)
-        }, 10)
-
+            setMustReset(false);
+        }, 10);
     };
 
     //category is not blank
@@ -745,8 +618,8 @@ function App() {
         if (!isValidCategory(baseCategory)) {
             setErrorMessage("please fill out all the categories");
             setTimeout(() => {
-                setErrorMessage(null)
-            }, ERROR_MESSAGE_TIMEOUT)
+                setErrorMessage(null);
+            }, ERROR_MESSAGE_TIMEOUT);
             return;
         }
 
@@ -821,29 +694,31 @@ function App() {
 
         fetch(`${HOST}/createStack`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
-        }).then(async (res) => {
-
-            if (!res.ok) {
-                setErrorMessage(res.statusText);
-                setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
-            } else {
-                const body = (await res.json()) as CreateStackReturnBody;
-                addStackToFrontend(body);
-            }
-            setStackLoading(false);
-            setShowAddStackDialogue(false);
-        }).catch(e => {
-            setErrorMessage(e.toString())
-            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
         })
+            .then(async (res) => {
+                if (!res.ok) {
+                    setErrorMessage(res.statusText);
+                    setTimeout(
+                        () => setErrorMessage(""),
+                        ERROR_MESSAGE_TIMEOUT,
+                    );
+                } else {
+                    const body = (await res.json()) as CreateStackReturnBody;
+                    addStackToFrontend(body);
+                }
+                setStackLoading(false);
+                setShowAddStackDialogue(false);
+            })
+            .catch((e) => {
+                setErrorMessage(e.toString());
+                setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
+            });
     }
 
     return (
         <div className={s.Container}>
-
-
             {/*network displayed here when enough nodes are present (don't include edges for empty case)*/}
             {nodes.length > 0 && (
                 <MyNetwork
@@ -874,7 +749,7 @@ function App() {
             <div className={s.plus}>
                 <AddButtons
                     showAddBox={() =>
-                        setAddPhase({...addPhase, phase: Phase.FIRST})
+                        setAddPhase({ ...addPhase, phase: Phase.FIRST })
                     }
                     showAddStack={() => setShowAddStackDialogue(true)}
                     addCategory={addCategory}
@@ -886,11 +761,11 @@ function App() {
                 <AddConnectionDialogue
                     firstNode={addPhase.firstNodeId}
                     hideAddBox={() =>
-                        setAddPhase({...addPhase, phase: Phase.NONE})
+                        setAddPhase({ ...addPhase, phase: Phase.NONE })
                     }
                     secondNode={addPhase.secondNodeId}
                     reset={() =>
-                        setAddPhase({...addPhase, phase: Phase.NONE})
+                        setAddPhase({ ...addPhase, phase: Phase.NONE })
                     }
                     updateRelationship={updateRelationship}
                     setErrorMessage={setErrorMessage}
@@ -970,10 +845,14 @@ function App() {
                 </AddStackDialogue>
             )}
 
-
             {/*buttons to upvote and downvote relationships*/}
             {selectedEdgeId != null &&
-                upvoteDownvoteButtons(selectedEdgeId, upvoteEdge, upvotedEdges, downvotedEdges)}
+                upvoteDownvoteButtons(
+                    selectedEdgeId,
+                    upvoteEdge,
+                    upvotedEdges,
+                    downvotedEdges,
+                )}
 
             {/*task list for the user to complete*/}
             <Tasks
@@ -985,13 +864,36 @@ function App() {
             />
 
             <div className={s.reset}>
-                <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
-                            message={"reset the graph"} onclick={resetGraph}
-                            customPadding="45px"
+                <HoverImage
+                    normalImage={"buttons/reset.svg"}
+                    hoverImage={"buttons/reset-hover.svg"}
+                    message={"reset the graph"}
+                    onclick={resetGraph}
+                    customPadding="45px"
                 />
             </div>
 
-            {errorMessage && <Error errorMessage={errorMessage}/>}
+            <div className={s.tutorialBox}>
+                <div>
+                    {currStep < tutorialSteps.length ? (
+                        <div>
+                            <div className={s.step}>
+                                {tutorialSteps[currStep]}
+                            </div>
+                            <div className={s.buttonContainer}>
+                                <button
+                                    onClick={() => setCurrStep(currStep + 1)}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div>Tutorial complete</div>
+                    )}
+                </div>
+            </div>
+            {errorMessage && <Error errorMessage={errorMessage} />}
         </div>
     );
 }
