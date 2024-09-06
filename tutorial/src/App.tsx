@@ -12,16 +12,18 @@ import {
     INFO,
     ROOT,
     CLASS,
+    AddPhase,
+    Phase,
 } from "../../shared/interfaces";
-import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
-import { AddButtons } from "./components/AddButtons/AddButtons";
-import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import { AddPhase, Phase } from "./interfaces";
 import {
     BASE_CATEGORY_INDEX,
     ERROR_MESSAGE_TIMEOUT,
     HOST,
 } from "../../shared/variables";
+import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
+import { AddButtons } from "./components/AddButtons/AddButtons";
+import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
+
 import s from "./App.module.scss";
 import { upvoteDownvoteButtons } from "./components/UpvoteDownvoteButtons";
 import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
@@ -153,8 +155,8 @@ function App() {
         "Type 'appearance' as the final connection label, and toggle the direction to point downwards.",
         "Take one last look at how the information is logically structured, and then press the 'create stack' button to add it to the graph.",
         "Well done! You have added knowledge to the graph so that others may now find it.",
-        "The point of adding and rearranging knowledge is to help people discover information and make conceptual links!"
-    ]
+        "The point of adding and rearranging knowledge is to help people discover information and make conceptual links!",
+    ];
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -770,17 +772,18 @@ function App() {
 
     //make an api request to upvote a relationship
     const upvoteEdge = async (edgeId: string, mustUpvote: boolean) => {
-        if (mustUpvote)
-            return ;
+        if (mustUpvote) return;
 
-        setRelationships(relationships.map(r => {
-            if (r.relId == "meteorology-to-science")
-                return {
-                    ...r,
-                    votes: 1
-                }
-            return r
-        }))
+        setRelationships(
+            relationships.map((r) => {
+                if (r.relId == "meteorology-to-science")
+                    return {
+                        ...r,
+                        votes: 1,
+                    };
+                return r;
+            }),
+        );
     };
 
     //show the dialogue to add a category
@@ -872,10 +875,11 @@ function App() {
         });
         updateNode({
             label: "Spots of a ladybug",
-            snippet: "The bright spots on a ladybug act as a warning sign. They contain toxins which are unpalatable to predators.",
+            snippet:
+                "The bright spots on a ladybug act as a warning sign. They contain toxins which are unpalatable to predators.",
             nodeId: "spots-of-a-ladybug",
-            nodeType: INFO
-        })
+            nodeType: INFO,
+        });
 
         //add the relationships
         updateRelationship({
@@ -884,8 +888,8 @@ function App() {
             votes: 3,
             from: "ladybug",
             to: "spots-of-a-ladybug",
-            direction: Direction.AWAY
-        })
+            direction: Direction.AWAY,
+        });
 
         updateRelationship({
             type: "type of",
@@ -893,8 +897,8 @@ function App() {
             votes: 3,
             from: "insect",
             to: "ladybug",
-            direction: Direction.TOWARDS
-        })
+            direction: Direction.TOWARDS,
+        });
 
         updateRelationship({
             type: "subsets",
@@ -902,8 +906,8 @@ function App() {
             votes: 3,
             from: "biology",
             to: "insect",
-            direction: Direction.AWAY
-        })
+            direction: Direction.AWAY,
+        });
 
         updateRelationship({
             type: "subset",
@@ -911,10 +915,10 @@ function App() {
             votes: 3,
             from: "nature",
             to: "biology",
-            direction: Direction.AWAY
-        })
+            direction: Direction.AWAY,
+        });
 
-        setShowAddStackDialogue(false)
+        setShowAddStackDialogue(false);
     }
 
     return (
