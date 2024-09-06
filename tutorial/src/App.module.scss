@@ -55,8 +55,7 @@ $len : 33px;
 .tutorialBox {
   position: absolute;
   bottom: 0;
-  width: 30%;
-  margin-left: 35%;
+  width: 400px;
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -65,7 +64,8 @@ $len : 33px;
   color: white;
   background-color: #404040;
   border: 2px solid #555555;
-  margin-bottom: 20px;
+  margin: 20px;
+  z-index: 10;
 }
 
 .tutorialBox button {

@@ -14,7 +14,7 @@ const options = {
         barnesHut: {
             gravitationalConstant: -5000,
             centralGravity: 0.3,
-            springLength: 120,
+            springLength: 150,
             springConstant: 0.03,
             damping: 0.3,
             avoidOverlap: 0,

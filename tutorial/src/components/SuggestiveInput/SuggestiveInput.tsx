@@ -15,20 +15,20 @@ function SuggestiveInput({onBlur, placeholder, setErrorMessage}: Props) {
     const [hasChosen, setHasChosen] = React.useState(false)
 
     async function getSuggestion() {
-        if (value == "")
-            return;
-        const list: string[] = await fetch(`${HOST}/suggest/${value.trim().replaceAll(' ', '_')}`)
-            .then(res => res.json())
-            .catch(e => {
-                setErrorMessage("Error: " + e.message)
-                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
-                setList([])
-                return ;
-            })
-
-        //remove the underscores
-        //not already chosen a value
-        setList(list.map(e => e.replaceAll('_', ' ')))
+        // if (value == "")
+        //     return;
+        // const list: string[] = await fetch(`${HOST}/suggest/${value.trim().replaceAll(' ', '_')}`)
+        //     .then(res => res.json())
+        //     .catch(e => {
+        //         setErrorMessage("Error: " + e.message)
+        //         setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
+        //         setList([])
+        //         return ;
+        //     })
+        //
+        // //remove the underscores
+        // //not already chosen a value
+        // setList(list.map(e => e.replaceAll('_', ' ')))
     }
 
     useEffect(() => {

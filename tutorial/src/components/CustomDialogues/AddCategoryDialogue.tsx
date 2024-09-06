@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Dialogue from "../Dialogue/Dialogue";
 import {
     ConnectionPath,
@@ -6,34 +6,39 @@ import {
     CreateStackReturnBody,
     Direction,
     Neo4jNode,
-    RequestBodyConnection
+    RequestBodyConnection,
+    CLASS,
 } from "../../../../shared/interfaces";
-import {BASE_CATEGORY_INDEX, HOST, ERROR_MESSAGE_TIMEOUT} from "../../../../shared/variables";
+import {
+    BASE_CATEGORY_INDEX,
+    HOST,
+    ERROR_MESSAGE_TIMEOUT,
+} from "../../../../shared/variables";
 import Node from "../Node/Node";
 import CategoryComp from "../Category/CategoryComp";
-import {UpdateType} from "../AddStackDialogue/DialogueUtils";
+import { UpdateType } from "../AddStackDialogue/DialogueUtils";
 import Toggle from "../Category/Toggle";
 import s from "../AddStackDialogue/AddStackDialogue.module.scss";
 
 interface AddCategoryDialogueProps {
-    hideDialogue: () => void,
-    firstNodeId: string,
-    secondNodeId: string,
-    baseCategory: RequestBodyConnection,
+    hideDialogue: () => void;
+    firstNodeId: string;
+    secondNodeId: string;
+    baseCategory: RequestBodyConnection;
     setBaseCategory: React.Dispatch<
         React.SetStateAction<RequestBodyConnection>
-    >,
-    categories: RequestBodyConnection[],
+    >;
+    categories: RequestBodyConnection[];
     setCategories: React.Dispatch<
         React.SetStateAction<RequestBodyConnection[]>
-    >,
+    >;
     updateCategory: (
         index: number,
         updateType: UpdateType,
         value: string | Direction,
-    ) => void,
-    addStackToFrontend: (body: CreateStackReturnBody) => void,
-    setErrorMessage: React.Dispatch<React.SetStateAction<string | null>>
+    ) => void;
+    addStackToFrontend: (body: CreateStackReturnBody) => void;
+    setErrorMessage: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const AddCategoryDialogue = ({
@@ -46,53 +51,16 @@ const AddCategoryDialogue = ({
     secondNodeId,
     updateCategory,
     addStackToFrontend,
-    setErrorMessage
+    setErrorMessage,
 }: AddCategoryDialogueProps) => {
     const [startNodeName, setStartNodeName] = useState<string>("");
     const [endNodeName, setEndNodeName] = useState<string>("");
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false);
 
     //gets the start and end nodes of the connection
     const getNodes = async () => {
-        const calls = [
-            async (): Promise<Neo4jNode> =>
-                await fetch(`${HOST}/nodeName/${firstNodeId}`).then((res) => {
-
-                    if (!res.ok)
-                        throw res.statusText;
-
-                    return res.json()
-                }),
-            async (): Promise<Neo4jNode> =>
-                await fetch(`${HOST}/nodeName/${secondNodeId}`).then((res) => {
-
-                    if (!res.ok)
-                        throw res.statusText;
-
-                    return res.json()
-                }),
-        ];
-
-        try {
-
-            const [node1, node2] = await Promise.all(
-                calls.map(async (fn) => await fn()),
-            );
-            setStartNodeName(node1.properties.label);
-            setEndNodeName(node2.properties.label);
-
-            //the base connection is the start node
-            setBaseCategory({
-                ...baseCategory,
-                nodeId: node1.properties.nodeId,
-                nodeName: node1.properties.label,
-            });
-
-        } catch (e) {
-            setErrorMessage(e as string)
-            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-        }
-
+        setStartNodeName("science");
+        setEndNodeName("meteorology");
     };
 
     //get the start and end node names
@@ -114,54 +82,40 @@ const AddCategoryDialogue = ({
 
     //send the api request
     const createPath = async () => {
+        //science <- uses - geology - includes ->
 
-        setIsLoading(true)
+        const stack: CreateStackReturnBody = {
+            nodes: [
+                {
+                    label: "geology",
+                    nodeId: "geology",
+                    nodeType: CLASS,
+                },
+            ],
+            relationships: [
+                {
+                    type: "uses",
+                    relId: "geology-science",
+                    votes: 5,
+                    to: "science",
+                    from: "geology",
+                    direction: Direction.TOWARDS,
+                },
+                {
+                    type: "includes",
+                    relId: "meteorology-geology",
+                    votes: 5,
+                    to: "meteorology",
+                    from: "geology",
+                    direction: Direction.AWAY
+                },
+            ],
+        };
 
-        const nodes: string[] = categories.map(c => c.nodeName)
-        let connections: ConnectionPathConnection[] = [];
-
-        //push the base connection
-        connections.push({
-            label: baseCategory.connectionName,
-            direction: baseCategory.direction
-        });
-
-        //push each other connection
-        connections = connections.concat(categories.map(c => {
-            return {
-                label: c.connectionName,
-                direction: c.direction
-            }
-        }))
-
-        const body: ConnectionPath = {
-            firstNodeId: firstNodeId,
-            secondNodeId: secondNodeId,
-            nodes: nodes,
-            connections: connections
-        }
-
-        await fetch(`${HOST}/connectionPath`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body)
-        }).then(async res => {
-
-            hideDialogue()
-
-            if (!res.ok) {
-                setErrorMessage(res.statusText);
-                return;
-            }
-
-            const result = await res.json() as CreateStackReturnBody;
-            setIsLoading(false)
-            addStackToFrontend(result);
-        })
-
+        addStackToFrontend(stack);
+        hideDialogue();
     };
+
 
     return (
         <Dialogue
@@ -225,11 +179,11 @@ const AddCategoryDialogue = ({
             </Node>
             <button onClick={addBlankCategory}>Add Category</button>
 
-            {isLoading ?
+            {isLoading ? (
                 <button className={"buttonDisabled"}>Loading</button>
-                :
+            ) : (
                 <button onClick={createPath}>Create Path</button>
-            }
+            )}
         </Dialogue>
     );
 };

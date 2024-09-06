@@ -15,14 +15,14 @@ function AddConnectionDialogue({
     secondNode,
     reset,
     updateRelationship,
-    setErrorMessage
+    setErrorMessage,
 }: {
-    hideAddBox: () => void,
-    firstNode: string | null,
-    secondNode: string | null,
-    reset: () => void,
-    updateRelationship: (myRel1: NodeRelationship) => void,
-    setErrorMessage: (value: string | null) => void
+    hideAddBox: () => void;
+    firstNode: string | null;
+    secondNode: string | null;
+    reset: () => void;
+    updateRelationship: (myRel1: NodeRelationship) => void;
+    setErrorMessage: (value: string | null) => void;
 }) {
     const nameRef = React.useRef<HTMLInputElement | null>(null);
     const checkRef = React.useRef<HTMLInputElement | null>(null);
@@ -30,42 +30,16 @@ function AddConnectionDialogue({
 
     //function to send an api request to create a connection
     const createConnection = async (name: string, direction: Direction) => {
-        if (firstNode == null || secondNode == null) {
-            console.log("First or second is null");
-            reset();
-            return;
-        }
 
-        const body: CreateRelRequestBody = {
-            name: name,
-            toId: secondNode,
-            fromId: firstNode,
-            direction: direction,
-        };
-
-        await fetch(`${HOST}/createRel`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        }).then(async (res) => {
-            if (res.status == 200) {
-                const body = await res.json();
-
-                //get the response for the updated relationship
-                const myRel1 = body as NodeRelationship;
-
-                //search for the relationship on the existing graph and update the value
-                updateRelationship(myRel1);
-
-                return;
-            }
-
-            setErrorMessage("error: " + res.status)
-            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
-            reset();
+        updateRelationship({
+            type: 'influences',
+            relId: 'ecosystems-to-meteorology',
+            votes: 5,
+            to: 'ecosystems',
+            from: 'meteorology',
+            direction: Direction.NEUTRAL
         });
+
     };
 
     const tryCreateConnection = async () => {
@@ -84,8 +58,8 @@ function AddConnectionDialogue({
             }
         }
 
-        setErrorMessage("name is not set")
-        setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+        setErrorMessage("name is not set");
+        setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
     };
 
     return (
