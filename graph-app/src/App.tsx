@@ -428,14 +428,11 @@ function App() {
             },
             body: JSON.stringify(body)
         })
-            .then(result => {
+            .then(async result => {
                 if (!result.ok) {
                     setErrorMessage("Failed up update edge list")
                     setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
                 }
-
-                console.log("result on frontend:")
-                console.log(result)
             })
     }, [upvotedEdges, downvotedEdges]);
 
@@ -456,11 +453,11 @@ function App() {
             //add to upvoted and downvoted lists to prevent
             //the person who added the post from voting on it
 
-            setUpvotedEdges([...upvotedEdges, r.relId])
-            setDownvotedEdges([...downvotedEdges, r.relId])
             updateRelationship(r);
         }
 
+        setUpvotedEdges([...upvotedEdges, ...requestRelationships.map(r => r.relId)]);
+        setDownvotedEdges([...downvotedEdges, ...requestRelationships.map(r => r.relId)])
         setStackLoading(false);
     };
 

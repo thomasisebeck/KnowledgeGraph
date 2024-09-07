@@ -232,7 +232,7 @@ const MyNetwork = ({
 
                         return (
                             <Edge
-                                id={UNIQUE_KEY}
+                                id={r.relId}
                                 from={r.from}
                                 to={r.to}
                                 label={LABEL}

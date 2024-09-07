@@ -15,8 +15,31 @@
   width: calc(100% - 12px);
 }
 
-.stack {
+@keyframes fade-anim {
+  0% {
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 0.5;
+  }
+  9% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 
+.fade {
+  animation-fill-mode: forwards;
+  animation-duration: 10s;
+  animation-name: fade-anim;
 }
 
 button:disabled {
