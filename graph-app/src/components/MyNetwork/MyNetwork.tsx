@@ -200,7 +200,7 @@ const MyNetwork = ({
                             color={getColor(el)}
                             value={getValueBaseOnType(el.nodeType)}
                             shape={el.snippet != null ? "box" : "dot"}
-                            key={`${el.nodeId}-rerender`}
+                            key={el.nodeId}
                             id={el.nodeId}
                             label={getNodeLabel(el)}
                             margin={el.snippet != null ? 10 : 0}

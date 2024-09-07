@@ -457,7 +457,7 @@ function App() {
         }
 
         setUpvotedEdges([...upvotedEdges, ...requestRelationships.map(r => r.relId)]);
-        setDownvotedEdges([...downvotedEdges, ...requestRelationships.map(r => r.relId)])
+        setDownvotedEdges([...downvotedEdges, ...requestRelationships.map(r => r.relId)]);
         setStackLoading(false);
     };
 
