@@ -91,6 +91,18 @@ export interface FrontendBaseCateogries {
     nodeId: string,
     label: string
 }
+export enum Phase {
+    NONE,
+    FIRST,
+    SECOND,
+    ADD_BOX,
+}
+
+export interface AddPhase {
+    phase: Phase;
+    firstNodeId: string;
+    secondNodeId: string;
+}
 
 export interface NodeRelationship {
     type: string,
