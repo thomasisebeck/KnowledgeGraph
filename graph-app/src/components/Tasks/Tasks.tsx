@@ -95,7 +95,7 @@ function Tasks({
     };
 
     //get the data and let them now add knowledge to the graph
-    const loadData = () => {
+    const loadData = async () => {
         getData(username);
         setTaskState(TaskState.ADDING_KNOWLEDGE);
     };
@@ -116,7 +116,7 @@ function Tasks({
                            value={username}
                     ></input>
 
-                    <ConditionallyDisabledButton onClick={startTasks} username={username} message={"Explore the graph"}/>
+                    <ConditionallyDisabledButton onClick={loadData} username={username} message={"Explore the graph"}/>
                     <ConditionallyDisabledButton onClick={startTasks} username={username} message={"Begin timed tasks"}/>
                 </div>
 

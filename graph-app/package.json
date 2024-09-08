@@ -11,7 +11,7 @@
     "clean": "yarn cache clean --force",
     "preview": "vite preview",
     "lint:": "npx eslint",
-    "kill:": "npx kill-port 3000"
+    "kill": "npx kill-port 3000"
   },
   "dependencies": {
     "@lifeomic/react-vis-network": "^1.1.0",
