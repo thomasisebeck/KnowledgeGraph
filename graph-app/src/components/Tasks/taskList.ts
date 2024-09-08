@@ -50,7 +50,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Time provides the framework within which change occurs, allowing us to measure and understand transformations. The passage of time enables the observation of progress and shifts in states, emphasizing how time is a fundamental dimension in the process of change.
@@ -63,7 +64,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Intuition plays a crucial role in decision-making by drawing on subconscious knowledge and experiences. It provides immediate, often unspoken guidance that helps individuals make choices without extensive deliberation, relying on patterns and instincts developed over time.
@@ -76,7 +78,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Language is not just a tool for communication but also a structuring force for thought. The vocabulary and grammatical frameworks of a language influence how we conceptualize and understand ideas, thus shaping our cognitive processes and the way we perceive the world.
@@ -89,7 +92,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Ambiguity introduces the possibility of multiple interpretations and perspectives. This open-endedness can enrich understanding by allowing various viewpoints and meanings to emerge, though it also requires careful analysis to ensure accurate comprehension.
@@ -102,7 +106,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Existentialism explores the meaning of life through the lens of individual freedom and responsibility. It asserts that meaning is not given but created through personal choices and authentic living, emphasizing that each person must find their own path and purpose.
@@ -115,7 +120,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Uncertainty is a driving force in scientific inquiry as it highlights the limits of current knowledge and stimulates further research. The recognition of uncertainty encourages scientists to test hypotheses, gather data, and refine theories to expand understanding.
@@ -128,7 +134,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Justice and equality are interrelated concepts in societal contexts. Justice seeks to ensure fair distribution of resources and opportunities, while equality focuses on treating individuals the same. Together, they address how societies can balance fairness with equal treatment.
@@ -141,7 +148,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Free will and determinism represent opposing views on human agency. Free will suggests that individuals can make independent choices, while determinism posits that all events are predetermined by prior causes. The intersection of these ideas raises questions about the nature of autonomy and causality
@@ -154,7 +162,8 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 
     //Our aesthetic experiences can evoke emotional responses, inspire creativity, and reflect cultural values, thus deeply impacting our interactions with the world. Aesthetics plays a significant role in shaping human experience by influencing how we perceive and appreciate beauty and art.
@@ -167,6 +176,7 @@ export const taskList: Task[] = [
         targetNodeId: "TO FILL OUT",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: false
     },
 ];

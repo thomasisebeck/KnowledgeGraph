@@ -6,6 +6,13 @@
   background-color: #212125;
 }
 
+.hasLabelsContainer {
+  position: fixed;
+  color: white;
+  right: 5px;
+  z-index: 5;
+}
+
 .plus {
   position: absolute;
   bottom: 5px;

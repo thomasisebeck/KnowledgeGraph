@@ -87,7 +87,8 @@ function App() {
         providedAnswer: "",
         totalTime: 0,
         totalClicks: 0,
-        username: ""
+        username: "",
+        linkLabels: true
     });
 
     const [upvotedEdges, setUpvotedEdges] = useState<string[]>([]);
@@ -759,32 +760,6 @@ function App() {
             return;
         }
 
-        //all info filled out....
-        //send a request
-        //print details
-        /* (() => {
-         console.log(" ----------------------- ");
-         console.log(" > Creating stack with the following items: < ");
-         console.log("base");
-
-         console.log("nodeName: ", baseCategory.nodeName);
-         console.log("dir: ", baseCategory.direction);
-         console.log("conn name: ", baseCategory.connectionName);
-         console.log("node id: ", baseCategory.nodeId);
-         console.log(" > sub categories < ");
-
-         for (const c of categories) {
-         console.log("name: ", c.nodeName);
-         console.log("dir: ", c.direction);
-         console.log("conn name: ", c.connectionName);
-         }
-
-         console.log(" > info < ");
-         console.log(heading);
-         console.log(info);
-         console.log(" ----------------------- ");
-         })(); */
-
         //get the connections from the state
         const addedConnections: RequestBodyConnection[] = categories.map(
             (c) => {
@@ -851,6 +826,8 @@ function App() {
                     rerender={mustReset}
                     setDisplayLabels={setDisplayLabels}
                     displayLabels={displayLabels}
+                    statObject={statObject}
+                    setStatObject={setStatObject}
                 />
             )}
 
@@ -866,6 +843,23 @@ function App() {
                     <p>Click on second node</p>
                 )}
             </div>
+
+            {/*checkbox for adding link labels or not*/}
+            {
+                statObject.username == "" &&
+                <div className={s.hasLabelsContainer}>
+                    <label htmlFor={"chk"}>Link labels:</label>
+                    <input
+                        type={"checkbox"}
+                        id={"chk"}
+                        checked={displayLabels}
+                        onChange={(e) => {
+                            setDisplayLabels(e.target.checked);
+                            setStatObject({ ...statObject, linkLabels: e.target.checked });
+                        }}
+                    />
+                </div>
+            }
 
             {/*buttons to add relationships and nodes*/}
             {

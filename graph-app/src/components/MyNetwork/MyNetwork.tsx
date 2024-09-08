@@ -1,13 +1,12 @@
-import {Edge, Network, Node} from "@lifeomic/react-vis-network";
-import React, {useEffect, useRef, useState} from "react";
-import {CLASS, Direction, GraphNode, GraphType, ROOT} from "../../../../shared/interfaces";
-import s from "./myNetwork.module.scss";
+import { Edge, Network, Node } from "@lifeomic/react-vis-network";
+import React, { useEffect, useRef } from "react";
+import { CLASS, Direction, GraphNode, GraphType, ROOT } from "../../../../shared/interfaces";
 
 const options = {
     width: "100%",
     height: "100%",
     interaction: {
-        hover: true,
+        hover: true
     },
     physics: {
         maxVelocity: 20,
@@ -17,8 +16,8 @@ const options = {
             springLength: 120,
             springConstant: 0.03,
             damping: 0.3,
-            avoidOverlap: 0,
-        },
+            avoidOverlap: 0
+        }
     },
     nodes: {
         borderWidth: 3,
@@ -28,29 +27,29 @@ const options = {
             color: "rgba(0,0,0,0.5)",
             size: 10,
             x: 5,
-            y: 5,
+            y: 5
         },
         font: {
-            color: "white",
+            color: "white"
         },
         shape: "dot",
         scaling: {
             min: 15,
-            max: 25,
-        },
+            max: 25
+        }
     },
     edges: {
         font: {
             color: "#dfdfdf",
             strokeWidth: 0,
             size: 16,
-            face: "courier",
+            face: "courier"
         },
         color: {
             color: "#8f7851",
-            highlight: "#bfa684",
-        },
-    },
+            highlight: "#bfa684"
+        }
+    }
 };
 
 //for edge thickness
@@ -60,14 +59,16 @@ const NUM_ROOT_NODES = 6;
 const RADIUS = 5;
 
 const MyNetwork = ({
-    nodes,
-    relationships,
-    setSelectedEdgeId,
-    setSelectedNodeId,
-    rerender,
-    displayLabels,
-    setDisplayLabels
-}: GraphType) => {
+                       nodes,
+                       relationships,
+                       setSelectedEdgeId,
+                       setSelectedNodeId,
+                       rerender,
+                       displayLabels,
+                       setDisplayLabels,
+                       statObject,
+                       setStatObject
+                   }: GraphType) => {
 
     //get a reference to the network object
     const networkRef = useRef(null);
@@ -118,12 +119,12 @@ const MyNetwork = ({
 
         switch (n.nodeType) {
             case ROOT:
-                return n.isExpanded ? "#c3c3c3" : "#a6e68a"
+                return n.isExpanded ? "#c3c3c3" : "#a6e68a";
             case CLASS:
                 return n.isExpanded ? "#777777" : "#87b66f";
         }
 
-        console.error("could not find Node type!!!")
+        console.error("could not find Node type!!!");
     };
 
     //get the size of the node based on it's type
@@ -174,23 +175,10 @@ const MyNetwork = ({
         const angle = 360 / NUM_ROOT_NODES * index;
         const radians = angle * (Math.PI / 180);
         return RADIUS * (isX ? Math.cos(radians) : Math.sin(radians)) * 25;
-    }
+    };
 
     return (
         <React.Fragment>
-            {/*checkbox for adding link labels or not*/}
-            <div className={s.hasLabelsContainer}>
-                <label htmlFor={"chk"}>Link labels:</label>
-                <input
-                    type={"checkbox"}
-                    id={"chk"}
-                    checked={displayLabels}
-                    onChange={(e) => {
-                        setDisplayLabels(e.target.checked);
-                    }}
-                />
-            </div>
-
             <Network options={options} ref={networkRef}>
 
                 {/*render the nodes*/}

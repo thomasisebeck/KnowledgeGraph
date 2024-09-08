@@ -112,6 +112,7 @@ function Tasks({
                            placeholder={"name"}
                            onChange={(e) => {
                                setUsername(e.target.value);
+                               setStatObject({...statObject, username: e.target.value});
                            }}
                            value={username}
                     ></input>

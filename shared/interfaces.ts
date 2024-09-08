@@ -8,6 +8,7 @@ export interface Task {
     clicksTillInNeighborhood: number;
     totalClicks: number;
     username: string;
+    linkLabels: boolean;
 }
 export interface VoteData {
     username: string,
@@ -144,7 +145,9 @@ export interface GraphType {
     setSelectedEdgeId: (edgeId: string | null) => void
     displayLabels: boolean,
     setDisplayLabels: (newValue: boolean) => void
-    rerender: boolean
+    rerender: boolean,
+    statObject: Task, 
+    setStatObject: (newObject: Task) => void
 }
 
 export interface HoverImageInterface {
