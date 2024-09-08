@@ -7,6 +7,7 @@ import {
 import Dialogue from "../Dialogue/Dialogue";
 import { ERROR_MESSAGE_TIMEOUT, HOST } from "../../../../shared/variables";
 import Error from "../Error/Error";
+import { infoHover } from "../../InfoHover";
 
 //dialogue to add a connection between two nodes
 function AddConnectionDialogue({
@@ -91,11 +92,15 @@ function AddConnectionDialogue({
     return (
         <React.Fragment>
             <Dialogue hideDialogue={hideAddBox} title={"Create Connection"}>
+                {infoHover(5, 13, "Connect two nodes together with a single connection. This will allow others to find information through a new path.", 350)}
+
                 <div>
-                    <label>Name the connection:</label>
+                    {infoHover(2, 51, "Name the connection. This will be the label.", 200)}
+                    <label>Connection name:</label>
                     <input type={"text"} ref={nameRef} />
                 </div>
                 <div>
+                    {infoHover(2, 90, "Will the connection point one way or both ways?", 200)}
                     <label>Double sided:</label>
                     <input type={"checkbox"} ref={checkRef} />
                 </div>

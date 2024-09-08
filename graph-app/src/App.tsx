@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import MyNetwork from "./components/MyNetwork/MyNetwork.js";
 import {
     CreateStackReturnBody,
@@ -25,6 +25,7 @@ import CategoryComp from "./components/Category/CategoryComp";
 import { UpdateType } from "./components/AddStackDialogue/DialogueUtils";
 import { HoverImage } from "./components/HoverImage/HoverImage";
 import Error from "./components/Error/Error";
+import { infoHover } from "./InfoHover";
 
 function App() {
 
@@ -812,6 +813,7 @@ function App() {
         });
     }
 
+    // @ts-ignore
     return (
         <div className={s.Container}>
 
@@ -947,26 +949,31 @@ function App() {
                         setErrorMessage={setErrorMessage}
                     />
 
+
+
                     {/* other custom categories that the user added */}
-                    <div className={s.categoriesContainer}>
+                    <div className={'categoriesContainer'}>
                         {categories.map(
                             (
                                 c,
                                 index // for each new category added
                             ) => (
-                                <CategoryComp
-                                    key={index}
-                                    index={index}
-                                    updateCategory={updateCategory}
-                                    c={c}
-                                    isBaseCategory={false}
-                                    categories={categories}
-                                    setCategories={setCategories}
-                                    showCancel={true}
-                                    baseCategory={baseCategory}
-                                    setBaseCategory={setBaseCategory}
-                                    setErrorMessage={setErrorMessage}
-                                />
+                                <Fragment>
+
+                                    <CategoryComp
+                                        key={index}
+                                        index={index}
+                                        updateCategory={updateCategory}
+                                        c={c}
+                                        isBaseCategory={false}
+                                        categories={categories}
+                                        setCategories={setCategories}
+                                        showCancel={true}
+                                        baseCategory={baseCategory}
+                                        setBaseCategory={setBaseCategory}
+                                        setErrorMessage={setErrorMessage}
+                                    />
+                                </Fragment>
                             )
                         )}
                     </div>

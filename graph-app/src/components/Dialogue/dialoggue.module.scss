@@ -16,7 +16,8 @@
   background-color: #39405c;
   border-radius: $border-rad;
   padding: $padding;
-  width: 385px;
+  width: 400px;
+  position: relative;
 }
 
 .box h3 {
@@ -26,9 +27,10 @@
 }
 
 .box label {
-  width: 170px;
+  width: 162px;
   display: inline-block;
   transform: translateY(-3px);
+  padding-left: 18px;
 }
 
 .background {

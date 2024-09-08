@@ -14,6 +14,8 @@ import CategoryComp from "../Category/CategoryComp";
 import {UpdateType} from "../AddStackDialogue/DialogueUtils";
 import Toggle from "../Category/Toggle";
 import s from "../AddStackDialogue/AddStackDialogue.module.scss";
+import a from "../../App.module.scss"
+import { infoHover } from "../../InfoHover";
 
 interface AddCategoryDialogueProps {
     hideDialogue: () => void,
@@ -168,7 +170,9 @@ const AddCategoryDialogue = ({
             hideDialogue={hideDialogue}
             title={"Add connection path between two nodes"}
         >
+            {infoHover(3, 13, "Connect two nodes together with a path (multiple nodes and connections). This will allow others to find information through a new path.", 350)}
             {/*starting node*/}
+            {infoHover(140, 70, "This is the starting node, and the bottom one is the ending node.", 250)}
             <Node>
                 <div>{startNodeName.replaceAll("_", " ")}</div>
             </Node>
@@ -201,7 +205,7 @@ const AddCategoryDialogue = ({
                 />
             </Toggle>
 
-            <div className={s.categoriesContainer}>
+            <div className={'categoriesContainer'}>
                 {/*connection label for the first node*/}
                 {categories.map((c, index) => (
                     <CategoryComp
