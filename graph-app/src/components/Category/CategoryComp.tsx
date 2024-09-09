@@ -75,7 +75,7 @@ export default function CategoryComp({
                     <React.Fragment>
                         {/*Node showing base category*/}
                         {infoHover(110, 27, "Fill out all the connections in the chain. This top one is the root node / category. Categories are represented as orange circles here, as they will create nodes on the graph.", 350)}
-                        {infoHover(65, 80, "Name the connections here. Change their direction by pressing on the button next to the input box", 300)}
+                        {infoHover(65, 80, "Name the connections here. Change their direction by pressing on the button next to the input box. Examples are 'influences', 'gives rise to', 'associated with', 'relates to', 'causes', 'depends on', 'contains', 'implies', 'is similar to'", 300)}
                         <Node>
                             <select
                                 name={"base-category"}

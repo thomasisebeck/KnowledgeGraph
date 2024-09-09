@@ -13,7 +13,7 @@ const options = {
         barnesHut: {
             gravitationalConstant: -5000,
             centralGravity: 0.3,
-            springLength: 120,
+            springLength: 250,
             springConstant: 0.03,
             damping: 0.3,
             avoidOverlap: 0
@@ -46,8 +46,9 @@ const options = {
             face: "courier"
         },
         color: {
-            color: "#8f7851",
-            highlight: "#bfa684"
+            // color: "#8f7851",
+            highlight: "#87bc8c",
+            hover: "#aee4b2"
         }
     }
 };
@@ -57,6 +58,11 @@ const THICKNESS_MULTIPLIER = 15;
 const MINIMUM_THICKNESS = 0.4;
 const NUM_ROOT_NODES = 6;
 const RADIUS = 5;
+const UPVOTE_THICKNESS_BOOST = 1.5;
+
+interface MyNetworkProps {
+    upvotedEdges: string[];
+}
 
 const MyNetwork = ({
                        nodes,
@@ -65,9 +71,8 @@ const MyNetwork = ({
                        setSelectedNodeId,
                        rerender,
                        displayLabels,
-                       setDisplayLabels,
-                       statObject,
-                       setStatObject
+                       upvotedEdges,
+                       downvotedEdges
                    }: GraphType) => {
 
     //get a reference to the network object
@@ -177,6 +182,23 @@ const MyNetwork = ({
         return RADIUS * (isX ? Math.cos(radians) : Math.sin(radians)) * 25;
     };
 
+    const isEdgeInUpvoteList = (id: string) => {
+        return upvotedEdges.indexOf(id) !== -1
+    };
+
+    const isEdgeInDownvoteList = (id: string) => {
+        return downvotedEdges.indexOf(id) !== -1
+    };
+
+    const getEdgeColor = (id: string) => {
+        if (isEdgeInUpvoteList(id))
+            return '#699364'
+        if (isEdgeInDownvoteList(id))
+            return '#8c4747'
+        return '#7e7869'
+    }
+
+
     return (
         <React.Fragment>
             <Network options={options} ref={networkRef}>
@@ -204,10 +226,14 @@ const MyNetwork = ({
                 {relationships &&
                     relationships.map((r) => {
                         const UNIQUE_KEY = `[${r.from}]-[${r.relId}]-[${r.to}]-${displayLabels ? "1" : "0"}`;
-                        const THICKNESS =
+                        let THICKNESS =
                             THICKNESS_MULTIPLIER *
                             (sigmoid(r.votes + 1) - 0.5) +
                             MINIMUM_THICKNESS;
+
+                        if (isEdgeInUpvoteList(r.relId))
+                            THICKNESS += UPVOTE_THICKNESS_BOOST;
+
                         const ARROWS =
                             r.direction == Direction.NEUTRAL
                                 ? ""
@@ -227,6 +253,8 @@ const MyNetwork = ({
                                 width={THICKNESS}
                                 arrows={ARROWS}
                                 key={UNIQUE_KEY}
+                                // color={getEdgeColor(r.relId)}
+                                color={{color: getEdgeColor(r.relId)}}
                             />
                         );
                     })}

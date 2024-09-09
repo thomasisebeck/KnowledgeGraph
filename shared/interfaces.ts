@@ -147,7 +147,9 @@ export interface GraphType {
     setDisplayLabels: (newValue: boolean) => void
     rerender: boolean,
     statObject: Task, 
-    setStatObject: (newObject: Task) => void
+    setStatObject: (newObject: Task) => void,
+    upvotedEdges: string[],
+    downvotedEdges: string[],
 }
 
 export interface HoverImageInterface {

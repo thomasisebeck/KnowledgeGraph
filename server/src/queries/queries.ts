@@ -457,15 +457,15 @@ const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelat
 }
 
 const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
-    console.log("ID: " + nodeId)
-    console.log("DEPTH: " + depth)
+    // console.log("ID: " + nodeId)
+    // console.log("DEPTH: " + depth)
 
     const relationshipsQuery =
         `MATCH (start {nodeId: '${nodeId}'})
-        MATCH p=(start)-[r*..${depth + 1}]-(end)
+        MATCH p=(start)-[r*..${depth + 1}]->(end)
         UNWIND relationships(p) AS rel
         WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
-        OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]-(startNode)
+        OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]->(startNode)
         RETURN collect(DISTINCT {
             startNodeId: startNode.nodeId,
             endNodeId: endNode.nodeId,
@@ -490,6 +490,7 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
     let toRetNodes: Node[] = [];
 
     for (const s of segments) {
+        console.log(s.isDoubleSided)
         toRetSegments = tryPushSegment(s, toRetSegments);
     }
 
@@ -504,12 +505,12 @@ const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) =>
         toRetNodes = tryPushToArray(newNode, toRetNodes, false);
     }
 
-    console.log("--------------------------")
-    console.log({
-        relationships: convertSegmentsToNodeRelationships(toRetSegments),
-        nodes: toRetNodes
-    })
-    console.log("--------------------------")
+    // console.log("--------------------------")
+    // console.log({
+    //     relationships: convertSegmentsToNodeRelationships(toRetSegments),
+    //     nodes: toRetNodes
+    // })
+    // console.log("--------------------------")
 
     return {
         relationships: convertSegmentsToNodeRelationships(toRetSegments),

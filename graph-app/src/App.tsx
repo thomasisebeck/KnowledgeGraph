@@ -830,6 +830,8 @@ function App() {
                     displayLabels={displayLabels}
                     statObject={statObject}
                     setStatObject={setStatObject}
+                    upvotedEdges={upvotedEdges}
+                    downvotedEdges={downvotedEdges}
                 />
             )}
 
