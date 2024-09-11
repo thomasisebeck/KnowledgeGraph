@@ -48,7 +48,7 @@ export const taskList: Task[] = [
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
+        targetNodeId: "fe61af91-79b9-4263-917e-2a86a1410745",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",

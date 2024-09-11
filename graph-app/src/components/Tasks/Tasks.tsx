@@ -117,7 +117,7 @@ function Tasks({
                            value={username}
                     ></input>
 
-                    <ConditionallyDisabledButton onClick={loadData} username={username} message={"Explore the graph"}/>
+                    <ConditionallyDisabledButton onClick={loadData} username={username} message={"Add information"}/>
                     <ConditionallyDisabledButton onClick={startTasks} username={username} message={"Begin timed tasks"}/>
                 </div>
 

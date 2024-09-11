@@ -135,11 +135,11 @@ app.post('/updateEdgeList', async (req, res) => {
 
 async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
     try {
-        const relString: string = req.body.relId;
-        let rel = relString.substring(relString.indexOf("]-[") + 3, relString.length);
-        rel = rel.substring(0, relString.indexOf("]-[") - 1);
 
-        await q.upVoteRelationship(driver, rel, mustUpvote).then(upvoted => {
+        if (req.body.relId == null)
+            throw "cannot vote if relid is null"
+
+        await q.upVoteRelationship(driver, req.body.relId, mustUpvote).then(upvoted => {
             const result: UpvoteResult = {
                 relId: upvoted.relId,
                 votes: upvoted.votes,
@@ -154,6 +154,7 @@ async function upOrDownVote(req: any, res: any, mustUpvote: boolean) {
 }
 
 app.post('/upvoteRel', async (req, res) => {
+
     await upOrDownVote(req, res, true);
 })
 

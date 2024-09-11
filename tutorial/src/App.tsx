@@ -96,6 +96,7 @@ function App() {
         totalTime: 0,
         totalClicks: 0,
         username: "",
+        linkLabels: false
     });
 
     const [upvotedEdges, setUpvotedEdges] = useState<string[]>([]);
@@ -937,6 +938,10 @@ function App() {
                     rerender={mustReset}
                     setDisplayLabels={setDisplayLabels}
                     displayLabels={displayLabels}
+                    statObject={statObject}
+                    setStatObject={setStatObject}
+                    upvotedEdges={upvotedEdges}
+                    downvotedEdges={downvotedEdges}
                 />
             )}
 
