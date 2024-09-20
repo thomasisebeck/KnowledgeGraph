@@ -44,7 +44,7 @@ export const taskList: Task[] = [
     //classification: existence <- relates to -> awareness <- synonyms -> consciousness - gives rise to -> states of awareness and sense of self
     {
         question: "What is a benefit of achieving a higher state of consciousness?",
-        answer: "Gaining a greater sense of oneself, one's role, and the world.",
+        answer: "The two normal states of awareness are consciousness and unconsciousness. Higher states of consciousness are often associated with spiritual or mystical experiences. It involves an elevated state of awareness where people are able to gain a greater sense of themselves, their role, and the world. Examples of this include transcendence, meditation, mindfulness, a \"runner's high,\" lucid dreaming, and flow states.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],

@@ -249,10 +249,6 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
         const from = getField(result.records, 'from') as Neo4jNode;
         const to = getField(result.records, 'to') as Neo4jNode;
 
-        console.log("NODES")
-        console.log(to)
-        console.log(from)
-
         //if undefined remove
         if (!r) {
                 console.error("UNDEFINED!")
@@ -297,7 +293,6 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
                         toExecute.push(fromStranded)
                 }
 
-
                 const strandedResults = await Promise.all(toExecute.map(
                     async fun => await executeGenericQuery(driver, fun, {})
                 ));
@@ -310,10 +305,8 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
                                 mayBeStranded = true;
                 }
 
-                console.log("Result of node is stranded...")
-                console.log(mayBeStranded);
-
                 if (!mayBeStranded) {
+                        //delete connection
                         return {
                                 relId: r.properties.relId,
                                 votes: 0
@@ -323,26 +316,25 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
                         console.log("Adding connection back")
 
                         const numRelationshipsDeleted = result.summary.counters.updates().relationshipsDeleted;
-                        let res;
+                        let res:NodeRelationship;
                         if (numRelationshipsDeleted === 1) {
                                 console.log("adding single sided connection")
                                 res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type,
-                                    Direction.AWAY);
+                                    Direction.AWAY, true);
                         } else {
                                 console.log("adding double sided connection")
                                 res = await findOrCreateRelationship(driver, from.properties.nodeId, to.properties.nodeId, r.type,
-                                    Direction.NEUTRAL);
+                                    Direction.NEUTRAL, true);
                         }
 
-                        console.dir(r, {depth: null})
                         console.log("VOTES")
-                        console.log(r.properties.votes.toNumber());
+                        console.log(res.relId);
 
                         //keep connection alive
                         return {
                                 relId: r.properties.relId,
                                 newRelId: res.relId,
-                                votes: INITIAL_VOTES
+                                votes: res.votes
                         }
                 }
 
@@ -358,7 +350,7 @@ const upVoteRelationship = async (driver: Driver, relId: string, mustUpvote: boo
 
 }
 
-const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction): Promise<NodeRelationship> => {
+const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, nodeIdTo: string, connName: string, direction: Direction, addingBack: boolean = false): Promise<NodeRelationship> => {
 
         if (connName.includes("-"))
                 throw "labels cannot include hyphens";
@@ -407,7 +399,7 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
              MERGE (n1)-[r:${toSnakeCase(connName)}]->(n2)
              ON CREATE SET
              r.relId = '${REL_ID}',
-             r.votes = ${INITIAL_VOTES}
+             r.votes = ${addingBack ? 1 : INITIAL_VOTES}
              RETURN r`
                 )
         }
