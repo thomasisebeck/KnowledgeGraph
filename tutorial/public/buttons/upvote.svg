@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 399.36 137.69">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #f15822;
+        stroke-width: 28px;
+      }
+
+      .cls-1, .cls-2 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        stroke: #fff;
+      }
+    </style>
+  </defs>
+  <g id="upvote_and_downvote" data-name="upvote and downvote">
+    <rect class="cls-2" x=".5" y=".5" width="398.36" height="136.69" rx="60.18" ry="60.18"/>
+    <polyline class="cls-1" points="104.69 92.76 198.46 33.14 292.23 92.76"/>
+  </g>
+</svg>

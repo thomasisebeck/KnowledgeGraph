@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 399.36 137.69">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #50c6df;
+      }
+
+      .cls-2 {
+        fill: #f15822;
+        stroke: #50c6df;
+        stroke-width: 25px;
+      }
+
+      .cls-2, .cls-3 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3 {
+        fill: #bae5f3;
+        stroke: #fff;
+      }
+    </style>
+  </defs>
+  <g id="Add_Node">
+    <rect class="cls-3" x=".5" y=".5" width="398.36" height="136.69" rx="60.18" ry="60.18"/>
+  </g>
+  <g id="Add_Node_Hover">
+    <circle class="cls-1" cx="197.03" cy="42.34" r="34.92"/>
+    <g>
+      <circle class="cls-1" cx="87.6" cy="88.45" r="34.92"/>
+      <line class="cls-2" x1="196.65" y1="40.87" x2="86.22" y2="89.75"/>
+    </g>
+    <g>
+      <circle class="cls-1" cx="305.7" cy="88.45" r="34.92"/>
+      <line class="cls-2" x1="196.65" y1="40.87" x2="307.08" y2="89.75"/>
+    </g>
+  </g>
+</svg>

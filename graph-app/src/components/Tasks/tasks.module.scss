@@ -1,0 +1,48 @@
+@import "../../variables";
+
+.container {
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  width: 400px;
+  margin-left: 20px;
+  margin-bottom: 20px;
+  flex-direction: column;
+  color: white;
+}
+
+.container input {
+  width: calc(100% - 12px);
+}
+
+@keyframes fade-anim {
+  0% {
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 0.5;
+  }
+  9% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.fade {
+  animation-fill-mode: forwards;
+  animation-duration: 10s;
+  animation-name: fade-anim;
+}
+
+button:disabled {
+  color: $disabled-text;
+  background-color: $disabled-background;
+}
