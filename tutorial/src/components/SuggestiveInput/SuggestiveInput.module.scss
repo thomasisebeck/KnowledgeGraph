@@ -1,0 +1,29 @@
+@import "../../variables";
+
+.suggestionsList {
+  position: relative;
+  z-index: 20;
+  color: black;
+  font-weight: normal;
+  border-radius: 0px 0px 4px 4px;
+  background-color: $light-blue;
+  padding: 5px;
+  max-height: 100px;
+  overflow-y: scroll;
+}
+
+.listItem {
+  cursor: pointer;
+  background-color: $light-blue;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.listItem:hover {
+  background-color: white;
+  color: black;
+}
+
+.container {
+
+}

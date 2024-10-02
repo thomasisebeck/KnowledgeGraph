@@ -2,6 +2,7 @@ import React from "react";
 import Dialogue from "../Dialogue/Dialogue";
 import s from "./AddStackDialogue.module.scss";
 import { RequestBodyConnection } from "../../../../shared/interfaces";
+import { infoHover } from "../../InfoHover";
 
 function AddStackDialogue({
     hideAddStackDialogue,
@@ -28,6 +29,8 @@ function AddStackDialogue({
             title={"Create Connection Stack"}
         >
 
+            {infoHover(65, 12, "Overlay a stack onto the graph. A stack is a bunch of connections and classification nodes that starts from a root node and ends at the piece of information you want to add. Try to add logical links.", 400)}
+
             {/* base category with dropdown (passed down)*/}
             {/* show the custom categories the user has added */}
             {children}
@@ -41,11 +44,13 @@ function AddStackDialogue({
 
             {/* for filling out the information */}
             <div className={s.textDiv}>
+                {infoHover(0, -5, "Give the information a meaningful title. Try to keep it short.", 250)}
+                <label>Title</label>
                 <input
                     type={"text"}
                     onBlur={(e) => setHeading(e.target.value)}
-                    placeholder={"title"}
                 />
+                {infoHover(0, 57, "Add the information here.", 200)}
                 <label>Information</label>
                 <textarea
                     onBlur={(e) => {

@@ -6,6 +6,13 @@
   background-color: #212125;
 }
 
+.hasLabelsContainer {
+  position: fixed;
+  color: white;
+  right: 5px;
+  z-index: 5;
+}
+
 .plus {
   position: absolute;
   bottom: 5px;
@@ -37,10 +44,7 @@
   height: 38px;
 }
 
-.categoriesContainer {
-  height: 250px;
-  overflow-y: scroll;
-}
+
 
 $len : 33px;
 .reset {
@@ -51,3 +55,11 @@ $len : 33px;
   width: $len;
   height: $len;
 }
+
+
+//.baseInfo {
+//  position: absolute;
+//  left: 243px;
+//  top: 47px;
+//}
+

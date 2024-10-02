@@ -8,12 +8,14 @@ export interface Task {
     clicksTillInNeighborhood: number;
     totalClicks: number;
     username: string;
+    linkLabels: boolean;
 }
 export interface VoteData {
     username: string,
     upvotedEdges: string[],
     downvotedEdges: string[]
 }
+
 export interface GraphNode {
     isExpanded?: boolean,
     label: string
@@ -90,6 +92,18 @@ export interface FrontendBaseCateogries {
     nodeId: string,
     label: string
 }
+export enum Phase {
+    NONE,
+    FIRST,
+    SECOND,
+    ADD_BOX,
+}
+
+export interface AddPhase {
+    phase: Phase;
+    firstNodeId: string;
+    secondNodeId: string;
+}
 
 export interface NodeRelationship {
     type: string,
@@ -131,7 +145,11 @@ export interface GraphType {
     setSelectedEdgeId: (edgeId: string | null) => void
     displayLabels: boolean,
     setDisplayLabels: (newValue: boolean) => void
-    rerender: boolean
+    rerender: boolean,
+    statObject: Task, 
+    setStatObject: (newObject: Task) => void,
+    upvotedEdges: string[],
+    downvotedEdges: string[],
 }
 
 export interface HoverImageInterface {

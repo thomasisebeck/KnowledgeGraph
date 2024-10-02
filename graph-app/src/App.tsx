@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import MyNetwork from "./components/MyNetwork/MyNetwork.js";
 import {
     CreateStackReturnBody,
@@ -13,25 +13,26 @@ import {
     VoteData
 } from "../../shared/interfaces";
 import AddConnectionDialogue from "./components/CustomDialogues/AddConnectionDialogue";
-import {AddButtons} from "./components/AddButtons/AddButtons";
+import { AddButtons } from "./components/AddButtons/AddButtons";
 import AddStackDialogue from "./components/AddStackDialogue/AddStackDialogue";
-import {AddPhase, Phase} from "./interfaces";
-import {BASE_CATEGORY_INDEX, ERROR_MESSAGE_TIMEOUT, HOST} from "../../shared/variables";
+import { AddPhase, Phase } from "./interfaces";
+import { BASE_CATEGORY_INDEX, ERROR_MESSAGE_TIMEOUT, HOST } from "../../shared/variables";
 import s from "./App.module.scss";
-import {upvoteDownvoteButtons} from "./components/UpvoteDownvoteButtons";
+import { upvoteDownvoteButtons } from "./components/UpvoteDownvoteButtons";
 import Tasks from "./components/Tasks/Tasks";
 import AddCategoryDialogue from "./components/CustomDialogues/AddCategoryDialogue";
 import CategoryComp from "./components/Category/CategoryComp";
-import {UpdateType} from "./components/AddStackDialogue/DialogueUtils";
-import {HoverImage} from "./components/HoverImage/HoverImage";
+import { UpdateType } from "./components/AddStackDialogue/DialogueUtils";
+import { HoverImage } from "./components/HoverImage/HoverImage";
 import Error from "./components/Error/Error";
+import { infoHover } from "./InfoHover";
 
 function App() {
 
     //graph components
     const [nodes, setNodes] = useState<GraphNode[]>([]);
     const [relationships, setRelationships] = useState<NodeRelationship[]>([]);
-    const [mustReset, setMustReset] = useState(true)
+    const [mustReset, setMustReset] = useState(true);
     const [displayLabels, setDisplayLabels] = useState(true);
 
     //creating a stack
@@ -43,12 +44,12 @@ function App() {
     const [addPhase, setAddPhase] = useState<AddPhase>({
         phase: Phase.NONE,
         secondNodeId: "",
-        firstNodeId: "",
+        firstNodeId: ""
     });
     const [addCategoryPhase, setAddCategoryPhase] = useState<AddPhase>({
         phase: Phase.NONE,
         secondNodeId: "",
-        firstNodeId: "",
+        firstNodeId: ""
     });
 
     //loading and showing dialogues
@@ -63,8 +64,8 @@ function App() {
         {
             nodeName: "new category",
             direction: Direction.NEUTRAL,
-            connectionName: "connection name",
-        },
+            connectionName: "connection name"
+        }
     ]);
 
     //creating an information node
@@ -74,7 +75,7 @@ function App() {
         connectionName: "",
         nodeId: "",
         direction: Direction.NEUTRAL,
-        nodeName: "",
+        nodeName: ""
     });
 
     //capture statistics
@@ -87,15 +88,16 @@ function App() {
         providedAnswer: "",
         totalTime: 0,
         totalClicks: 0,
-        username: ""
-    })
+        username: "",
+        linkLabels: true
+    });
 
-    const [upvotedEdges, setUpvotedEdges] = useState<string[]>([])
-    const [downvotedEdges, setDownvotedEdges] = useState<string[]>([])
+    const [upvotedEdges, setUpvotedEdges] = useState<string[]>([]);
+    const [downvotedEdges, setDownvotedEdges] = useState<string[]>([]);
 
     const updateStatObject = (newObj: Task) => {
-        setStatObject({...newObj})
-    }
+        setStatObject({ ...newObj });
+    };
 
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
@@ -118,9 +120,9 @@ function App() {
                     nodeId: INFO_ID,
                     label: newNode.label,
                     snippet: newNode.snippet,
-                    nodeType: "INFO",
+                    nodeType: "INFO"
                 },
-                ...nodes,
+                ...nodes
             ]);
 
             //add rel
@@ -131,9 +133,9 @@ function App() {
                     relId: REL_ID,
                     from: newNode.nodeId,
                     to: INFO_ID,
-                    type: "",
+                    type: ""
                 },
-                ...relationships,
+                ...relationships
             ]);
 
             return;
@@ -143,33 +145,33 @@ function App() {
         const DEPTH = 2;
 
         //expand the node
-        const nodesCopy = nodes
+        const nodesCopy = nodes;
 
         //set node white for initial expansion
-        setNodes([...nodesCopy])
+        setNodes([...nodesCopy]);
 
 
         if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
 
-            console.log("getting neighborhood")
+            console.log("getting neighborhood");
             let success = true;
 
             const neighborhood = await fetch(
-                `${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`,
+                `${HOST}/neighborhood/${newNode.nodeId}/${DEPTH}`
             ).then(async (res) => {
 
                 if (!res.ok) {
                     setErrorMessage(res.statusText);
-                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
                     return;
                 }
 
                 return await res.json();
             }).catch((e) => {
-                setErrorMessage(e.toString())
-                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                setErrorMessage(e.toString());
+                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
                 success = false;
-            })
+            });
 
             if (!success)
                 return;
@@ -183,7 +185,7 @@ function App() {
 
             for (const node of neighborhood.nodes) {
                 const index = newNodes.findIndex(
-                    (n) => n.nodeId == node.nodeId,
+                    (n) => n.nodeId == node.nodeId
                 );
                 if (index == -1) {
                     //add each node not found in the current nodes
@@ -192,13 +194,13 @@ function App() {
 
                     //check if the target node is now in the neighborhood
                     //check if it hasn't been set yet
-                    console.log("node id: ", node.nodeId)
-                    console.log("target id: ", statObject.targetNodeId)
-                    console.log("stat object: ", statObject.clicksTillInNeighborhood)
-                    console.log("setting to: ", statObject.totalClicks)
+                    console.log("node id: ", node.nodeId);
+                    console.log("target id: ", statObject.targetNodeId);
+                    console.log("stat object: ", statObject.clicksTillInNeighborhood);
+                    console.log("setting to: ", statObject.totalClicks);
 
                     if (node.nodeId == statObject.targetNodeId && statObject.clicksTillInNeighborhood == 0) {
-                        console.warn("set current clicks to in neighborhood")
+                        console.warn("set current clicks to in neighborhood");
                         hasFound = true;
                     }
                 }
@@ -216,7 +218,7 @@ function App() {
                     return {
                         ...n,
                         isExpanded: true
-                    }
+                    };
                 }
                 return n;
             }));
@@ -230,13 +232,13 @@ function App() {
                     totalClicks: statObject.totalClicks + 1,
                     clicksTillInNeighborhood: statObject.totalClicks + 1,
                     expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
-                })
+                });
             else
                 setStatObject({
                     ...statObject,
                     totalClicks: statObject.totalClicks + 1,
                     expandedNodesPerClick: [...statObject.expandedNodesPerClick, currExpandedNodes]
-                })
+                });
         }
 
     };
@@ -247,9 +249,9 @@ function App() {
             .then(async (res) => {
 
                 if (!res.ok) {
-                    console.error(res.status)
-                    setErrorMessage("Failed to get initial data")
-                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                    console.error(res.status);
+                    setErrorMessage("Failed to get initial data");
+                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
                     return;
                 }
 
@@ -258,20 +260,20 @@ function App() {
                 const nodes = data.topicNodes as GraphNode[];
                 const voteData = data.voteData as VoteData;
 
-                console.log("vote data:")
-                console.log(voteData)
+                console.log("vote data:");
+                console.log(voteData);
 
-                setUpvotedEdges([...voteData.upvotedEdges])
-                setDownvotedEdges([...voteData.downvotedEdges])
+                setUpvotedEdges([...voteData.upvotedEdges]);
+                setDownvotedEdges([...voteData.downvotedEdges]);
 
                 //set the categories for the dropdown menu
                 setBaseCategories(
                     nodes.map((n: GraphNode) => {
                         return {
                             nodeId: n.nodeId,
-                            label: n.label.replaceAll("_", " "),
+                            label: n.label.replaceAll("_", " ")
                         };
-                    }),
+                    })
                 );
 
                 //add nodes to frontend
@@ -282,20 +284,20 @@ function App() {
                             label: n.label,
                             snippet: undefined,
                             isSnippetNode: false,
-                            nodeType: n.nodeType,
+                            nodeType: n.nodeType
                         };
-                    }),
+                    })
                 );
 
                 //after the graph has settled, allow the layout to be reset again
                 setTimeout(() => {
-                    setMustReset(false)
-                }, 10)
+                    setMustReset(false);
+                }, 10);
 
             })
             .catch((e) => {
-                setErrorMessage(e.toString())
-                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                setErrorMessage(e.toString());
+                setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
             });
     }
 
@@ -321,7 +323,7 @@ function App() {
             "reset-hover.svg",
             "up-arrow.svg",
             "upvote.svg",
-            "upvote-hover.svg",
+            "upvote-hover.svg"
         ];
 
         images.forEach((img) => {
@@ -348,7 +350,7 @@ function App() {
                 setAddPhase({
                     ...addPhase,
                     phase: Phase.SECOND,
-                    firstNodeId: selectedNodeId,
+                    firstNodeId: selectedNodeId
                 });
                 return;
             }
@@ -358,7 +360,7 @@ function App() {
                 setAddPhase({
                     ...addPhase,
                     phase: Phase.ADD_BOX,
-                    secondNodeId: selectedNodeId,
+                    secondNodeId: selectedNodeId
                 });
                 return;
             }
@@ -371,7 +373,7 @@ function App() {
                 setAddCategoryPhase({
                     ...addCategoryPhase,
                     phase: Phase.SECOND,
-                    firstNodeId: selectedNodeId,
+                    firstNodeId: selectedNodeId
                 });
                 return;
             }
@@ -381,7 +383,7 @@ function App() {
                 setAddCategoryPhase({
                     ...addCategoryPhase,
                     phase: Phase.ADD_BOX,
-                    secondNodeId: selectedNodeId,
+                    secondNodeId: selectedNodeId
                 });
                 return;
             }
@@ -397,9 +399,9 @@ function App() {
                         try {
                             expandNode(node);
                         } catch (e) {
-                            console.error("CAUGHT ERROR")
-                            setErrorMessage(e as string)
-                            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                            console.error("CAUGHT ERROR");
+                            setErrorMessage(e as string);
+                            setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
                         }
                         return;
                     }
@@ -412,7 +414,7 @@ function App() {
         if (statObject.username == "" || statObject.username == null)
             return;
 
-        console.log("SENDING POST TO UPDATE EDGE LIST")
+        console.log("SENDING POST TO UPDATE EDGE LIST");
 
         const body: VoteData = {
             username: statObject.username,
@@ -422,21 +424,18 @@ function App() {
 
         //send the new upvoted edges list to the mongo table
         fetch(`${HOST}/updateEdgeList`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'Application/json'
+                "Content-Type": "Application/json"
             },
             body: JSON.stringify(body)
         })
-            .then(result => {
+            .then(async result => {
                 if (!result.ok) {
-                    setErrorMessage("Failed up update edge list")
-                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT)
+                    setErrorMessage("Failed up update edge list");
+                    setTimeout(() => setErrorMessage(null), ERROR_MESSAGE_TIMEOUT);
                 }
-
-                console.log("result on frontend:")
-                console.log(result)
-            })
+            });
     }, [upvotedEdges, downvotedEdges]);
 
     //hide the dialogue and update the nodes and relationships
@@ -456,11 +455,11 @@ function App() {
             //add to upvoted and downvoted lists to prevent
             //the person who added the post from voting on it
 
-            setUpvotedEdges([...upvotedEdges, r.relId])
-            setDownvotedEdges([...downvotedEdges, r.relId])
             updateRelationship(r);
         }
 
+        setUpvotedEdges([...upvotedEdges, ...requestRelationships.map(r => r.relId)]);
+        setDownvotedEdges([...downvotedEdges, ...requestRelationships.map(r => r.relId)]);
         setStackLoading(false);
     };
 
@@ -471,8 +470,8 @@ function App() {
             {
                 direction: Direction.NEUTRAL,
                 nodeName: "",
-                connectionName: "",
-            },
+                connectionName: ""
+            }
         ]);
     }
 
@@ -481,26 +480,26 @@ function App() {
         if (index == BASE_CATEGORY_INDEX) {
             //update base category
             if (!setBaseCategory) {
-                setErrorMessage("check assignment, base category not found")
+                setErrorMessage("check assignment, base category not found");
             }
 
             switch (updateType) {
                 case UpdateType.CONNECTION_DIRECTION:
                     setBaseCategory({
                         ...baseCategory,
-                        direction: value as Direction,
+                        direction: value as Direction
                     });
                     break;
                 case UpdateType.CONNECTION_NAME:
                     setBaseCategory({
                         ...baseCategory,
-                        connectionName: value as string,
+                        connectionName: value as string
                     });
                     break;
                 case UpdateType.NODE_NAME:
                     setBaseCategory({
                         ...baseCategory,
-                        nodeName: value as string,
+                        nodeName: value as string
                     });
                     break;
             }
@@ -513,18 +512,18 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return {...e, direction: value as Direction};
+                            return { ...e, direction: value as Direction };
                         return e;
-                    }),
+                    })
                 );
                 break;
             case UpdateType.CONNECTION_NAME:
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return {...e, connectionName: value as string};
+                            return { ...e, connectionName: value as string };
                         return e;
-                    }),
+                    })
                 );
 
                 break;
@@ -532,9 +531,9 @@ function App() {
                 setCategories(
                     categories.map((e, ind) => {
                         if (ind == index)
-                            return {...e, nodeName: value as string};
+                            return { ...e, nodeName: value as string };
                         return e;
-                    }),
+                    })
                 );
 
                 break;
@@ -544,13 +543,13 @@ function App() {
     //conditionally add a node if it doesn't exist
     function updateNode(toAdd: GraphNode) {
         if (toAdd == null) {
-            setErrorMessage("Node is null")
+            setErrorMessage("Node is null");
             return;
         }
 
         setNodes((prevState) => {
             const existingIndex = prevState.findIndex(
-                (node) => node.nodeId == toAdd.nodeId,
+                (node) => node.nodeId == toAdd.nodeId
             );
             if (existingIndex !== -1)
                 //node already added
@@ -575,14 +574,14 @@ function App() {
         //update the relationships using the prev state
         setRelationships((prevState) => {
             const existingIndex = prevState.findIndex(
-                (rel) => rel.relId === result.relId,
+                (rel) => rel.relId === result.relId
             );
 
             if (existingIndex !== -1) {
                 const toUpdate = [...prevState];
                 toUpdate[existingIndex] = {
                     ...toUpdate[existingIndex],
-                    votes: result.votes,
+                    votes: result.votes
                 };
                 return toUpdate;
             }
@@ -597,14 +596,14 @@ function App() {
 
         //return early if in upvoted or downvoted already...
         if (mustUpvote && upvotedEdges.indexOf(edgeId) !== -1) {
-            setErrorMessage("cannot upvote an edge twice")
-            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            setErrorMessage("cannot upvote an edge twice");
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
             return;
         }
 
         if (!mustUpvote && downvotedEdges.indexOf(edgeId) != -1) {
-            setErrorMessage("cannot downvote an edge twice")
-            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+            setErrorMessage("cannot downvote an edge twice");
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
             return;
         }
 
@@ -615,11 +614,11 @@ function App() {
         await fetch(URL, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                relId: edgeId,
-            }),
+                relId: edgeId
+            })
         }).then(async (res) => {
 
             if (!res.ok) {
@@ -634,21 +633,21 @@ function App() {
             if (mustUpvote) {
                 //if in downvoted edges, remove
                 if (downvotedEdges.indexOf(edgeId) !== -1)
-                    setDownvotedEdges(downvotedEdges.filter(e => e !== edgeId))
+                    setDownvotedEdges(downvotedEdges.filter(e => e !== edgeId));
                 else //otherwise add to upvoted edges
-                    setUpvotedEdges([...upvotedEdges, edgeId])
+                    setUpvotedEdges([...upvotedEdges, edgeId]);
             } else {
                 //if in upvoted edges, remove
                 if (upvotedEdges.indexOf(edgeId) !== -1)
-                    setUpvotedEdges(upvotedEdges.filter(e => e !== edgeId))
+                    setUpvotedEdges(upvotedEdges.filter(e => e !== edgeId));
                 else //otherwise add ot downvoted edges
-                    setDownvotedEdges([...downvotedEdges, edgeId])
+                    setDownvotedEdges([...downvotedEdges, edgeId]);
             }
 
             if (relationship.newRelId != null) {
                 //todo: remove from downvoted edges and prevent from being downvoted further
-                setDownvotedEdges(downvotedEdges.filter(e => e != edgeId))
-                setDownvotedEdges([...downvotedEdges, relationship.newRelId])
+                setDownvotedEdges(downvotedEdges.filter(e => e != edgeId));
+                setDownvotedEdges([...downvotedEdges, relationship.newRelId]);
 
 
                 //rel kept alive, add back
@@ -663,16 +662,16 @@ function App() {
 
                             console.log(
                                 "returning new rel with relID" +
-                                relationship.relId,
+                                relationship.relId
                             );
                             return {
                                 ...rel,
                                 relId: relationship.newRelId!,
-                                votes: relationship.votes,
+                                votes: relationship.votes
                             };
                         }
                         return rel;
-                    }),
+                    })
                 );
 
                 //nothing more to do after adding back
@@ -686,20 +685,20 @@ function App() {
                         if (rel.relId === relationship.relId)
                             return {
                                 ...rel,
-                                votes: relationship.votes,
+                                votes: relationship.votes
                             };
 
                         return rel;
                     })
                     //filter out deleted relationships
-                    .filter((rel) => rel.votes > 0),
+                    .filter((rel) => rel.votes > 0)
             );
         });
     };
 
     //show the dialogue to add a category
     const addCategory = () => {
-        setAddCategoryPhase({...addCategoryPhase, phase: Phase.FIRST});
+        setAddCategoryPhase({ ...addCategoryPhase, phase: Phase.FIRST });
     };
 
     //reset the nodes and edges for the next task
@@ -709,17 +708,17 @@ function App() {
                 return {
                     ...n,
                     isExpanded: false
-                }
+                };
             }).filter(n => n.nodeType == "ROOT")
-        )
+        );
 
         setRelationships([]);
 
         //reset the positions of the nodes
-        setMustReset(true)
+        setMustReset(true);
         setTimeout(() => {
-            setMustReset(false)
-        }, 10)
+            setMustReset(false);
+        }, 10);
 
     };
 
@@ -745,8 +744,8 @@ function App() {
         if (!isValidCategory(baseCategory)) {
             setErrorMessage("please fill out all the categories");
             setTimeout(() => {
-                setErrorMessage(null)
-            }, ERROR_MESSAGE_TIMEOUT)
+                setErrorMessage(null);
+            }, ERROR_MESSAGE_TIMEOUT);
             return;
         }
 
@@ -757,36 +756,10 @@ function App() {
 
         if (info == "") {
             setErrorMessage(
-                "please fill out information in the space provided",
+                "please fill out information in the space provided"
             );
             return;
         }
-
-        //all info filled out....
-        //send a request
-        //print details
-        /* (() => {
-             console.log(" ----------------------- ");
-             console.log(" > Creating stack with the following items: < ");
-             console.log("base");
-
-             console.log("nodeName: ", baseCategory.nodeName);
-             console.log("dir: ", baseCategory.direction);
-             console.log("conn name: ", baseCategory.connectionName);
-             console.log("node id: ", baseCategory.nodeId);
-             console.log(" > sub categories < ");
-
-             for (const c of categories) {
-                 console.log("name: ", c.nodeName);
-                 console.log("dir: ", c.direction);
-                 console.log("conn name: ", c.connectionName);
-             }
-
-             console.log(" > info < ");
-             console.log(heading);
-             console.log(info);
-             console.log(" ----------------------- ");
-         })(); */
 
         //get the connections from the state
         const addedConnections: RequestBodyConnection[] = categories.map(
@@ -794,9 +767,9 @@ function App() {
                 return {
                     nodeName: c.nodeName,
                     direction: c.direction,
-                    connectionName: c.connectionName,
+                    connectionName: c.connectionName
                 };
-            },
+            }
         );
 
         //construct the request
@@ -806,14 +779,14 @@ function App() {
                 {
                     connectionName: baseCategory.connectionName,
                     nodeName: baseCategory.nodeName,
-                    direction: baseCategory.direction,
+                    direction: baseCategory.direction
                 },
-                ...addedConnections,
+                ...addedConnections
             ],
             infoNode: {
                 label: heading,
-                snippet: info,
-            },
+                snippet: info
+            }
         };
 
         //button loading
@@ -821,13 +794,13 @@ function App() {
 
         fetch(`${HOST}/createStack`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(body),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
         }).then(async (res) => {
 
             if (!res.ok) {
                 setErrorMessage(res.statusText);
-                setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
+                setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
             } else {
                 const body = (await res.json()) as CreateStackReturnBody;
                 addStackToFrontend(body);
@@ -835,11 +808,12 @@ function App() {
             setStackLoading(false);
             setShowAddStackDialogue(false);
         }).catch(e => {
-            setErrorMessage(e.toString())
-            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT)
-        })
+            setErrorMessage(e.toString());
+            setTimeout(() => setErrorMessage(""), ERROR_MESSAGE_TIMEOUT);
+        });
     }
 
+    // @ts-ignore
     return (
         <div className={s.Container}>
 
@@ -854,6 +828,10 @@ function App() {
                     rerender={mustReset}
                     setDisplayLabels={setDisplayLabels}
                     displayLabels={displayLabels}
+                    statObject={statObject}
+                    setStatObject={setStatObject}
+                    upvotedEdges={upvotedEdges}
+                    downvotedEdges={downvotedEdges}
                 />
             )}
 
@@ -870,27 +848,56 @@ function App() {
                 )}
             </div>
 
+            {/*checkbox for adding link labels or not*/}
+            {
+                statObject.username == "" &&
+                <div className={s.hasLabelsContainer}>
+                    <label htmlFor={"chk"}>Link labels:</label>
+                    <input
+                        type={"checkbox"}
+                        id={"chk"}
+                        checked={displayLabels}
+                        onChange={(e) => {
+                            setDisplayLabels(e.target.checked);
+                            setStatObject({ ...statObject, linkLabels: e.target.checked });
+                        }}
+                    />
+                </div>
+            }
+
             {/*buttons to add relationships and nodes*/}
-            <div className={s.plus}>
-                <AddButtons
-                    showAddBox={() =>
-                        setAddPhase({...addPhase, phase: Phase.FIRST})
-                    }
-                    showAddStack={() => setShowAddStackDialogue(true)}
-                    addCategory={addCategory}
-                />
-            </div>
+            {
+                statObject.username != "" &&
+                <React.Fragment>
+                    <div className={s.reset}>
+                        <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
+                                    message={"reset the graph"} onclick={resetGraph}
+                                    customPadding="45px"
+                        />
+                    </div>
+
+                    <div className={s.plus}>
+                        <AddButtons
+                            showAddBox={() =>
+                                setAddPhase({ ...addPhase, phase: Phase.FIRST })
+                            }
+                            showAddStack={() => setShowAddStackDialogue(true)}
+                            addCategory={addCategory}
+                        />
+                    </div>
+                </React.Fragment>
+            }
 
             {/* when the add connection phase requires the dialogue to be shown, */}
             {addPhase.phase == Phase.ADD_BOX && (
                 <AddConnectionDialogue
                     firstNode={addPhase.firstNodeId}
                     hideAddBox={() =>
-                        setAddPhase({...addPhase, phase: Phase.NONE})
+                        setAddPhase({ ...addPhase, phase: Phase.NONE })
                     }
                     secondNode={addPhase.secondNodeId}
                     reset={() =>
-                        setAddPhase({...addPhase, phase: Phase.NONE})
+                        setAddPhase({ ...addPhase, phase: Phase.NONE })
                     }
                     updateRelationship={updateRelationship}
                     setErrorMessage={setErrorMessage}
@@ -903,7 +910,7 @@ function App() {
                     hideDialogue={() =>
                         setAddCategoryPhase({
                             ...addCategoryPhase,
-                            phase: Phase.NONE,
+                            phase: Phase.NONE
                         })
                     }
                     firstNodeId={addCategoryPhase.firstNodeId}
@@ -944,27 +951,32 @@ function App() {
                         setErrorMessage={setErrorMessage}
                     />
 
+
+
                     {/* other custom categories that the user added */}
-                    <div className={s.categoriesContainer}>
+                    <div className={'categoriesContainer'}>
                         {categories.map(
                             (
                                 c,
-                                index, // for each new category added
+                                index // for each new category added
                             ) => (
-                                <CategoryComp
-                                    key={index}
-                                    index={index}
-                                    updateCategory={updateCategory}
-                                    c={c}
-                                    isBaseCategory={false}
-                                    categories={categories}
-                                    setCategories={setCategories}
-                                    showCancel={true}
-                                    baseCategory={baseCategory}
-                                    setBaseCategory={setBaseCategory}
-                                    setErrorMessage={setErrorMessage}
-                                />
-                            ),
+                                <Fragment>
+
+                                    <CategoryComp
+                                        key={index}
+                                        index={index}
+                                        updateCategory={updateCategory}
+                                        c={c}
+                                        isBaseCategory={false}
+                                        categories={categories}
+                                        setCategories={setCategories}
+                                        showCancel={true}
+                                        baseCategory={baseCategory}
+                                        setBaseCategory={setBaseCategory}
+                                        setErrorMessage={setErrorMessage}
+                                    />
+                                </Fragment>
+                            )
                         )}
                     </div>
                 </AddStackDialogue>
@@ -984,14 +996,8 @@ function App() {
                 getData={getData}
             />
 
-            <div className={s.reset}>
-                <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
-                            message={"reset the graph"} onclick={resetGraph}
-                            customPadding="45px"
-                />
-            </div>
 
-            {errorMessage && <Error errorMessage={errorMessage}/>}
+            {errorMessage && <Error errorMessage={errorMessage} />}
         </div>
     );
 }

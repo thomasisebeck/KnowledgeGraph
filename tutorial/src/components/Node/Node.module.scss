@@ -1,0 +1,22 @@
+@import "../../variables";
+
+.nodeDiv {
+  background-color: $primary;
+  border-radius: 100%;
+  width: 70px;
+  height: 70px;
+}
+
+.nodeDivOuter {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 7px;
+}
+
+.content {
+  color: white;
+  position: absolute;
+  font-weight: bold;
+  top: 21px;
+}
