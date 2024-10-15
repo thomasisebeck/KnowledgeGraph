@@ -96,7 +96,7 @@ function App() {
         totalTime: 0,
         totalClicks: 0,
         username: "",
-        linkLabels: false
+        linkLabels: false,
     });
 
     const [upvotedEdges, setUpvotedEdges] = useState<string[]>([]);
@@ -401,6 +401,7 @@ function App() {
                 });
 
                 break;
+
             case "ecology":
                 updateNode({
                     label: "ecosystems",
@@ -1085,6 +1086,15 @@ function App() {
                                 {tutorialSteps[currStep]}
                             </div>
                             <div className={s.buttonContainer}>
+                                {currStep > 0 && (
+                                    <button
+                                        onClick={() =>
+                                            setCurrStep(currStep - 1)
+                                        }
+                                    >
+                                        Prev
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setCurrStep(currStep + 1)}
                                 >
