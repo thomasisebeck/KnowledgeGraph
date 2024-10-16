@@ -130,7 +130,8 @@ export interface Segment {
         }
         type: string
     },
-    isDoubleSided: boolean
+    isDoubleSided: boolean,
+    distinctBacklink?: any
 }
 
 export interface NodePair {
