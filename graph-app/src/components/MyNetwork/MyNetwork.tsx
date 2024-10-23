@@ -15,9 +15,10 @@ const options = {
             centralGravity: 0.3,
             springLength: 250,
             springConstant: 0.03,
-            damping: 0.3,
+            damping: 0.5,
             avoidOverlap: 0
-        }
+        },
+        solver: 'forceAtlas2Based'
     },
     nodes: {
         borderWidth: 3,

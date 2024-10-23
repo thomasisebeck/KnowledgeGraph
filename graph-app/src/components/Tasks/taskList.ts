@@ -41,7 +41,7 @@ find 45% of posts not in realm 1
 export const taskList: Task[] = [
 
     {
-        question: "Into what Parts did Plato decide to divide the soul into?",
+        question: "Into what Parts did Plato decide to divide the soul?",
         answer: "Plato believed that the soul is immortal and exists independently of the body. He divided the soul into three parts: the rational part, the spirited part, and the appetitive part. A well-balanced soul, with the rational part in control, is essential for a virtuous life.",
         providedAnswer: null,
         totalTime: 0,

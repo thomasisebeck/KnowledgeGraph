@@ -102,6 +102,7 @@ function App() {
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
 
+        console.log("expanding node...")
         //expand the snippet of an info node
         if (newNode.snippet) {
 
@@ -153,7 +154,6 @@ function App() {
 
         if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
 
-            console.log("getting neighborhood");
             let success = true;
 
             const neighborhood = await fetch(
@@ -182,6 +182,8 @@ function App() {
             let currExpandedNodes = 0;
 
             let hasFound = false;
+
+            console.log("loop")
 
             for (const node of neighborhood.nodes) {
                 const index = newNodes.findIndex(
@@ -223,6 +225,8 @@ function App() {
                 return n;
             }));
 
+            console.log("done loop")
+
             setRelationships([...newRels]);
 
             //add the current expanded nodes to the object
@@ -241,6 +245,7 @@ function App() {
                 });
         }
 
+        console.log("done");
     };
 
     //initial data from database
