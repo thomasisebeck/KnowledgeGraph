@@ -47,7 +47,7 @@ function Tasks({
 
     const postTaskToServer = async (time: number) => {
 
-        const toPost = { ...statObject, totalTime: time, username: username };
+        const toPost = { ...statObject, providedAnswer: text, totalTime: time, username: username };
 
         await fetch(`${HOST}/tasks`, {
             method: "POST",
@@ -151,7 +151,11 @@ function Tasks({
                                         type={"text"}
                                         placeholder={"answer"}
                                         onChange={(e) => {
-                                            setStatObject({ ...statObject, providedAnswer: e.target.value });
+                                            // let old = statObject;
+                                            // old.providedAnswer = e.target.value;
+
+                                            // statObject.providedAnswer = e.target.value;
+                                            // setStatObject({ ...old});
                                             setText(e.target.value);
                                         }}
                                         value={text}

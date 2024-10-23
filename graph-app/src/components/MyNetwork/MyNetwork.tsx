@@ -14,9 +14,9 @@ const options = {
             gravitationalConstant: -5000,
             centralGravity: 0.3,
             springLength: 250,
-            springConstant: 0.03,
+            springConstant: 0.05,
             damping: 0.5,
-            avoidOverlap: 0
+            avoidOverlap: 20
         },
         solver: 'forceAtlas2Based'
     },

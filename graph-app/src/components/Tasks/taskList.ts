@@ -39,14 +39,25 @@ find 45% of posts not in realm 1
 */
 
 export const taskList: Task[] = [
-
     {
-        question: "Into what Parts did Plato decide to divide the soul?",
-        answer: "Plato believed that the soul is immortal and exists independently of the body. He divided the soul into three parts: the rational part, the spirited part, and the appetitive part. A well-balanced soul, with the rational part in control, is essential for a virtuous life.",
+        question: "How does recognising uncertainty aid scientists?",
+        answer: "Uncertainty is a driving force in scientific inquiry as it highlights the limits of current knowledge and stimulates further research. The recognition of uncertainty encourages scientists to test hypotheses, gather data, and refine theories to expand understanding.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "3422f038-2b9b-4125-8af6-e68a9dbb5a48",
+        targetNodeId: "81b9bdf5-7db1-428e-87ce-695b45cc1296",
+        clicksTillInNeighborhood: 0,
+        totalClicks: 0,
+        username: "",
+        linkLabels: false
+    },
+    {
+        question: "What can aesthetics do for people who wish to appreciate art?",
+        answer: "Our aesthetic experiences can evoke emotional responses, inspire creativity, and reflect cultural values, thus deeply impacting our interactions with the world. Aesthetics plays a significant role in shaping human experience by influencing how we perceive and appreciate beauty and art.",
+        providedAnswer: null,
+        totalTime: 0,
+        expandedNodesPerClick: [],
+        targetNodeId: "a86fd1c7-8fc2-4896-88a7-df8860793606",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
@@ -54,12 +65,12 @@ export const taskList: Task[] = [
     },
 
     {
-        question: "What physical law of nature can act as an explanation for time moving only in one direction?",
-        answer: "Why does time flow in one direction, from past to future? This phenomenon is closely related to the second law of thermodynamics, which states that entropy (a measure of disorder) always increases over time.",
+        question: "What paradox comments on the limitations of formal logic?",
+        answer: "The liar paradox is a classic logical puzzle that states: 'This sentence is false.' If the sentence is true, then it is false, and if it is false, then it is true. It highlights the complexities of self-reference and the limitations of formal logic.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "eb007c64-5de9-490c-ad0f-c79e37e73266",
+        targetNodeId: "fa66a744-3540-4204-8db5-860f3d4ddc93",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
@@ -67,12 +78,12 @@ export const taskList: Task[] = [
     },
 
     {
-        question: "Which theory argues that any action is intrinsically right or wrong, regardless of the consequences?",
-        answer: "Deontology is another ethical theory that emphasizes duty and obligation. It argues that certain actions are inherently right or wrong, regardless of their consequences.",
+        question: "What theory suggests that the earth has interconnected natural systems to create stability?",
+        answer: "The Earth is a self-regulating system, with its biosphere acting to maintain conditions suitable for life. This is called the Gaia hypothesis. This concept suggests that the planet's various systems, such as the atmosphere, oceans, and land, are interconnected and work together to create a stable environment.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "03aea7c9-40d9-425c-96e6-024deddd786f",
+        targetNodeId: "8eadc805-c0c7-4042-80bf-b4429b9237fd",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
@@ -80,30 +91,82 @@ export const taskList: Task[] = [
     },
 
     {
-        question: "What phenomenon occurs when a person feels the effect of a treatment based on the belief that it is working, rather than the physical results?",
-        answer: "The placebo effect is a fascinating phenomenon in which a person's belief in a treatment can influence its effectiveness, even if the treatment is ineffective. It demonstrates the powerful role of the mind in shaping our physical and psychological experiences.",
+        question: "What concept speaks of the loss of habitats as a result of human interference?",
+        answer: "Another major environmental crisis is on the rise. The loss of species and ecosystems is a result of human activities such as habitat destruction, pollution, and overexploitation. This is called Biodiversity loss.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "6e556c08-b78f-4cfe-99a0-16a21b17cd09",
+        targetNodeId: "26f3a8ed-8402-4967-9bdf-18a4d91c2c6e",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
 
-    //Existentialism explores the meaning of life through the lens of individual freedom and responsibility. It asserts that meaning is not given but created through personal choices and authentic living, emphasizing that each person must find their own path and purpose.,
-    {
-        question: "What effect does language have on the way we think?",
-        answer: "Language is not just a tool for communication but also a structuring force for thought. The vocabulary and grammatical frameworks of a language influence how we conceptualize and understand ideas, thus shaping our cognitive processes and the way we perceive the world.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "0768798-3540-478c-9f12-e346f028679e",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
+
 
 ];
+
+
+export const newTasks: Task[] = [
+    {
+        question: "What are two different types of infinity?",
+        answer: "The concept of infinity is a mind-boggling one in mathematics. It refers to something that is limitless or endless, defying our finite understanding of the world. There are different types of infinity, such as countable infinity and uncountable infinity, each with its own properties.",
+        providedAnswer: null,
+        totalTime: 0,
+        expandedNodesPerClick: [],
+        targetNodeId: "4d18c59d-27c2-4522-b882-b41c001e469a",
+        clicksTillInNeighborhood: 0,
+        totalClicks: 0,
+        username: "",
+        linkLabels: false
+    },
+    {
+        question: "What are two opposing views on the nature of reality?",
+        answer: "The nature of reality is a fundamental question that has puzzled philosophers for centuries. Some believe that reality is objective and independent of our perception, while others argue that it is subjective and shaped by our minds.",
+        providedAnswer: null,
+        totalTime: 0,
+        expandedNodesPerClick: [],
+        targetNodeId: "b6c392c8-5825-4bfb-91e6-0186248dc18d",
+        clicksTillInNeighborhood: 0,
+        totalClicks: 0,
+        username: "",
+        linkLabels: false
+    },
+    {
+        question: "What moral dilemma weighs up sacrificing one person to save many others?",
+        answer: "The trolley problem is a thought experiment that presents a moral dilemma. It asks whether it is morally acceptable to sacrifice one person to save many others. It highlights the complexities of ethical decision-making and the tension between individual rights and the greater good.",
+        providedAnswer: null,
+        totalTime: 0,
+        expandedNodesPerClick: [],
+        targetNodeId: "7c6e4e24-77da-4c28-a338-eb44b9ca2f7b",
+        clicksTillInNeighborhood: 0,
+        totalClicks: 0,
+        username: "",
+        linkLabels: false
+    },
+    {
+        question: "What philosophy suggests that one cannot prove the existence of anything outside of ones own mind?",
+        answer: "Solipsism is the philosophical idea that only one's mind is sure to exist. As an epistemological position, solipsism holds that knowledge outside one's own mind is unsure; the external world and other minds cannot be known and might not exist outside the mind.",
+        providedAnswer: null,
+        totalTime: 0,
+        expandedNodesPerClick: [],
+        targetNodeId: "1eba857c-388f-4e88-8923-2362354acfc8",
+        clicksTillInNeighborhood: 0,
+        totalClicks: 0,
+        username: "",
+        linkLabels: false
+    },
+    {
+        question: "What is it called when one experiences the discomfort caused by having conflicting internal beliefs?",
+        answer: "The psychological discomfort that arises when people hold conflicting beliefs or attitudes is known as cognitive dissonance. Individuals may engage in various strategies to reduce this discomfort, such as rationalization or denial.",
+        providedAnswer: null,
+        totalTime: 0,
+        expandedNodesPerClick: [],
+        targetNodeId: "41dc1083-a8ac-4c27-b450-8c59d7e2ba40",
+        clicksTillInNeighborhood: 0,
+        totalClicks: 0,
+        username: "",
+        linkLabels: false
+    },
+]
