@@ -38,135 +38,155 @@ find 45% of posts not in realm 1
 
 */
 
+
 export const taskList: Task[] = [
     {
-        question: "How does recognising uncertainty aid scientists?",
-        answer: "Uncertainty is a driving force in scientific inquiry as it highlights the limits of current knowledge and stimulates further research. The recognition of uncertainty encourages scientists to test hypotheses, gather data, and refine theories to expand understanding.",
+        question: "What phenomenon proves the existence of dark matter?",
+        answer: "Gravitational lensing is a phenomenon where massive objects, like galaxies and galaxy clusters, bend the path of light passing through them. This bending occurs due to the warping of spacetime caused by the object's immense gravity. By studying the distortion of light from distant galaxies, astronomers can infer the presence of invisible mass, such as dark matter.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "81b9bdf5-7db1-428e-87ce-695b45cc1296",
+        targetNodeId: "84380c7b-62e0-4183-9a47-7947aabf33fd",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
     {
-        question: "What can aesthetics do for people who wish to appreciate art?",
-        answer: "Our aesthetic experiences can evoke emotional responses, inspire creativity, and reflect cultural values, thus deeply impacting our interactions with the world. Aesthetics plays a significant role in shaping human experience by influencing how we perceive and appreciate beauty and art.",
+        question: "What values does Immanuel Kant emphasize, which he believes would drive humanity forward?",
+        answer: "Immanuel Kant's categorical imperative is a moral principle that states that one should act only in accordance with rules that could be universalized. It emphasizes the importance of duty, reason, and respect for humanity.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "a86fd1c7-8fc2-4896-88a7-df8860793606",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    {
-        question: "What paradox comments on the limitations of formal logic?",
-        answer: "The liar paradox is a classic logical puzzle that states: 'This sentence is false.' If the sentence is true, then it is false, and if it is false, then it is true. It highlights the complexities of self-reference and the limitations of formal logic.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "fa66a744-3540-4204-8db5-860f3d4ddc93",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    {
-        question: "What theory suggests that the earth has interconnected natural systems to create stability?",
-        answer: "The Earth is a self-regulating system, with its biosphere acting to maintain conditions suitable for life. This is called the Gaia hypothesis. This concept suggests that the planet's various systems, such as the atmosphere, oceans, and land, are interconnected and work together to create a stable environment.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "8eadc805-c0c7-4042-80bf-b4429b9237fd",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    {
-        question: "What concept speaks of the loss of habitats as a result of human interference?",
-        answer: "Another major environmental crisis is on the rise. The loss of species and ecosystems is a result of human activities such as habitat destruction, pollution, and overexploitation. This is called Biodiversity loss.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "26f3a8ed-8402-4967-9bdf-18a4d91c2c6e",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-
-
-];
-
-
-export const newTasks: Task[] = [
-    {
-        question: "What are two different types of infinity?",
-        answer: "The concept of infinity is a mind-boggling one in mathematics. It refers to something that is limitless or endless, defying our finite understanding of the world. There are different types of infinity, such as countable infinity and uncountable infinity, each with its own properties.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "4d18c59d-27c2-4522-b882-b41c001e469a",
+        targetNodeId: "58d4abc6-b3b6-450c-b11c-f6e050280072",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
     {
-        question: "What are two opposing views on the nature of reality?",
-        answer: "The nature of reality is a fundamental question that has puzzled philosophers for centuries. Some believe that reality is objective and independent of our perception, while others argue that it is subjective and shaped by our minds.",
+        question: "If the universe were different in any significant way—such as having different physical constants or initial conditions—it would be unlikely that intelligent life could have evolved. The Anthropic Principle posits that the universe's observed properties are precisely those that allow for the existence of intelligent life.",
+        answer: "Which principle comments on the state of the universe being exactly right for humans to evolve?",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "b6c392c8-5825-4bfb-91e6-0186248dc18d",
+        targetNodeId: "9dd4d88a-f944-4478-9bf4-ff01e772cf15",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
     {
-        question: "What moral dilemma weighs up sacrificing one person to save many others?",
-        answer: "The trolley problem is a thought experiment that presents a moral dilemma. It asks whether it is morally acceptable to sacrifice one person to save many others. It highlights the complexities of ethical decision-making and the tension between individual rights and the greater good.",
+        question: "Why does the scarcity principle work?",
+        answer: "The scarcity principle is a psychological technique that suggests that people are more attracted to things that are perceived as scarce or limited in availability. When something is rare or difficult to obtain, it can increase its perceived value and desirability. This principle is often used in marketing and sales to create a sense of urgency or exclusivity. The scarcity principle works because it taps into our fear of missing out. When we believe that something is in short supply, we may be more likely to act quickly to acquire it before it's gone.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "7c6e4e24-77da-4c28-a338-eb44b9ca2f7b",
+        targetNodeId: "02da2fc7-44e8-421f-ae98-e0b2cb7b9557",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
     {
-        question: "What philosophy suggests that one cannot prove the existence of anything outside of ones own mind?",
-        answer: "Solipsism is the philosophical idea that only one's mind is sure to exist. As an epistemological position, solipsism holds that knowledge outside one's own mind is unsure; the external world and other minds cannot be known and might not exist outside the mind.",
+        question: "What framework sees our consciousness",
+        answer: "Panpsychism is a philosophical belief that consciousness or mind exists throughout the universe, not just in living beings. This means that even inanimate objects, such as rocks or atoms, may possess some form of consciousness or awareness. Panpsychism challenges the traditional view that consciousness is a unique property of living organisms and suggests that it may be a fundamental aspect of reality.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "1eba857c-388f-4e88-8923-2362354acfc8",
+        targetNodeId: "8117fa9e-b02a-48d5-88f2-8e964512a9ba",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
     {
-        question: "What is it called when one experiences the discomfort caused by having conflicting internal beliefs?",
-        answer: "The psychological discomfort that arises when people hold conflicting beliefs or attitudes is known as cognitive dissonance. Individuals may engage in various strategies to reduce this discomfort, such as rationalization or denial.",
+        question: "What is it called when many people share an innacurate memory?",
+        answer: "There is a phenomenon where a large group of people seem to have a shared false memory of a particular event or fact. It's often attributed to mass hysteria or misremembering. It's called the Mandela Effect.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "41dc1083-a8ac-4c27-b450-8c59d7e2ba40",
+        targetNodeId: "84380c7b-62e0-4183-9a47-7947aabf33fd",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
 ]
+
+//done, for zander
+// export const taskList: Task[] = [
+//     {
+//         question: "What phenomenon proves the existence of dark matter?",
+//         answer: "Gravitational lensing is a phenomenon where massive objects, like galaxies and galaxy clusters, bend the path of light passing through them. This bending occurs due to the warping of spacetime caused by the object's immense gravity. By studying the distortion of light from distant galaxies, astronomers can infer the presence of invisible mass, such as dark matter.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "What values does Immanuel Kant emphasize, which he believes would drive humanity forward?",
+//         answer: "Immanuel Kant's categorical imperative is a moral principle that states that one should act only in accordance with rules that could be universalized. It emphasizes the importance of duty, reason, and respect for humanity.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "Which principle comments on the state of the universe being exactly right for humans to evolve?",
+//         answer: "If the universe were different in any significant way—such as having different physical constants or initial conditions—it would be unlikely that intelligent life could have evolved. The Anthropic Principle posits that the universe's observed properties are precisely those that allow for the existence of intelligent life.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "Why does the scarcity principle work?",
+//         answer: "The scarcity principle is a psychological technique that suggests that people are more attracted to things that are perceived as scarce or limited in availability. When something is rare or difficult to obtain, it can increase its perceived value and desirability. This principle is often used in marketing and sales to create a sense of urgency or exclusivity. The scarcity principle works because it taps into our fear of missing out. When we believe that something is in short supply, we may be more likely to act quickly to acquire it before it's gone.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "What framework sees our conciousness",
+//         answer: "Panpsychism is a philosophical belief that consciousness or mind exists throughout the universe, not just in living beings. This means that even inanimate objects, such as rocks or atoms, may possess some form of consciousness or awareness. Panpsychism challenges the traditional view that consciousness is a unique property of living organisms and suggests that it may be a fundamental aspect of reality.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "What is it called when many people share an innacurate memory?",
+//         answer: "There is a phenomenon where a large group of people seem to have a shared false memory of a particular event or fact. It's often attributed to mass hysteria or misremembering. It's called the Mandela Effect.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//
+// ]

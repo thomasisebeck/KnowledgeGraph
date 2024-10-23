@@ -864,27 +864,27 @@ function App() {
                         checked={displayLabels}
                         onChange={(e) => {
                             setDisplayLabels(e.target.checked);
-                            setStatObject({ ...statObject, linkLabels: e.target.checked });
+                            setStatObject({...statObject, linkLabels: e.target.checked});
                         }}
                     />
                 </div>
             }
-
+            <div className={s.reset}>
+                <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
+                            message={"reset the graph"} onclick={resetGraph}
+                            customPadding="45px"
+                />
+            </div>
             {/*buttons to add relationships and nodes*/}
             {
                 statObject.username != "" &&
                 <React.Fragment>
-                    <div className={s.reset}>
-                        <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
-                                    message={"reset the graph"} onclick={resetGraph}
-                                    customPadding="45px"
-                        />
-                    </div>
+
 
                     <div className={s.plus}>
                         <AddButtons
                             showAddBox={() =>
-                                setAddPhase({ ...addPhase, phase: Phase.FIRST })
+                                setAddPhase({...addPhase, phase: Phase.FIRST})
                             }
                             showAddStack={() => setShowAddStackDialogue(true)}
                             addCategory={addCategory}
@@ -898,11 +898,11 @@ function App() {
                 <AddConnectionDialogue
                     firstNode={addPhase.firstNodeId}
                     hideAddBox={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.NONE })
+                        setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     secondNode={addPhase.secondNodeId}
                     reset={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.NONE })
+                        setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     updateRelationship={updateRelationship}
                     setErrorMessage={setErrorMessage}
@@ -957,7 +957,6 @@ function App() {
                     />
 
 
-
                     {/* other custom categories that the user added */}
                     <div className={'categoriesContainer'}>
                         {categories.map(
@@ -1002,7 +1001,7 @@ function App() {
             />
 
 
-            {errorMessage && <Error errorMessage={errorMessage} />}
+            {errorMessage && <Error errorMessage={errorMessage}/>}
         </div>
     );
 }
