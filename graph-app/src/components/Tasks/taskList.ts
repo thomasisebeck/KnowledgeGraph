@@ -41,32 +41,8 @@ find 45% of posts not in realm 1
 
 export const taskList: Task[] = [
     {
-        question: "What phenomenon proves the existence of dark matter?",
-        answer: "Gravitational lensing is a phenomenon where massive objects, like galaxies and galaxy clusters, bend the path of light passing through them. This bending occurs due to the warping of spacetime caused by the object's immense gravity. By studying the distortion of light from distant galaxies, astronomers can infer the presence of invisible mass, such as dark matter.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "84380c7b-62e0-4183-9a47-7947aabf33fd",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-    {
-        question: "What values does Immanuel Kant emphasize, which he believes would drive humanity forward?",
-        answer: "Immanuel Kant's categorical imperative is a moral principle that states that one should act only in accordance with rules that could be universalized. It emphasizes the importance of duty, reason, and respect for humanity.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "58d4abc6-b3b6-450c-b11c-f6e050280072",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-    {
-        question: "If the universe were different in any significant way—such as having different physical constants or initial conditions—it would be unlikely that intelligent life could have evolved. The Anthropic Principle posits that the universe's observed properties are precisely those that allow for the existence of intelligent life.",
-        answer: "Which principle comments on the state of the universe being exactly right for humans to evolve?",
+        question: "Which principle comments on the state of the universe being exactly right for humans to evolve?",
+        answer: "If the universe were different in any significant way—such as having different physical constants or initial conditions—it would be unlikely that intelligent life could have evolved. The Anthropic Principle posits that the universe's observed properties are precisely those that allow for the existence of intelligent life.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
@@ -77,19 +53,7 @@ export const taskList: Task[] = [
         linkLabels: false
     },
     {
-        question: "Why does the scarcity principle work?",
-        answer: "The scarcity principle is a psychological technique that suggests that people are more attracted to things that are perceived as scarce or limited in availability. When something is rare or difficult to obtain, it can increase its perceived value and desirability. This principle is often used in marketing and sales to create a sense of urgency or exclusivity. The scarcity principle works because it taps into our fear of missing out. When we believe that something is in short supply, we may be more likely to act quickly to acquire it before it's gone.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "02da2fc7-44e8-421f-ae98-e0b2cb7b9557",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-    {
-        question: "What framework sees our consciousness",
+        question: "What framework sees our conciousness as something that exists outside of our minds?",
         answer: "Panpsychism is a philosophical belief that consciousness or mind exists throughout the universe, not just in living beings. This means that even inanimate objects, such as rocks or atoms, may possess some form of consciousness or awareness. Panpsychism challenges the traditional view that consciousness is a unique property of living organisms and suggests that it may be a fundamental aspect of reality.",
         providedAnswer: null,
         totalTime: 0,
@@ -100,13 +64,13 @@ export const taskList: Task[] = [
         username: "",
         linkLabels: false
     },
-    {
-        question: "What is it called when many people share an innacurate memory?",
-        answer: "There is a phenomenon where a large group of people seem to have a shared false memory of a particular event or fact. It's often attributed to mass hysteria or misremembering. It's called the Mandela Effect.",
+   {
+        question: "What theory comments on the question as to whether the identity of an object remains the same after all it's parts have been replaced?",
+        answer: "The Ship of Theseus is a philosophical paradox that explores the nature of identity and change. It asks whether a ship that has had all of its parts replaced over time remains the same ship. It raises questions about the relationship between identity and continuity.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "84380c7b-62e0-4183-9a47-7947aabf33fd",
+        targetNodeId: "e3a35d47-862b-4a46-bacb-5f888da903a7",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",

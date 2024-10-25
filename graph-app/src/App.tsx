@@ -883,9 +883,9 @@ function App() {
 
                     <div className={s.plus}>
                         <AddButtons
-                            showAddBox={() =>
+                            showAddBox={() => {
                                 setAddPhase({...addPhase, phase: Phase.FIRST})
-                            }
+                            }}
                             showAddStack={() => setShowAddStackDialogue(true)}
                             addCategory={addCategory}
                         />

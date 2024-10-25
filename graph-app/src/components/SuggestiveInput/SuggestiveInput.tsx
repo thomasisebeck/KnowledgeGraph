@@ -44,7 +44,9 @@ function SuggestiveInput({onBlur, placeholder, setErrorMessage}: Props) {
                        setValue(e.target.value)
                        setHasChosen(false)
                    }}
-                   onBlur={(e) => onBlur(e.target.value)}
+                   onBlur={(e) => {
+                       onBlur(e.target.value)
+                   }}
             />
             {value != "" && list.length > 0 && !hasChosen &&
                 <div className={s.suggestionsList}>
