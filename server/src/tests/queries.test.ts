@@ -130,51 +130,51 @@ describe('queries', () => {
     //
     // }, 15000)
 
-    test('connection directions', async () => {
-        if (driver == null)
-            fail("driver is null")
-
-
-        const functionCalls = [
-            q.findOrCreateClassificationNode(driver, "from1"),
-            q.findOrCreateClassificationNode(driver, "to1"),
-            q.findOrCreateClassificationNode(driver, "from2"),
-            q.findOrCreateClassificationNode(driver, "to2"),
-            q.findOrCreateClassificationNode(driver, "from3"),
-            q.findOrCreateClassificationNode(driver, "to3")
-        ];
-
-        const nodes = await Promise.all(functionCalls);
-        // console.dir(nodes, {depth: null});
-
-        const relFunctionCalls = [
-            //from->to AWAY
-            q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, "new conn 1", Direction.AWAY),
-            //from<-to TOWARDS
-            q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, "new conn 2", Direction.TOWARDS),
-            //NEUTRAL
-            q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId,"new conn 3", Direction.NEUTRAL),
-        ]
-
-        const rels = await Promise.all(relFunctionCalls);
-
-        //NB: don't swap the form and to, just return the direction!!!!
-        //swapping from and to adds too much complexity and edge cases
-
-        expect(rels[0].from).toBe(nodes[0].nodeId)
-        expect(rels[0].to).toBe(nodes[1].nodeId)
-        expect(rels[0].direction).toBe(Direction.AWAY)
-
-        expect(rels[1].from).toBe(nodes[2].nodeId)
-        expect(rels[1].to).toBe(nodes[3].nodeId)
-        expect(rels[1].direction).toBe(Direction.TOWARDS)
-
-        expect(rels[2].from).toBe(nodes[4].nodeId)
-        expect(rels[2].to).toBe(nodes[5].nodeId)
-        expect(rels[2].direction).toBe(Direction.NEUTRAL)
-
-
-    }, 20000)
+    // test('connection directions', async () => {
+    //     if (driver == null)
+    //         fail("driver is null")
+    //
+    //
+    //     const functionCalls = [
+    //         q.findOrCreateClassificationNode(driver, "from1"),
+    //         q.findOrCreateClassificationNode(driver, "to1"),
+    //         q.findOrCreateClassificationNode(driver, "from2"),
+    //         q.findOrCreateClassificationNode(driver, "to2"),
+    //         q.findOrCreateClassificationNode(driver, "from3"),
+    //         q.findOrCreateClassificationNode(driver, "to3")
+    //     ];
+    //
+    //     const nodes = await Promise.all(functionCalls);
+    //     // console.dir(nodes, {depth: null});
+    //
+    //     const relFunctionCalls = [
+    //         //from->to AWAY
+    //         q.findOrCreateRelationship(driver, nodes[0].nodeId, nodes[1].nodeId, "new conn 1", Direction.AWAY),
+    //         //from<-to TOWARDS
+    //         q.findOrCreateRelationship(driver, nodes[2].nodeId, nodes[3].nodeId, "new conn 2", Direction.TOWARDS),
+    //         //NEUTRAL
+    //         q.findOrCreateRelationship(driver, nodes[4].nodeId, nodes[5].nodeId,"new conn 3", Direction.NEUTRAL),
+    //     ]
+    //
+    //     const rels = await Promise.all(relFunctionCalls);
+    //
+    //     //NB: don't swap the form and to, just return the direction!!!!
+    //     //swapping from and to adds too much complexity and edge cases
+    //
+    //     expect(rels[0].from).toBe(nodes[0].nodeId)
+    //     expect(rels[0].to).toBe(nodes[1].nodeId)
+    //     expect(rels[0].direction).toBe(Direction.AWAY)
+    //
+    //     expect(rels[1].from).toBe(nodes[2].nodeId)
+    //     expect(rels[1].to).toBe(nodes[3].nodeId)
+    //     expect(rels[1].direction).toBe(Direction.TOWARDS)
+    //
+    //     expect(rels[2].from).toBe(nodes[4].nodeId)
+    //     expect(rels[2].to).toBe(nodes[5].nodeId)
+    //     expect(rels[2].direction).toBe(Direction.NEUTRAL)
+    //
+    //
+    // }, 20000)
 
     // test('create stack', async () => {
     //

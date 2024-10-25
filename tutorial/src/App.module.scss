@@ -75,7 +75,13 @@ $len : 33px;
 .buttonContainer {
   display: flex;
   justify-content: flex-end;
+  padding: 4px;
 }
+
+.buttonContainer button:nth-child(1) {
+  margin-right: 7px;
+}
+
 .step {
   display: block;
 }

@@ -96,7 +96,7 @@ function App() {
         totalTime: 0,
         totalClicks: 0,
         username: "",
-        linkLabels: false
+        linkLabels: false,
     });
 
     const [upvotedEdges, setUpvotedEdges] = useState<string[]>([]);
@@ -131,8 +131,7 @@ function App() {
         "Click on 'Add connection path between two nodes'.",
         "Click on meteorology, and then science.",
         "We want to refine this path to add another category in between these two categories.",
-        "Let's add a category called 'geology', which is higher up in the hierarchy than 'meteorology', but lower than 'science'.",
-        "Name the node in the middle 'geology'.",
+        "Let's add a category called 'geology', which is higher up in the hierarchy than 'meteorology', but lower than 'science'. Go ahead and name the middle node (orange circle) 'geology'.",
         "Name the top connection 'uses', and set the direction so that it points upwards.",
         "Name the bottom connection 'includes', and set the direction so that it points downwards.",
         "In future, you can add as many categories as you want in between two nodes, but for now just click 'Create Path'.",
@@ -143,13 +142,13 @@ function App() {
         "Reset the graph again using the reset button.",
         "Expand the menu in the lower right corner.",
         "Click on 'create node with information' (the top button).",
-        "Type: 'Spots of a ladybug' in the title box.",
+        "Type: 'Spots of a ladybug' in the title box near the bottom.",
         "Type: 'The bright spots on a ladybug act as a warning sign. They contain toxins which are unpalatable to predators.' in the information box.",
         "Now, you can add categories to place this information in context.",
         "Select 'nature' for the root category by expanding the dropdown for the top category node (the orange circle).",
         "Type 'associated with' in the first connection label, and make sure the direction as neutral or undirected (the line next to the connection label should be a simple stripe).",
         "Type 'biology' as the first category name.",
-        "Type 'subset' in the second connection label, and toggle the direction to point downwards by clicking on the circular button next to it twice.",
+        "Type 'subset' in the second connection label, and toggle the direction to point downwards by clicking on the circular button until the arrow faces the right direction.",
         "Add another category by clicking on the 'add category' button.",
         "Type 'insect' in the second category name.",
         "Type 'type of' in the third connection label, and toggle the direction to point upwards by clicking on the circular button next to it once.",
@@ -401,6 +400,7 @@ function App() {
                 });
 
                 break;
+
             case "ecology":
                 updateNode({
                     label: "ecosystems",
@@ -1085,6 +1085,15 @@ function App() {
                                 {tutorialSteps[currStep]}
                             </div>
                             <div className={s.buttonContainer}>
+                                {currStep > 0 && (
+                                    <button
+                                        onClick={() =>
+                                            setCurrStep(currStep - 1)
+                                        }
+                                    >
+                                        Prev
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setCurrStep(currStep + 1)}
                                 >

@@ -102,6 +102,7 @@ function App() {
     //add a node when clicking on a snippet to show the information
     const expandNode = async (newNode: any) => {
 
+        console.log("expanding node...")
         //expand the snippet of an info node
         if (newNode.snippet) {
 
@@ -153,7 +154,6 @@ function App() {
 
         if (newNode.nodeId != null && newNode.nodeType !== "INFO") {
 
-            console.log("getting neighborhood");
             let success = true;
 
             const neighborhood = await fetch(
@@ -182,6 +182,8 @@ function App() {
             let currExpandedNodes = 0;
 
             let hasFound = false;
+
+            console.log("loop")
 
             for (const node of neighborhood.nodes) {
                 const index = newNodes.findIndex(
@@ -223,6 +225,8 @@ function App() {
                 return n;
             }));
 
+            console.log("done loop")
+
             setRelationships([...newRels]);
 
             //add the current expanded nodes to the object
@@ -241,6 +245,7 @@ function App() {
                 });
         }
 
+        console.log("done");
     };
 
     //initial data from database
@@ -859,28 +864,28 @@ function App() {
                         checked={displayLabels}
                         onChange={(e) => {
                             setDisplayLabels(e.target.checked);
-                            setStatObject({ ...statObject, linkLabels: e.target.checked });
+                            setStatObject({...statObject, linkLabels: e.target.checked});
                         }}
                     />
                 </div>
             }
-
+            <div className={s.reset}>
+                <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
+                            message={"reset the graph"} onclick={resetGraph}
+                            customPadding="45px"
+                />
+            </div>
             {/*buttons to add relationships and nodes*/}
             {
                 statObject.username != "" &&
                 <React.Fragment>
-                    <div className={s.reset}>
-                        <HoverImage normalImage={"buttons/reset.svg"} hoverImage={"buttons/reset-hover.svg"}
-                                    message={"reset the graph"} onclick={resetGraph}
-                                    customPadding="45px"
-                        />
-                    </div>
+
 
                     <div className={s.plus}>
                         <AddButtons
-                            showAddBox={() =>
-                                setAddPhase({ ...addPhase, phase: Phase.FIRST })
-                            }
+                            showAddBox={() => {
+                                setAddPhase({...addPhase, phase: Phase.FIRST})
+                            }}
                             showAddStack={() => setShowAddStackDialogue(true)}
                             addCategory={addCategory}
                         />
@@ -893,11 +898,11 @@ function App() {
                 <AddConnectionDialogue
                     firstNode={addPhase.firstNodeId}
                     hideAddBox={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.NONE })
+                        setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     secondNode={addPhase.secondNodeId}
                     reset={() =>
-                        setAddPhase({ ...addPhase, phase: Phase.NONE })
+                        setAddPhase({...addPhase, phase: Phase.NONE})
                     }
                     updateRelationship={updateRelationship}
                     setErrorMessage={setErrorMessage}
@@ -952,7 +957,6 @@ function App() {
                     />
 
 
-
                     {/* other custom categories that the user added */}
                     <div className={'categoriesContainer'}>
                         {categories.map(
@@ -997,7 +1001,7 @@ function App() {
             />
 
 
-            {errorMessage && <Error errorMessage={errorMessage} />}
+            {errorMessage && <Error errorMessage={errorMessage}/>}
         </div>
     );
 }

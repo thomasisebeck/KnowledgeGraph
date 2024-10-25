@@ -38,132 +38,119 @@ find 45% of posts not in realm 1
 
 */
 
+
 export const taskList: Task[] = [
-
-    //The two normal states of awareness are consciousness and unconsciousness. Higher states of consciousness are often associated with spiritual or mystical experiences. It involves an elevated state of awareness where people are able to gain a greater sense of themselves, their role, and the world. Examples of this include transcendence, meditation, mindfulness, a "runner's high," lucid dreaming, and flow states.
-    //classification: existence <- relates to -> awareness <- synonyms -> consciousness - gives rise to -> states of awareness and sense of self
     {
-        question: "What is a benefit of achieving a higher state of consciousness?",
-        answer: "The two normal states of awareness are consciousness and unconsciousness. Higher states of consciousness are often associated with spiritual or mystical experiences. It involves an elevated state of awareness where people are able to gain a greater sense of themselves, their role, and the world. Examples of this include transcendence, meditation, mindfulness, a \"runner's high,\" lucid dreaming, and flow states.",
+        question: "Which principle comments on the state of the universe being exactly right for humans to evolve?",
+        answer: "If the universe were different in any significant way—such as having different physical constants or initial conditions—it would be unlikely that intelligent life could have evolved. The Anthropic Principle posits that the universe's observed properties are precisely those that allow for the existence of intelligent life.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "fe61af91-79b9-4263-917e-2a86a1410745",
+        targetNodeId: "9dd4d88a-f944-4478-9bf4-ff01e772cf15",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
-
-    //Intuition plays a crucial role in decision-making by drawing on subconscious knowledge and experiences. It provides immediate, often unspoken guidance that helps individuals make choices without extensive deliberation, relying on patterns and instincts developed over time.
     {
-        question: "What is the role of intuition in decision-making?",
-        answer: "It allows us to draw on subconscious knowledge and past experiences",
+        question: "What framework sees our conciousness as something that exists outside of our minds?",
+        answer: "Panpsychism is a philosophical belief that consciousness or mind exists throughout the universe, not just in living beings. This means that even inanimate objects, such as rocks or atoms, may possess some form of consciousness or awareness. Panpsychism challenges the traditional view that consciousness is a unique property of living organisms and suggests that it may be a fundamental aspect of reality.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
+        targetNodeId: "8117fa9e-b02a-48d5-88f2-8e964512a9ba",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
-
-    //Language is not just a tool for communication but also a structuring force for thought. The vocabulary and grammatical frameworks of a language influence how we conceptualize and understand ideas, thus shaping our cognitive processes and the way we perceive the world.
-    {
-        question: "How does language shape thought processes?",
-        answer: "It forces us to structure our thoughts and conceptualise and understand our ideas",
+   {
+        question: "What theory comments on the question as to whether the identity of an object remains the same after all it's parts have been replaced?",
+        answer: "The Ship of Theseus is a philosophical paradox that explores the nature of identity and change. It asks whether a ship that has had all of its parts replaced over time remains the same ship. It raises questions about the relationship between identity and continuity.",
         providedAnswer: null,
         totalTime: 0,
         expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
+        targetNodeId: "e3a35d47-862b-4a46-bacb-5f888da903a7",
         clicksTillInNeighborhood: 0,
         totalClicks: 0,
         username: "",
         linkLabels: false
     },
+]
 
-    //Ambiguity introduces the possibility of multiple interpretations and perspectives. This open-endedness can enrich understanding by allowing various viewpoints and meanings to emerge, though it also requires careful analysis to ensure accurate comprehension.
-    {
-        question: "What is the significance of ambiguity in interpretation?",
-        answer: "Ambiguity allows for multiple interpretations and perspectives",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    //Existentialism explores the meaning of life through the lens of individual freedom and responsibility. It asserts that meaning is not given but created through personal choices and authentic living, emphasizing that each person must find their own path and purpose.
-    {
-        question: "How does existentialism address the meaning of life?",
-        answer: "It explores the meaning of life through the lens of individual freedom and responsibility. Each person must find their own path and purpose.",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    //Uncertainty is a driving force in scientific inquiry as it highlights the limits of current knowledge and stimulates further research. The recognition of uncertainty encourages scientists to test hypotheses, gather data, and refine theories to expand understanding.
-    {
-        question: "Why is uncertainty useful in scientific research",
-        answer: "It encourages scientists to test hypotheses, gather data and expand understanding",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    //Justice and equality are interrelated concepts in societal contexts. Justice seeks to ensure fair distribution of resources and opportunities, while equality focuses on treating individuals the same. Together, they address how societies can balance fairness with equal treatment.
-    {
-        question: "Why is equality considered in tandem when considering equity?",
-        answer: "They must be considered together when addressing fairness and equal treatment",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    //Free will and determinism represent opposing views on human agency. Free will suggests that individuals can make independent choices, while determinism posits that all events are predetermined by prior causes. The intersection of these ideas raises questions about the nature of autonomy and causality
-    {
-        question: "How does the concept of free will intersect with determinism?",
-        answer: "They are opposing view on human agency",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-
-    //Our aesthetic experiences can evoke emotional responses, inspire creativity, and reflect cultural values, thus deeply impacting our interactions with the world. Aesthetics plays a significant role in shaping human experience by influencing how we perceive and appreciate beauty and art.
-    {
-        question: "In what way does aesthetics influence human experience?",
-        answer: "It influences how we perceive and communicate beauty and art",
-        providedAnswer: null,
-        totalTime: 0,
-        expandedNodesPerClick: [],
-        targetNodeId: "TO FILL OUT",
-        clicksTillInNeighborhood: 0,
-        totalClicks: 0,
-        username: "",
-        linkLabels: false
-    },
-];
+//done, for zander
+// export const taskList: Task[] = [
+//     {
+//         question: "What phenomenon proves the existence of dark matter?",
+//         answer: "Gravitational lensing is a phenomenon where massive objects, like galaxies and galaxy clusters, bend the path of light passing through them. This bending occurs due to the warping of spacetime caused by the object's immense gravity. By studying the distortion of light from distant galaxies, astronomers can infer the presence of invisible mass, such as dark matter.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "What values does Immanuel Kant emphasize, which he believes would drive humanity forward?",
+//         answer: "Immanuel Kant's categorical imperative is a moral principle that states that one should act only in accordance with rules that could be universalized. It emphasizes the importance of duty, reason, and respect for humanity.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "Which principle comments on the state of the universe being exactly right for humans to evolve?",
+//         answer: "If the universe were different in any significant way—such as having different physical constants or initial conditions—it would be unlikely that intelligent life could have evolved. The Anthropic Principle posits that the universe's observed properties are precisely those that allow for the existence of intelligent life.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "Why does the scarcity principle work?",
+//         answer: "The scarcity principle is a psychological technique that suggests that people are more attracted to things that are perceived as scarce or limited in availability. When something is rare or difficult to obtain, it can increase its perceived value and desirability. This principle is often used in marketing and sales to create a sense of urgency or exclusivity. The scarcity principle works because it taps into our fear of missing out. When we believe that something is in short supply, we may be more likely to act quickly to acquire it before it's gone.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "What framework sees our conciousness",
+//         answer: "Panpsychism is a philosophical belief that consciousness or mind exists throughout the universe, not just in living beings. This means that even inanimate objects, such as rocks or atoms, may possess some form of consciousness or awareness. Panpsychism challenges the traditional view that consciousness is a unique property of living organisms and suggests that it may be a fundamental aspect of reality.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//     {
+//         question: "What is it called when many people share an innacurate memory?",
+//         answer: "There is a phenomenon where a large group of people seem to have a shared false memory of a particular event or fact. It's often attributed to mass hysteria or misremembering. It's called the Mandela Effect.",
+//         providedAnswer: null,
+//         totalTime: 0,
+//         expandedNodesPerClick: [],
+//         targetNodeId: "",
+//         clicksTillInNeighborhood: 0,
+//         totalClicks: 0,
+//         username: "",
+//         linkLabels: false
+//     },
+//
+// ]

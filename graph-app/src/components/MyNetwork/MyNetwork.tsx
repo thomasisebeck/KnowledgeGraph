@@ -9,14 +9,23 @@ const options = {
         hover: true
     },
     physics: {
-        maxVelocity: 20,
-        barnesHut: {
-            gravitationalConstant: -5000,
-            centralGravity: 0.3,
-            springLength: 250,
-            springConstant: 0.03,
-            damping: 0.3,
-            avoidOverlap: 0
+        maxVelocity: 5,
+        // barnesHut: {
+        //     gravitationalConstant: -5000,
+        //     centralGravity: 0.1,
+        //     springLength: 750,
+        //     springConstant: 1,
+        //     damping: 0.5,
+        //     avoidOverlap: 20
+        // },
+        solver: 'forceAtlas2Based',
+        enabled: true,
+        forceAtlas2Based: {
+            gravitationalConstant: -800,
+            centralGravity: 0.08,
+            damping: 0.90,
+            avoidOverlap: 0.9,
+            springConstant: 0.1
         }
     },
     nodes: {
@@ -48,7 +57,8 @@ const options = {
         color: {
             // color: "#8f7851",
             highlight: "#87bc8c",
-            hover: "#aee4b2"
+            hover: "#aee4b2",
+            opacity: 0.6,
         }
     }
 };

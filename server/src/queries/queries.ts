@@ -114,7 +114,7 @@ const createTopicNodes = async (driver: Driver) => {
     const createIndexQuery = `CREATE FULLTEXT INDEX ${INDEX_NAME} IF NOT EXISTS FOR (n:CLASS) ON EACH [n.label]`
     await executeGenericQuery(driver, createIndexQuery, {})
 
-    return await Promise.all([
+     const topicNodes = await Promise.all([
         createRootNode(driver, "Existence"), //being, reality, possibility
         createRootNode(driver, "Ethics"), //morality, right vs wrong, conscience
         createRootNode(driver, "Logic"), //reasoning, deduction, mathematics, truth
@@ -122,6 +122,12 @@ const createTopicNodes = async (driver: Driver) => {
         createRootNode(driver, "Nature"), //physical phenomenons, environment
         createRootNode(driver, "Belief"), //faith, religion, spirituality
     ]);
+
+    for (const t of topicNodes) {
+        rootNodeIds.push(t.nodeId)
+    }
+
+    return topicNodes;
 
 }
 
@@ -150,6 +156,8 @@ const tryPushToArray = (toAdd: any, array: any, isRel?: boolean) => {
 
     return array;
 }
+
+const rootNodeIds: string[] = [];
 
 const getAllData = async (driver: Driver) => {
     const allNodesQuery =
@@ -423,26 +431,6 @@ const findOrCreateRelationship = async (driver: Driver, nodeIdFrom: string, node
 
 }
 
-// {
-//     rel: {
-//         type: 'is_influenced_by',
-//             properties: { relId: '03fea521-23db-43d9-8c0a-352b91c21be7', votes: 5 }
-//     },
-//     endNodeId: '8832a769-1c8b-4a73-9eab-8805518780d8',
-//         startNodeId: 'd8a917e2-0965-4876-9e4f-2261e70e3ddc',
-//     isDoubleSided: false,
-//     distinctBacklink: Relationship {
-//     identity: Integer { low: 0, high: 0 },
-//     start: Integer { low: 6, high: 0 },
-//     end: Integer { low: 1, high: 0 },
-//     type: 'aspect_of',
-//         properties: { relId: 'ce9b710c-6b96-4079-8fa8-4959bc3b0b8f', votes: [Integer] },
-//     elementId: '5:69348f0d-904e-4fa8-b80f-aed5d4c49503:0',
-//         startNodeElementId: '4:69348f0d-904e-4fa8-b80f-aed5d4c49503:6',
-//         endNodeElementId: '4:69348f0d-904e-4fa8-b80f-aed5d4c49503:1'
-// }
-// }
-
 const tryPushSegment = (segment: Segment, array: Segment[]): Segment[] => {
     const forwardLinkIndex = array.findIndex(seg => seg.rel.properties.relId == segment.rel.properties.relId)
     const newArray = array;
@@ -512,22 +500,12 @@ const convertSegmentsToNodeRelationships = (toRetSegments: Segment[]): NodeRelat
 }
 
 const getNeighborhood = async (driver: Driver, nodeId: string, depth: number) => {
-    // console.log("ID: " + nodeId)
-    // console.log("DEPTH: " + depth)
 
-    // const relationshipsQuery =
-    //     `MATCH (start {nodeId: '${nodeId}'})
-    // MATCH p=(start)-[r*..${depth + 1}]->(end)
-    // UNWIND relationships(p) AS rel
-    // WITH rel, startNode(rel) AS startNode, endNode(rel) AS endNode
-    // OPTIONAL MATCH (endNode)-[r2 {relId: rel.relId}]->(startNode)
-    // RETURN collect(DISTINCT {
-    //     startNodeId: startNode.nodeId,
-    //     endNodeId: endNode.nodeId,
-    //     rel: rel,
-    //     isDoubleSided: r2 IS NOT NULL
-    // }) AS segments`;
-    //
+    if (rootNodeIds.indexOf(nodeId) != -1) {
+        console.log("is a root node")
+        depth = 1;
+    }
+
     const relationshipsQuery =
         `MATCH (start {nodeId: '${nodeId}'})
         MATCH p=(start)-[*..${depth + 1}]-(end)
