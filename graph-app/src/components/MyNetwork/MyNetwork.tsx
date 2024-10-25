@@ -10,6 +10,7 @@ const options = {
     },
     physics: {
         maxVelocity: 5,
+        minVelocity: 5,
         // barnesHut: {
         //     gravitationalConstant: -5000,
         //     centralGravity: 0.1,
@@ -23,9 +24,9 @@ const options = {
         forceAtlas2Based: {
             gravitationalConstant: -800,
             centralGravity: 0.08,
-            damping: 0.90,
+            damping: 0.999,
             avoidOverlap: 0.9,
-            springConstant: 0.1
+            springConstant: 0.1,
         }
     },
     nodes: {
@@ -57,7 +58,7 @@ const options = {
         color: {
             // color: "#8f7851",
             highlight: "#87bc8c",
-            hover: "#aee4b2",
+            hover: "#eddd99",
             opacity: 0.6,
         }
     }
